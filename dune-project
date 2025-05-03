@@ -44,6 +44,12 @@
    (>= 4.0.0))
   (js_of_ocaml-ppx
    (>= 4.0.0))
+  (js_of_ocaml-lwt
+   (>= 4.0.0))
+  (bigstringaf
+   (>= 0.9.0))
+  (threads
+   (>= 0.0.0))
   (dream
    (>= 1.0.0~alpha4))
   (alcotest :with-test)

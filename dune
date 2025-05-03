@@ -1,1 +1,11 @@
 (dirs :standard \ _site \ node_modules)
+
+(env
+ (dev
+  (js_of_ocaml
+   (flags
+    (:standard --quiet))))
+ (release
+  (js_of_ocaml
+   (flags
+    (:standard --quiet --opt 3)))))
