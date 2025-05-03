@@ -1,12 +1,12 @@
 (* Configuration type *)
 type config_type = {
-  _site_title : string;         (* TODO: Remove underscore when used *)
-  _site_description : string;   (* TODO: Remove underscore when used *)
+  _site_title : string; (* TODO: Remove underscore when used *)
+  _site_description : string; (* TODO: Remove underscore when used *)
   author : string;
-  _base_url : string;           (* TODO: Remove underscore when used *)
+  _base_url : string; (* TODO: Remove underscore when used *)
   output_dir : string;
-  _content_dir : string;        (* TODO: Remove underscore when used *)
-  _template_dir : string;       (* TODO: Remove underscore when used *)
+  _content_dir : string; (* TODO: Remove underscore when used *)
+  _template_dir : string; (* TODO: Remove underscore when used *)
   static_dir : string;
 }
 
@@ -43,7 +43,8 @@ let write_file path content =
   close_out oc
 
 (* Process markdown content *)
-let _process_markdown content =  (* TODO: Remove underscore when used *)
+let _process_markdown content =
+  (* TODO: Remove underscore when used *)
   let open Omd in
   let md = of_string content in
   to_html md
@@ -68,33 +69,39 @@ let copy_static_assets () =
   if Sys.file_exists src then copy_dir src dst
 
 (* Render HTML page *)
-let _render_page ~title:_ ~content =  (* TODO: Remove underscore when used *)
+let _render_page ~title:_ ~content =
+  (* TODO: Remove underscore when used *)
   let open Tyxml.Html in
   let doc =
     html
       (head
-        (title (txt "Thoughts and Tiny-Experiments"))         [
+         (title (txt "Thoughts and Tiny-Experiments"))
+         [
            meta ~a:[ a_charset "utf-8" ] ();
            meta
-             ~a:[
-               a_name "viewport";
-               a_content "width=device-width, initial-scale=1";
-             ] ();
+             ~a:
+               [
+                 a_name "viewport";
+                 a_content "width=device-width, initial-scale=1";
+               ]
+             ();
            link ~rel:[ `Stylesheet ] ~href:"/static/css/main.css" ();
          ])
       (body
          [
            header [ h1 [ txt "Doing It Scared" ] ];
            main [ Tyxml.Html.Unsafe.data content ];
-           footer [
-             small [
-               txt
-                 ("© "
-                 ^ string_of_int
-                     ((Unix.localtime (Unix.time ())).Unix.tm_year + 1900)
-                 ^ " " ^ config.author);
+           footer
+             [
+               small
+                 [
+                   txt
+                     ("© "
+                     ^ string_of_int
+                         ((Unix.localtime (Unix.time ())).Unix.tm_year + 1900)
+                     ^ " " ^ config.author);
+                 ];
              ];
-           ];
          ])
   in
   Format.asprintf "%a" (pp ()) doc

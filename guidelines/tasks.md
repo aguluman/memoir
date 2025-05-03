@@ -32,11 +32,11 @@ This document provides a detailed breakdown of tasks needed to implement the OCa
 - [x] 1.4.5 Test deployment pipeline with a simple page
 
 ### Testing Framework Setup
-- [ ] 1.5.1 Configure Alcotest testing framework
-- [ ] 1.5.2 Create basic test structure
-- [ ] 1.5.3 Set up QCheck for property-based testing
-- [ ] 1.5.4 Create test helper modules
-- [ ] 1.5.5 Set up test directories for each component
+- [x] 1.5.1 Configure Alcotest testing framework
+- [x] 1.5.2 Create basic test structure
+- [x] 1.5.3 Set up QCheck for property-based testing
+- [x] 1.5.4 Create test helper modules
+- [x] 1.5.5 Set up test directories for each component
 
 ## Phase 2: Core Components Development
 
