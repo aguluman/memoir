@@ -1,6 +1,6 @@
 (library
  (name memoir_lib)
  (public_name memoir.lib)
- (libraries tyxml omd yaml yojson lwt js_of_ocaml)
+ (libraries tyxml omd yaml yojson lwt js_of_ocaml dream)
  (preprocess
   (pps js_of_ocaml-ppx)))
