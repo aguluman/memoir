@@ -1,9 +1,12 @@
-(executables
- (names generator server cli)
- (public_names memoir-generator memoir-server memoir-cli)
- (package memoir)
- (modules generator server cli)
- (libraries memoir.lib tyxml omd yaml yojson lwt lwt.unix dream js_of_ocaml))
+(executable
+ (name server)
+ (libraries memoir_lib dream lwt)
+ (modes byte exe))
+
+(executable
+ (name generator)
+ (libraries memoir_lib js_of_ocaml)
+ (modes byte exe))
 
 (rule
  (targets generator.bc.js)

@@ -53,7 +53,7 @@ let parse_frontmatter content =
         let remaining = String.sub content (end_pos + 3) (content_length - end_pos - 3) in
         (* Parse the YAML *)
         (try
-           let yaml = Yaml.of_string frontmatter in
+           let _yaml = Yaml.of_string frontmatter in
            (* Convert to metadata *)
            (* This is a basic implementation - expand with proper error handling *)
            empty_metadata, remaining
@@ -72,7 +72,7 @@ let process_content file_path =
       Sys.readdir file_path |> ignore;
       "TODO: Implement file reading"
     in
-    let metadata, markdown = parse_frontmatter content in
+    let metadata, _markdown = parse_frontmatter content in
     let html = "TODO: Convert markdown to HTML" in
     Some { metadata; content = html; url = "/TODO/url"; source_path = file_path }
   with
