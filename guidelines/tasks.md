@@ -5,24 +5,24 @@ This document provides a detailed breakdown of tasks needed to implement the OCa
 ## Phase 1: Project Setup and Infrastructure
 
 ### OCaml Environment Setup
-- [ ] 1.1.1 Install and configure OCaml and OPAM
-- [ ] 1.1.2 Set up VS Code/editor with OCaml plugins
-- [ ] 1.1.3 Create a local Git repository
-- [ ] 1.1.4 Initialize GitHub repository
+- [x] 1.1.1 Install and configure OCaml and OPAM
+- [x] 1.1.2 Set up VS Code/editor with OCaml plugins
+- [x] 1.1.3 Create a local Git repository
+- [x] 1.1.4 Initialize GitHub repository
 
 ### Project Structure Creation
-- [ ] 1.2.1 Create the basic directory structure
-- [ ] 1.2.2 Initialize dune-project with required dependencies
-- [ ] 1.2.3 Create root dune file with directory configuration
-- [ ] 1.2.4 Create .gitignore file (including _site/ directory)
-- [ ] 1.2.5 Create LICENSE file
+- [x] 1.2.1 Create the basic directory structure
+- [x] 1.2.2 Initialize dune-project with required dependencies
+- [x] 1.2.3 Create root dune file with directory configuration
+- [x] 1.2.4 Create .gitignore file (including _site/ directory)
+- [x] 1.2.5 Create LICENSE file
 
 ### Build Pipeline Configuration
-- [ ] 1.3.1 Create lib/dune with library configuration
-- [ ] 1.3.2 Create bin/dune for executable configuration
-- [ ] 1.3.3 Implement basic skeleton of generator.ml
-- [ ] 1.3.4 Implement basic skeleton of server.ml
-- [ ] 1.3.5 Configure js_of_ocaml build pipeline
+- [x] 1.3.1 Create lib/dune with library configuration
+- [x] 1.3.2 Create bin/dune for executable configuration
+- [x] 1.3.3 Implement basic skeleton of generator.ml
+- [x] 1.3.4 Implement basic skeleton of server.ml
+- [x] 1.3.5 Configure js_of_ocaml build pipeline
 
 ### GitHub Pages Configuration
 - [ ] 1.4.1 Initialize GitHub repository

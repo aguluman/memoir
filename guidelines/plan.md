@@ -454,5 +454,10 @@ jobs:
 3. Create the basic Dream server
 4. Implement the content processing system
 5. Begin developing the TyXML templates and RSS feed generator
+6. Frontmatter parsing with the yaml library
+7. RSS feed generation
+8. More sophisticated templates
+9. Better error handling
+10. Client-side interactivity with js_of_ocaml
 
 By following this implementation plan, we'll create a fully OCaml-powered memoir website with both server-side and client-side components, hosted statically on GitHub Pages with comprehensive tests and RSS feed functionality.
