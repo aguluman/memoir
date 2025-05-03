@@ -1,0 +1,16 @@
+(executables
+ (names generator server cli)
+ (public_names memoir-generator memoir-server memoir-cli)
+ (package memoir)
+ (modules generator server cli)
+ (libraries memoir.lib tyxml omd yaml yojson lwt lwt.unix dream js_of_ocaml))
+
+(rule
+ (targets generator.bc.js)
+ (action
+  (run %{bin:js_of_ocaml} --source-map %{dep:generator.bc} -o %{targets})))
+
+(rule
+ (targets server.bc.js)
+ (action
+  (run %{bin:js_of_ocaml} --source-map %{dep:server.bc} -o %{targets})))
