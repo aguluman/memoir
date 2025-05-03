@@ -31,9 +31,11 @@
   (tyxml
    (>= 4.5.0))
   (omd
-   (>= 2.0.0)) ; Markdown parser
+   (>= 1.3.2))
+  ; Markdown parser
   (yaml
-   (>= 3.0.0)) ; For frontmatter parsing
+   (>= 3.0.0))
+  ; For frontmatter parsing
   (yojson
    (>= 2.0.0))
   (lwt
@@ -42,7 +44,14 @@
    (>= 4.0.0))
   (js_of_ocaml-ppx
    (>= 4.0.0))
+  (js_of_ocaml-lwt
+   (>= 4.0.0))
+  (bigstringaf
+   (>= 0.9.0))
+  (threads
+   (>= 0.0.0))
   (dream
    (>= 1.0.0~alpha4))
   (alcotest :with-test)
-  (qcheck :with-test)))
+  (qcheck :with-test)
+  (qcheck-alcotest :with-test)))

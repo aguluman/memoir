@@ -24,7 +24,6 @@ The website can be accessed at:
 
 ## Next Steps
 
-1. Initialize the project structure
 2. Set up the OCaml environment and test framework
 3. Create the basic Dream server
 4. Implement the content processing system
