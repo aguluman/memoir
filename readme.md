@@ -2,6 +2,26 @@
 
 This project aims to create a memoir website using OCaml, featuring a server-side component with Dream and a client-side component using js_of_ocaml. The website will be statically hosted on GitHub Pages and will include comprehensive tests and an RSS feed.
 
+## GitHub Pages Configuration
+
+This project is set up to deploy automatically to GitHub Pages using GitHub Actions. The site is available at [https://fearful-odds.rocks/](https://fearful-odds.rocks/).
+
+### Deployment Status
+
+✅ **Domain Verification**: The custom domain "fearful-odds.rocks" has been successfully verified.
+
+✅ **DNS Configuration**: DNS records properly configured with:
+- A records pointing to GitHub Pages servers for apex domain
+- CNAME record for www subdomain
+
+✅ **Automated Deployment**: GitHub Actions workflow configured to build and deploy the site automatically on each push to the main branch.
+
+### Accessing the Site
+
+The website can be accessed at:
+- [https://fearful-odds.rocks](https://fearful-odds.rocks)
+- [https://www.fearful-odds.rocks](https://www.fearful-odds.rocks)
+
 ## Next Steps
 
 1. Initialize the project structure
