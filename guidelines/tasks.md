@@ -25,11 +25,11 @@ This document provides a detailed breakdown of tasks needed to implement the OCa
 - [x] 1.3.5 Configure js_of_ocaml build pipeline
 
 ### GitHub Pages Configuration
-- [ ] 1.4.1 Initialize GitHub repository
-- [ ] 1.4.2 Create GitHub Action workflow file for CI/CD
-- [ ] 1.4.3 Set up GitHub Pages deployment configuration
-- [ ] 1.4.4 Configure custom domain with DNS settings
-- [ ] 1.4.5 Test deployment pipeline with a simple page
+- [x] 1.4.1 Initialize GitHub repository
+- [x] 1.4.2 Create GitHub Action workflow file for CI/CD
+- [x] 1.4.3 Set up GitHub Pages deployment configuration
+- [x] 1.4.4 Configure custom domain with DNS settings
+- [x] 1.4.5 Test deployment pipeline with a simple page
 
 ### Testing Framework Setup
 - [ ] 1.5.1 Configure Alcotest testing framework
