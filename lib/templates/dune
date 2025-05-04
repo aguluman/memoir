@@ -1,0 +1,6 @@
+(library
+ (name memoir_templates)
+ (public_name memoir.templates)
+ (libraries tyxml memoir.types)
+ (preprocess
+  (pps ppx_deriving.show js_of_ocaml-ppx)))
