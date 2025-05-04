@@ -41,12 +41,12 @@ This document provides a detailed breakdown of tasks needed to implement the OCa
 ## Phase 2: Core Components Development
 
 ### Content Processing System
-- [ ] 2.1.1 Implement basic data types in lib/types/
-- [ ] 2.1.2 Create markdown parser with frontmatter support
-- [ ] 2.1.3 Implement YAML frontmatter extractor
-- [ ] 2.1.4 Build file-based content loader system
-- [ ] 2.1.5 Create path resolution and routing system
-- [ ] 2.1.6 Write tests for content processing
+- [x] 2.1.1 Implement basic data types in lib/types/
+- [x] 2.1.2 Create markdown parser with frontmatter support
+- [x] 2.1.3 Implement YAML frontmatter extractor
+- [x] 2.1.4 Build file-based content loader system
+- [x] 2.1.5 Create path resolution and routing system
+- [x] 2.1.6 Write tests for content processing
 
 ### TyXML Template System
 - [ ] 2.2.1 Create base HTML layout template
