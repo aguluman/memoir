@@ -14,13 +14,21 @@ let test_markdown_parsing () =
 
 (** Test frontmatter extraction *)
 let test_frontmatter_extraction () =
+  (* Create a test content with very explicit frontmatter delimiters *)
   let content =
     "---\ntitle: Test Page\ndescription: A test page\n---\n# Content"
   in
+
+  (* Debug printing to see what we're actually parsing *)
+  Printf.printf "Testing content: %S\n" content;
+
   let yaml_opt, content_only = extract_frontmatter content in
 
+  Printf.printf "Extracted YAML: %s\n"
+    (match yaml_opt with Some y -> "Some(" ^ y ^ ")" | None -> "None");
+  Printf.printf "Content without frontmatter: %S\n" content_only;
+
   check bool "should extract frontmatter" true (Option.is_some yaml_opt);
-  (* The content might have leading whitespace, so we'll trim it *)
   check string "should extract content without frontmatter" "# Content"
     (String.trim content_only);
 
@@ -50,24 +58,25 @@ let test_frontmatter_parsing () =
 
 (** Test full markdown file parsing *)
 let test_markdown_file_parsing () =
+  (* Use explicit string with precise formatting *)
   let content =
     "---\ntitle: Test Page\ndescription: A test page\n---\n# Content"
   in
-  
+
   (* Debug output *)
-  Printf.printf "Original content: '%s'\n" content;
-  
+  Printf.printf "Original content: %S\n" content;
+
   (* Extract frontmatter for debugging *)
-  let (fm_yaml, content_only) = extract_frontmatter content in
-  Printf.printf "Extracted YAML: %s\n" 
+  let fm_yaml, content_only = extract_frontmatter content in
+  Printf.printf "Extracted YAML: %s\n"
     (match fm_yaml with Some y -> "Some(" ^ y ^ ")" | None -> "None");
-  Printf.printf "Content without frontmatter: '%s'\n" content_only;
-  
+  Printf.printf "Content without frontmatter: %S\n" content_only;
+
   (* Continue with the actual test *)
   let page = parse_markdown_file ~path:"test.md" ~content in
-  
-  Printf.printf "Page title: '%s'\n" page.frontmatter.title;
-  
+
+  Printf.printf "Page title: %S\n" page.frontmatter.title;
+
   check string "should set correct path" "test.md" page.path;
   check string "should parse title" "Test Page" page.frontmatter.title;
   check (option string) "should parse description" (Some "A test page")

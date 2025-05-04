@@ -5,8 +5,8 @@ open Content_types
 
 (** Extract frontmatter from markdown content *)
 let extract_frontmatter content =
-  (* Pattern that matches both Unix and Windows line endings *)
-  let frontmatter_pattern = "^---[\n\r]+(.*?)[\n\r]+---[\n\r]+" in
+  (* Pattern that uses simpler regex for line breaks *)
+  let frontmatter_pattern = "^---\n\\(\\(.\\|\n\\)*?\\)\n---\n" in
   let re = Str.regexp frontmatter_pattern in
 
   if Str.string_match re content 0 then

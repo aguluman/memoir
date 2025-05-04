@@ -22,25 +22,26 @@ let rec load_directory_content ~content_dir ~base_dir =
   try
     let dir_contents = Stdlib.Sys.readdir base_dir |> Array.to_list in
     List.concat_map dir_contents ~f:(fun entry ->
-      let full_path = Stdlib.Filename.concat base_dir entry in
-      if Stdlib.Sys.is_directory full_path then
-        load_directory_content ~content_dir ~base_dir:full_path
-      else if is_content_file full_path then
-        let relative_path = 
-          String.drop_prefix full_path (String.length content_dir + 1) in
-        match load_file full_path with
-        | Ok content -> 
-            [Markdown_parser.parse_markdown_file ~path:relative_path ~content]
-        | Error _ -> []
-      else
-        []
-    )
+        let full_path = Stdlib.Filename.concat base_dir entry in
+        if Stdlib.Sys.is_directory full_path then
+          load_directory_content ~content_dir ~base_dir:full_path
+        else if is_content_file full_path then
+          let relative_path =
+            String.drop_prefix full_path (String.length content_dir + 1)
+          in
+          match load_file full_path with
+          | Ok content ->
+              [
+                Markdown_parser.parse_markdown_file ~path:relative_path ~content;
+              ]
+          | Error _ -> []
+        else [])
   with Sys_error _ -> []
 
 (** Load all content from the content directory *)
 let load_all_content ~content_dir =
-  if Stdlib.Sys.file_exists content_dir && Stdlib.Sys.is_directory content_dir then
-    load_directory_content ~content_dir ~base_dir:content_dir
+  if Stdlib.Sys.file_exists content_dir && Stdlib.Sys.is_directory content_dir
+  then load_directory_content ~content_dir ~base_dir:content_dir
   else []
 
 (** Group content pages by content type *)
