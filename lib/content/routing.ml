@@ -21,14 +21,19 @@ let path_to_output_path content_path ~output_dir =
   in
   Stdlib.Filename.concat output_dir html_file
 
+(** Determine content type from directory path *)
+let determine_content_type dir =
+  match dir with
+  | dir when String.is_prefix dir ~prefix:"blog" -> Content_types.Post
+  | dir when String.is_prefix dir ~prefix:"projects" -> Content_types.Project
+  | dir when String.is_prefix dir ~prefix:"journal" -> Content_types.Journal
+  | _ -> Content_types.Page
+
 (** Create a route for a content page *)
 let create_route page ~output_dir =
   let content_type =
     let dir = Stdlib.Filename.dirname page.path in
-    if String.is_prefix dir ~prefix:"blog" then Content_types.Post
-    else if String.is_prefix dir ~prefix:"projects" then Content_types.Project
-    else if String.is_prefix dir ~prefix:"journal" then Content_types.Journal
-    else Content_types.Page
+    determine_content_type dir
   in
 
   let output_path = path_to_output_path page.path ~output_dir in

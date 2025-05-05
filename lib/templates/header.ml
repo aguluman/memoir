@@ -36,6 +36,7 @@ module Header = struct
           a_class [ "nav-toggle" ];
           a_aria "expanded" [ "false" ];
           a_aria "controls" [ "primary-navigation" ];
+          a_aria "label" [ "Toggle navigation menu" ];
         ]
       [
         span ~a:[ a_class [ "sr-only" ] ] [ Html.txt "Menu" ];

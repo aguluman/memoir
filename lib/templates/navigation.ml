@@ -14,11 +14,8 @@ module Navigation = struct
       [
         a
           ~a:
-            [
-              a_href href;
-              (if is_active then a_aria "current" [ "page" ]
-               else a_user_data "no-attr" "true");
-            ]
+            ([ a_href href ]
+            @ if is_active then [ a_aria "current" [ "page" ] ] else [])
           [ Html.txt text ];
       ]
 
