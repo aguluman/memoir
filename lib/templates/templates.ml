@@ -4,12 +4,12 @@ open Header
 open Footer
 open Navigation
 open Seo
-open Template_base  (* Add this line to import layout and doctype *)
+open Template_base (* Add this line to import layout and doctype *)
 
 (** Convenient function to create a page with all components *)
 let create_page ?(lang = "en") ?(current_path = "/") ?(page_class = "page")
     ?(year = 2023) ?(author = "Site Author") ?(twitter_handle = "@siteauthor")
-    ?(additional_head = []) ~title ~description ~content ~url () =
+    ?(additional_head = []) ~title_text ~description ~content ~url () =
   let open Tyxml in
   let nav = Navigation.make ~current_path () in
 
@@ -19,11 +19,7 @@ let create_page ?(lang = "en") ?(current_path = "/") ?(page_class = "page")
     [
       div
         ~a:[ a_class [ "container" ]; a_class [ "header-container" ] ]
-        [
-          Header.logo ();
-          Header.nav_toggle ();
-          Header.navigation ();
-        ];
+        [ Header.logo (); Header.nav_toggle (); Header.navigation () ];
     ]
   in
 
@@ -51,7 +47,9 @@ let create_page ?(lang = "en") ?(current_path = "/") ?(page_class = "page")
             [
               h3 [ Html.txt "Subscribe" ];
               p
-                [ Html.txt "Stay updated with my latest projects and articles." ];
+                [
+                  Html.txt "Stay updated with my latest projects and articles.";
+                ];
               div
                 ~a:[ a_class [ "footer-form" ] ]
                 [
@@ -60,33 +58,36 @@ let create_page ?(lang = "en") ?(current_path = "/") ?(page_class = "page")
                 ];
             ];
         ];
-      div 
-        ~a:[ a_class [ "footer-bottom" ] ] 
+      div
+        ~a:[ a_class [ "footer-bottom" ] ]
         [ Footer.copyright ~year ~name:author () ];
     ]
   in
 
   (* Get SEO meta content without the title element *)
   let seo_without_title =
-    let open_graph = Seo.open_graph_meta ~title_text:title ~description ~url 
-      ~type_:(if current_path = "/" then "website" else "article") () in
-    let twitter_card = Seo.twitter_card_meta ~title_text:title ~description ~twitter_handle () in
-    let canonical = [Seo.canonical_url ~url] in
-    let schema = [Seo.schema_jsonld ~schema_type:"WebPage" ~title_text:title ~description ~url ()] in
+    let open_graph =
+      Seo.open_graph_meta ~title_text ~description ~url
+        ~type_:(if current_path = "/" then "website" else "article")
+        ()
+    in
+    let twitter_card =
+      Seo.twitter_card_meta ~title_text ~description ~twitter_handle ()
+    in
+    let canonical = [ Seo.canonical_url ~url ] in
+    let schema =
+      [
+        Seo.schema_jsonld ~schema_type:"WebPage" ~title_text ~description ~url
+          ();
+      ]
+    in
     open_graph @ twitter_card @ canonical @ schema
   in
 
   (* Add header, navigation, page content, and footer to the layout *)
-  let html_output = 
-    layout 
-      ~lang 
-      ~title_text:title 
-      ~description 
-      ~page_class
+  let html_output =
+    layout ~lang ~title_text ~description ~page_class
       ~additional_head:(seo_without_title @ additional_head)
-      ~header_content
-      ~content:(nav :: content) 
-      ~footer_content
-      () 
+      ~header_content ~content:(nav :: content) ~footer_content ()
   in
   doctype ^ Format.asprintf "%a" (Html.pp ()) html_output

@@ -12,9 +12,7 @@ let meta_tags ~description =
     meta ~a:[ a_charset "utf-8" ] ();
     meta
       ~a:
-        [
-          a_name "viewport"; a_content "width=device-width, initial-scale=1.0";
-        ]
+        [ a_name "viewport"; a_content "width=device-width, initial-scale=1.0" ]
       ();
     meta ~a:[ a_name "description"; a_content description ] ();
     link ~rel:[ `Stylesheet ] ~href:"/static/css/main.css" ();
@@ -31,12 +29,14 @@ let layout ?(lang = "en") ~title_text ~description ~page_class
     ?(additional_head = []) ~header_content ~content ~footer_content () =
   let open Html in
   let meta_content = meta_tags ~description @ additional_head in
-  
+
   html
     ~a:[ a_lang lang ]
     (head (title (txt title_text)) meta_content)
-    (body ~a:[ a_class [ page_class ] ] [
-      header ~a:[ a_class [ "site-header" ] ] header_content; 
-      main content; 
-      footer ~a:[ a_class [ "site-footer" ] ] footer_content
-    ])
+    (body
+       ~a:[ a_class [ page_class ] ]
+       [
+         header ~a:[ a_class [ "site-header" ] ] header_content;
+         main content;
+         footer ~a:[ a_class [ "site-footer" ] ] footer_content;
+       ])
