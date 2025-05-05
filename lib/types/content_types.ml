@@ -41,16 +41,18 @@ type content_page = {
 (** A content page with frontmatter and markdown content *)
 
 (** Content type for different sections of the site *)
-type content_type = 
-  | Page 
-  | Post 
+type content_type =
+  | Page
+  | Post
   | Project
+  | Journal
 
 (** Convert string to content_type *)
 let content_type_of_string = function
   | "page" -> Page
   | "post" -> Post
   | "project" -> Project
+  | "journal" -> Journal
   | _ -> Page (* Default to Page *)
 
 (** Convert content_type to string *)
@@ -58,6 +60,7 @@ let string_of_content_type = function
   | Page -> "page"
   | Post -> "post"
   | Project -> "project"
+  | Journal -> "journal"
 
 type route = {
   source_path : string; (* Original source file path *)

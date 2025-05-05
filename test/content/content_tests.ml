@@ -25,7 +25,9 @@ let test_frontmatter_extraction () =
   let yaml_opt, content_only = extract_frontmatter content in
 
   Printf.printf "Extracted YAML: %s\n"
-    (match yaml_opt with Some y -> "Some(" ^ y ^ ")" | None -> "None");
+    (match yaml_opt with
+    | Some y -> "Some(" ^ y ^ ")"
+    | None -> "None");
   Printf.printf "Content without frontmatter: %S\n" content_only;
 
   check bool "should extract frontmatter" true (Option.is_some yaml_opt);
@@ -69,7 +71,9 @@ let test_markdown_file_parsing () =
   (* Extract frontmatter for debugging *)
   let fm_yaml, content_only = extract_frontmatter content in
   Printf.printf "Extracted YAML: %s\n"
-    (match fm_yaml with Some y -> "Some(" ^ y ^ ")" | None -> "None");
+    (match fm_yaml with
+    | Some y -> "Some(" ^ y ^ ")"
+    | None -> "None");
   Printf.printf "Content without frontmatter: %S\n" content_only;
 
   (* Continue with the actual test *)
