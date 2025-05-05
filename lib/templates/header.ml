@@ -22,8 +22,8 @@ module Header = struct
       li [ a ~a:[ a_href "/about" ] [ Html.txt "About" ] ];
       li [ a ~a:[ a_href "/projects" ] [ Html.txt "Projects" ] ];
       li [ a ~a:[ a_href "/blog" ] [ Html.txt "Blog" ] ];
-      li [ a ~a:[ a_href "/journal" ] [ Html.txt "Journal" ] ];
       (* Daily Entry: a recollection of how my day was spent *)
+      li [ a ~a:[ a_href "/journal" ] [ Html.txt "Journal" ] ];
       li [ a ~a:[ a_href "/contact" ] [ Html.txt "Contact" ] ];
     ]
 

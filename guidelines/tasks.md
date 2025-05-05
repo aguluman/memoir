@@ -54,7 +54,7 @@ This document provides a detailed breakdown of tasks needed to implement the OCa
 - [x] 2.2.3 Implement footer component
 - [x] 2.2.4 Create responsive navigation menu
 - [x] 2.2.5 Build metadata and SEO components
-- [ ] 2.2.6 Write tests for HTML generation
+- [x] 2.2.6 Write tests for HTML generation
 
 ### Static Site Generation
 - [ ] 2.3.1 Implement file output system
@@ -128,6 +128,17 @@ This document provides a detailed breakdown of tasks needed to implement the OCa
 - [ ] 3.6.4 Implement form validation
 - [ ] 3.6.5 Add social media links component
 - [ ] 3.6.6 Create GitHub activity integration
+
+### Journal Section
+- [ ] 3.7.1 Create journal entry template with frontmatter
+- [ ] 3.7.2 Implement daily entry listing page
+- [ ] 3.7.3 Build journal entry permalinks system
+- [ ] 3.7.4 Create calendar-based navigation
+- [ ] 3.7.5 Implement date-based archive view
+- [ ] 3.7.6 Add journal entry categories/tags
+- [ ] 3.7.7 Create journal search functionality
+- [ ] 3.7.8 Implement entry metadata display (time spent, mood, tags)
+
 
 ## Phase 4: Client-Side Features 
 
