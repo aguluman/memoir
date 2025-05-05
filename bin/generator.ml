@@ -24,23 +24,76 @@ let config =
   }
 
 (* File utilities *)
+let normalize_path path =
+  let rec normalize acc = function
+    | [] -> acc
+    | "." :: rest -> normalize acc rest
+    | ".." :: rest -> (
+        match acc with
+        | _ :: parent -> normalize parent rest
+        | [] -> normalize [] rest)
+    | x :: rest -> normalize (x :: acc) rest
+  in
+  let parts = Str.split (Str.regexp_string Filename.dir_sep) path in
+  let normalized = normalize [] parts |> List.rev in
+  String.concat Filename.dir_sep normalized
+
 let ensure_directory_exists dir =
-  if not (Sys.file_exists dir) then Sys.mkdir dir 0o755
-  else if not (Sys.is_directory dir) then
-    failwith (Printf.sprintf "%s exists but is not a directory" dir)
+  let normalized_dir = normalize_path dir in
+  try
+    if not (Sys.file_exists normalized_dir) then
+      let rec make_dir path =
+        if not (Sys.file_exists path) then (
+          make_dir (Filename.dirname path);
+          Printf.printf "Creating directory: %s\n" path;
+          Sys.mkdir path 0o755)
+      in
+      make_dir normalized_dir
+    else if not (Sys.is_directory normalized_dir) then
+      failwith
+        (Printf.sprintf "%s exists but is not a directory" normalized_dir)
+  with Sys_error msg ->
+    failwith
+      (Printf.sprintf "Failed to create directory %s: %s" normalized_dir msg)
 
 let read_file path =
-  let ic = open_in path in
-  let len = in_channel_length ic in
-  let content = really_input_string ic len in
-  close_in ic;
-  content
+  let normalized_path = normalize_path path in
+  try
+    let ic = open_in normalized_path in
+    try
+      let len = in_channel_length ic in
+      let content = really_input_string ic len in
+      close_in ic;
+      content
+    with e ->
+      close_in ic;
+      raise
+        (Failure
+           (Printf.sprintf "Failed to read file %s: %s" normalized_path
+              (Printexc.to_string e)))
+  with Sys_error msg ->
+    raise
+      (Failure (Printf.sprintf "Failed to open file %s: %s" normalized_path msg))
 
 let write_file path content =
-  ensure_directory_exists (Filename.dirname path);
-  let oc = open_out path in
-  output_string oc content;
-  close_out oc
+  let normalized_path = normalize_path path in
+  try
+    ensure_directory_exists (Filename.dirname normalized_path);
+    Printf.printf "Writing file: %s\n" normalized_path;
+    let oc = open_out normalized_path in
+    try
+      output_string oc content;
+      close_out oc
+    with e ->
+      close_out oc;
+      raise
+        (Failure
+           (Printf.sprintf "Failed to write to file %s: %s" normalized_path
+              (Printexc.to_string e)))
+  with Sys_error msg ->
+    raise
+      (Failure
+         (Printf.sprintf "Failed to create file %s: %s" normalized_path msg))
 
 (* Process markdown content *)
 let _process_markdown content =
@@ -49,24 +102,32 @@ let _process_markdown content =
   let md = of_string content in
   to_html md
 
-(* Copy static assets *)
+(* Copy static assets with enhanced error handling *)
 let copy_static_assets () =
   let rec copy_dir src_dir dst_dir =
+    Printf.printf "Copying directory: %s -> %s\n" src_dir dst_dir;
     ensure_directory_exists dst_dir;
-    let entries = Sys.readdir src_dir in
-    Array.iter
-      (fun entry ->
-        let src_path = Filename.concat src_dir entry in
-        let dst_path = Filename.concat dst_dir entry in
-        if Sys.is_directory src_path then copy_dir src_path dst_path
-        else
-          let content = read_file src_path in
-          write_file dst_path content)
-      entries
+    try
+      let entries = Sys.readdir src_dir in
+      Array.iter
+        (fun entry ->
+          if entry <> ".git" && entry <> "_site" && entry <> "node_modules" then
+            let src_path = Filename.concat src_dir entry in
+            let dst_path = Filename.concat dst_dir entry in
+            if Sys.is_directory src_path then copy_dir src_path dst_path
+            else (
+              Printf.printf "Copying file: %s\n" entry;
+              let content = read_file src_path in
+              write_file dst_path content))
+        entries
+    with Sys_error msg ->
+      raise
+        (Failure (Printf.sprintf "Failed to copy directory %s: %s" src_dir msg))
   in
   let src = config.static_dir in
   let dst = Filename.concat config.output_dir "static" in
   if Sys.file_exists src then copy_dir src dst
+  else Printf.printf "Warning: Static directory %s does not exist\n" src
 
 (* Render HTML page *)
 let _render_page ~title:_ ~content =
@@ -106,17 +167,160 @@ let _render_page ~title:_ ~content =
   in
   Format.asprintf "%a" (pp ()) doc
 
+(* Route and URL mapping types *)
+type route = {
+  url_path : string;
+  file_path : string;
+  content_type : content_type;
+}
+
+and content_type =
+  | Page
+  | BlogPost
+  | Project
+  | Journal
+  | Asset
+
+(* URL path mapping *)
+let clean_url_path path =
+  let path = Filename.remove_extension path in
+  let path = if path = "index" then "/" else "/" ^ path in
+  String.map
+    (function
+      | '\\' -> '/'
+      | c -> c)
+    path
+
+let content_type_of_path path =
+  match Filename.dirname path with
+  | "content/blog" -> BlogPost
+  | "content/projects" -> Project
+  | "content/journal" -> Journal
+  | "content/pages" -> Page
+  | _ when Filename.extension path = "" -> Asset
+  | _ -> Page
+
+let collect_routes () =
+  let routes = ref [] in
+  let add_route ~url_path ~file_path ~content_type =
+    routes := { url_path; file_path; content_type } :: !routes
+  in
+  let rec process_dir dir =
+    if Sys.file_exists dir then
+      Array.iter
+        (fun entry ->
+          let path = Filename.concat dir entry in
+          if entry <> "." && entry <> ".." && entry <> "_site" then
+            if Sys.is_directory path then process_dir path
+            else
+              let rel_path =
+                let prefix_len = String.length config._content_dir + 1 in
+                String.sub path prefix_len (String.length path - prefix_len)
+              in
+              let url_path = clean_url_path rel_path in
+              let content_type = content_type_of_path path in
+              add_route ~url_path ~file_path:path ~content_type)
+        (Sys.readdir dir)
+  in
+  process_dir config._content_dir;
+  List.rev !routes
+
+(* Cache for incremental builds *)
+type build_cache = {
+  last_modified : (string * float) list;
+  mutable cache_file : string;
+}
+
+let load_build_cache () =
+  let cache_file = Filename.concat config.output_dir ".build-cache" in
+  try
+    let content = read_file cache_file in
+    let lines = String.split_on_char '\n' content in
+    let last_modified =
+      List.filter_map
+        (fun line ->
+          match String.split_on_char '|' line with
+          | [ path; time ] -> Some (path, float_of_string time)
+          | _ -> None)
+        lines
+    in
+    { last_modified; cache_file }
+  with _ -> { last_modified = []; cache_file }
+
+let save_build_cache cache =
+  let content =
+    String.concat "\n"
+      (List.map
+         (fun (path, time) -> Printf.sprintf "%s|%f" path time)
+         cache.last_modified)
+  in
+  write_file cache.cache_file content
+
+let is_file_modified file_path cache =
+  try
+    let stat = Unix.stat file_path in
+    match List.assoc_opt file_path cache.last_modified with
+    | Some last_mtime -> stat.Unix.st_mtime > last_mtime
+    | None -> true
+  with Unix.Unix_error _ -> true
+
+let update_cache_entry file_path cache =
+  try
+    let stat = Unix.stat file_path in
+    let last_modified =
+      (file_path, stat.Unix.st_mtime)
+      :: List.filter (fun (p, _) -> p <> file_path) cache.last_modified
+    in
+    { cache with last_modified }
+  with Unix.Unix_error _ -> cache
+
 (* Generate site *)
 let generate_site () =
   print_endline "Starting site generation...";
+
+  (* Load build cache *)
+  let cache = load_build_cache () in
+
   (* Ensure output directory exists *)
   ensure_directory_exists config.output_dir;
+
   (* Copy static assets *)
   copy_static_assets ();
   print_endline "Static assets copied.";
-  (* TODO: Process content files *)
-  (* TODO: Generate index page *)
-  (* TODO: Generate RSS feed *)
+
+  (* Collect and process routes *)
+  let routes = collect_routes () in
+  Printf.printf "Collected %d routes\n" (List.length routes);
+
+  (* Process each route *)
+  let final_cache =
+    List.fold_left
+      (fun acc route ->
+        if is_file_modified route.file_path acc then (
+          Printf.printf "Processing modified route: %s -> %s\n" route.file_path
+            route.url_path;
+          (match route.content_type with
+          | Asset ->
+              let content = read_file route.file_path in
+              let output_path =
+                Filename.concat config.output_dir
+                  (String.sub route.url_path 1
+                     (String.length route.url_path - 1))
+              in
+              write_file output_path content
+          | _ ->
+              (* TODO: Process markdown and generate HTML *)
+              ());
+          update_cache_entry route.file_path acc)
+        else (
+          Printf.printf "Skipping unmodified route: %s\n" route.file_path;
+          acc))
+      cache routes
+  in
+
+  (* Save updated cache *)
+  save_build_cache final_cache;
+
   print_endline "Site generation complete!";
   ()
 
