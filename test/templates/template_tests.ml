@@ -10,23 +10,35 @@ module Template_tests = struct
     let title = "Test Page" in
     let description = "Test description" in
     let layout =
-      Template_base.layout ~title_text:title ~description ~page_class:"test-page"
-        ~header_content:[Html.div [ Html.txt "Header" ]] 
+      Template_base.layout ~title_text:title ~description
+        ~page_class:"test-page"
+        ~header_content:[ Html.div [ Html.txt "Header" ] ]
         ~content:[ Html.p [ Html.txt "Content" ] ]
-        ~footer_content:[Html.div [ Html.txt "Footer" ]] ()
+        ~footer_content:[ Html.div [ Html.txt "Footer" ] ]
+        ()
     in
     let html_string = Format.asprintf "%a" (Html.pp ()) layout in
     check bool "Contains title" true (String.contains html_string 'T');
     check bool "Contains content" true (String.contains html_string 'C')
 
   let test_header () =
-    let header_content = [Html.div [ Html.txt "Header" ]] in
-    let html_string = String.concat "" (List.map (fun elt -> Format.asprintf "%a" (Html.pp_elt ()) elt) header_content) in
+    let header_content = [ Html.div [ Html.txt "Header" ] ] in
+    let html_string =
+      String.concat ""
+        (List.map
+           (fun elt -> Format.asprintf "%a" (Html.pp_elt ()) elt)
+           header_content)
+    in
     check bool "Contains header" true (String.contains html_string 'H')
 
   let test_footer () =
-    let footer_content = [Html.div [ Html.txt "© 2024 Test User" ]] in
-    let html_string = String.concat "" (List.map (fun elt -> Format.asprintf "%a" (Html.pp_elt ()) elt) footer_content) in
+    let footer_content = [ Html.div [ Html.txt "© 2024 Test User" ] ] in
+    let html_string =
+      String.concat ""
+        (List.map
+           (fun elt -> Format.asprintf "%a" (Html.pp_elt ()) elt)
+           footer_content)
+    in
     check bool "Contains copyright" true (String.contains html_string '\xA9')
 
   let test_navigation () =
@@ -35,10 +47,14 @@ module Template_tests = struct
     check bool "Contains nav element" true (String.contains html_string '<')
 
   let test_seo () =
-    let meta = Seo.make_head ~title_text:"Test" ~description:"Test"
+    let meta =
+      Seo.make_head ~title_text:"Test" ~description:"Test"
         ~url:"https://example.com" ()
     in
-    let html_string = String.concat "" (List.map (fun elt -> Format.asprintf "%a" (Html.pp_elt ()) elt) meta) in
+    let html_string =
+      String.concat ""
+        (List.map (fun elt -> Format.asprintf "%a" (Html.pp_elt ()) elt) meta)
+    in
     check bool "Contains meta tags" true (String.contains html_string 'm')
 end
 

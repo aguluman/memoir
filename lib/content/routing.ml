@@ -25,9 +25,10 @@ let path_to_output_path content_path ~output_dir =
 let create_route page ~output_dir =
   let content_type =
     let dir = Stdlib.Filename.dirname page.path in
-    if String.is_prefix dir ~prefix:"blog" then Post
-    else if String.is_prefix dir ~prefix:"projects" then Project
-    else Page
+    if String.is_prefix dir ~prefix:"blog" then Content_types.Post
+    else if String.is_prefix dir ~prefix:"projects" then Content_types.Project
+    else if String.is_prefix dir ~prefix:"journal" then Content_types.Journal
+    else Content_types.Page
   in
 
   let output_path = path_to_output_path page.path ~output_dir in
