@@ -5,14 +5,15 @@ open Content_types
 
 (** Extract frontmatter from markdown content *)
 let extract_frontmatter content =
-  (* Pattern that uses simpler regex for line breaks *)
-  let frontmatter_pattern = "^---\n\\(\\(.\\|\n\\)*?\\)\n---\n" in
+  let frontmatter_pattern = "^---\n\\([^-]\\|-[^-]\\)*\n---\n" in
   let re = Str.regexp frontmatter_pattern in
-
   if Str.string_match re content 0 then
-    let yaml_content = Str.matched_group 1 content in
+    let yaml_content = String.sub ~pos:4 ~len:(Str.match_end () - 8) content in
+    let content_start = Str.match_end () in
     let content_without_frontmatter =
-      String.drop_prefix content (Str.match_end ())
+      String.sub ~pos:content_start
+        ~len:(String.length content - content_start)
+        content
     in
     (Some yaml_content, content_without_frontmatter)
   else (None, content)
@@ -60,11 +61,9 @@ let parse_yaml_frontmatter yaml_str =
 
 (** Parse markdown content into HTML *)
 let parse_markdown content =
-  (* Make sure we're only parsing the content AFTER frontmatter *)
-  let frontmatter_yaml, content_without_frontmatter = extract_frontmatter content in
-  (* Debug: Print to confirm frontmatter was removed *)
-  Stdio.printf "Frontmatter removed: %b\n" (Option.is_some frontmatter_yaml);
-  let html = Omd.of_string content_without_frontmatter |> Omd.to_html in
+  let md = Omd.of_string content in
+  (* Convert to HTML with auto identifiers for headings *)
+  let html = Omd.to_html ~auto_identifiers:true md in
   html
 
 (** Parse a markdown file with frontmatter into a content_page *)
@@ -76,13 +75,12 @@ let parse_markdown_file ~path ~content =
     | None -> empty_frontmatter
   in
 
-  (* Ensure we only pass the content WITHOUT frontmatter to the HTML generator *)
+  (* Process markdown after frontmatter *)
   let html_content = parse_markdown markdown_content in
   let url_path =
     match frontmatter.slug with
     | Some slug -> slug
     | None ->
-        (* Derive URL path from the file path *)
         let base_name = Stdlib.Filename.basename path in
         let without_ext = Stdlib.Filename.remove_extension base_name in
         let dir_path = Stdlib.Filename.dirname path in
@@ -93,7 +91,7 @@ let parse_markdown_file ~path ~content =
   {
     path;
     frontmatter;
-    content = markdown_content; (* Store markdown without frontmatter *)
+    content = markdown_content;
     html_content = Some html_content;
     url_path;
   }

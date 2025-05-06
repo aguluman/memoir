@@ -125,27 +125,12 @@ let write_output_file ~content ~path =
   Printf.printf "Written: %s\n" path
 
 (* Process markdown content *)
-(* Process markdown content *)
-let _process_markdown content =
-  (* Extract frontmatter first using a regex to match the section between --- markers *)
-  let frontmatter_pattern = "^---\n\\(\\(.\\|\n\\)*?\\)\n---\n" in
-  let re = Str.regexp frontmatter_pattern in
-  
-  if Str.string_match re content 0 then
-    (* Get content after frontmatter *)
-    let content_without_frontmatter = 
-      String.sub content (Str.match_end ()) 
-        (String.length content - Str.match_end ())
-    in
-    (* Convert only the content part to HTML *)
-    let open Omd in
-    let md = of_string content_without_frontmatter in
-    to_html md
-  else
-    (* If no frontmatter found, process whole content *)
-    let open Omd in
-    let md = of_string content in
-    to_html md
+let _process_markdown ~file_path ~content =
+  let open Memoir_content.Markdown_parser in
+  let page = parse_markdown_file ~path:file_path ~content in
+  match page.html_content with
+  | Some html -> html
+  | None -> ""
 
 (* Enhanced static asset copying with content type detection *)
 let copy_static_assets () =
@@ -197,10 +182,18 @@ let _render_page ~page_title ~content =
          ])
       (body
          [
-           header [ h1 [ txt page_title ] ];
-           main [ Tyxml.Html.Unsafe.data content ];
-           footer
+           header [ h1 ~a:[ a_class [ "site-title" ] ] [ txt page_title ] ];
+           main
+             ~a:[ a_class [ "main-content" ] ]
              [
+               div
+                 ~a:[ a_class [ "content-wrapper" ] ]
+                 [ Tyxml.Html.Unsafe.data content ];
+             ];
+           footer
+             ~a:[ a_class [ "site-footer" ] ]
+             [
+               hr ();
                small
                  [
                    txt
@@ -240,13 +233,14 @@ let extract_route_metadata file_path =
   let content = read_file file_path in
   let frontmatter_pattern = "^---\n\\(\\(.\\|\n\\)*?\\)\n---\n" in
   let re = Str.regexp frontmatter_pattern in
-  
+
   if Str.string_match re content 0 then
     let yaml_str = Str.matched_group 1 content in
     try
       (* Use your existing YAML parsing logic from markdown_parser.ml *)
       match Yaml.of_string yaml_str with
-      | Error _ -> { title = None; _date = None; _description = None; _tags = [] }
+      | Error _ ->
+          { title = None; _date = None; _description = None; _tags = [] }
       | Ok yaml ->
           let get_string yaml key =
             match Yaml.Util.find key yaml with
@@ -256,9 +250,11 @@ let extract_route_metadata file_path =
           let get_string_list yaml key =
             match Yaml.Util.find key yaml with
             | Ok (Some (`A lst)) ->
-                List.filter_map (function
-                  | `String s -> Some s
-                  | _ -> None) lst
+                List.filter_map
+                  (function
+                    | `String s -> Some s
+                    | _ -> None)
+                  lst
             | _ -> []
           in
           {
@@ -268,8 +264,7 @@ let extract_route_metadata file_path =
             _tags = get_string_list yaml "tags";
           }
     with _ -> { title = None; _date = None; _description = None; _tags = [] }
-  else
-    { title = None; _date = None; _description = None; _tags = [] }
+  else { title = None; _date = None; _description = None; _tags = [] }
 
 (* Process Page Route *)
 let process_route route =
@@ -291,12 +286,15 @@ let process_route route =
   match route.content_type with
   | Asset -> write_output_file ~content ~path:output_path
   | _ ->
-      let html_content = _process_markdown content in
-      let page =
-        _render_page
-          ~page_title:(Option.value metadata.title ~default:"Untitled")
-          ~content:html_content
+      let title =
+        match metadata.title with
+        | Some t -> t
+        | None -> Filename.remove_extension (Filename.basename route.file_path)
       in
+      let html_content =
+        _process_markdown ~file_path:route.file_path ~content
+      in
+      let page = _render_page ~page_title:title ~content:html_content in
       write_output_file ~content:page ~path:output_path
 
 (* URL path mapping *)

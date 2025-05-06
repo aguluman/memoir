@@ -7,8 +7,6 @@ layout: "home"
 tags: ["memoir", "engineering", "ocaml", "journey"]
 ---
 
-# Into The Digital Breach
-
 > Then out spake brave Horatius,  
 > The Captain of the gate:  
 > "*To every man upon this earth  
