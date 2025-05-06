@@ -26,8 +26,10 @@
   "A modern portfolio and memoir website built with OCaml, featuring static site generation and interactive components")
  (depends
   (ocaml
-   (>= 4.14.0))
+   (>= 5.3.0))
   dune
+  (str
+   (>= 1.0.0))
   (tyxml
    (>= 4.5.0))
   (omd

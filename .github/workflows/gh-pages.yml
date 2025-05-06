@@ -5,6 +5,13 @@ on:
   push:
     branches:
       - main
+  # Allow manual triggering
+  workflow_dispatch:
+
+# Cancel in-progress runs
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -12,24 +19,48 @@ permissions:
   id-token: write
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-      - name: Build static site
+        with:
+          fetch-depth: 1  # Shallow clone for faster checkout
+        
+      - name: Set up OCaml
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: 5.3.x
+          dune-cache: true  # More efficient caching
+          opam-repositories: |
+            default: https://github.com/ocaml/opam-repository.git
+          cache-prefix: v1  # Enable caching
+
+      - name: Install dependencies
+        run: opam install . --deps-only --with-doc --with-test
+          
+      - name: Build and generate site
         run: |
+          eval $(opam env)
+          dune build
           mkdir -p _site
-          # Copy static files to the output directory
-          cp -r static/* _site/ || echo "No static files found"
-          # Copy CNAME file to the output directory
-          cp CNAME _site/ || echo "No CNAME file found"
+          dune exec bin/generator.exe
+          cp CNAME _site/ || true
+          
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
+          retention-days: 1  # Reduced retention since we deploy immediately
+
+          
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

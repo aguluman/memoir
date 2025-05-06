@@ -57,12 +57,12 @@ This document provides a detailed breakdown of tasks needed to implement the OCa
 - [x] 2.2.6 Write tests for HTML generation
 
 ### Static Site Generation
-- [ ] 2.3.1 Implement file output system
-- [ ] 2.3.2 Create static asset copying mechanism
-- [ ] 2.3.3 Build path mapping for URLs
-- [ ] 2.3.4 Implement route collection and processing
-- [ ] 2.3.5 Create incremental build system
-- [ ] 2.3.6 Test full site generation
+- [x] 2.3.1 Implement file output system
+- [x] 2.3.2 Create static asset copying mechanism
+- [x] 2.3.3 Build path mapping for URLs
+- [x] 2.3.4 Implement route collection and processing
+- [x] 2.3.5 Create incremental build system
+- [x] 2.3.6 Test full site generation
 
 ### Basic Styling Implementation
 - [ ] 2.4.1 Create CSS reset/normalize

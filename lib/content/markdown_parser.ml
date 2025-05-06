@@ -5,14 +5,15 @@ open Content_types
 
 (** Extract frontmatter from markdown content *)
 let extract_frontmatter content =
-  (* Pattern that uses simpler regex for line breaks *)
-  let frontmatter_pattern = "^---\n\\(\\(.\\|\n\\)*?\\)\n---\n" in
+  let frontmatter_pattern = "^---\n\\([^-]\\|-[^-]\\)*\n---\n" in
   let re = Str.regexp frontmatter_pattern in
-
   if Str.string_match re content 0 then
-    let yaml_content = Str.matched_group 1 content in
+    let yaml_content = String.sub ~pos:4 ~len:(Str.match_end () - 8) content in
+    let content_start = Str.match_end () in
     let content_without_frontmatter =
-      String.drop_prefix content (Str.match_end ())
+      String.sub ~pos:content_start
+        ~len:(String.length content - content_start)
+        content
     in
     (Some yaml_content, content_without_frontmatter)
   else (None, content)
@@ -60,7 +61,9 @@ let parse_yaml_frontmatter yaml_str =
 
 (** Parse markdown content into HTML *)
 let parse_markdown content =
-  let html = Omd.of_string content |> Omd.to_html in
+  let md = Omd.of_string content in
+  (* Convert to HTML with auto identifiers for headings *)
+  let html = Omd.to_html ~auto_identifiers:true md in
   html
 
 (** Parse a markdown file with frontmatter into a content_page *)
@@ -72,12 +75,12 @@ let parse_markdown_file ~path ~content =
     | None -> empty_frontmatter
   in
 
+  (* Process markdown after frontmatter *)
   let html_content = parse_markdown markdown_content in
   let url_path =
     match frontmatter.slug with
     | Some slug -> slug
     | None ->
-        (* Derive URL path from the file path *)
         let base_name = Stdlib.Filename.basename path in
         let without_ext = Stdlib.Filename.remove_extension base_name in
         let dir_path = Stdlib.Filename.dirname path in
