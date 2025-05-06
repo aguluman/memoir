@@ -6,40 +6,28 @@ on:
       - main
   workflow_dispatch:
 
-concurrency:
-  group: pages-${{ github.ref }}
-  cancel-in-progress: true
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
+# Single deployment job since we're not building
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
+      
       - name: Setup Pages
         uses: actions/configure-pages@v4
-
-      - name: Fix static asset paths
-        run: |
-          find _site -type f -name "*.html" -exec sed -i 's/href="\/static\//href="..\/..\/static\//g' {} +
-          find _site -type f -name "*.html" -exec sed -i 's/src="\/static\//src="..\/..\/static\//g' {} +
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
-          retention-days: 5
 
       - name: Deploy to GitHub Pages
         id: deployment
