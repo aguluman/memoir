@@ -183,7 +183,8 @@ body {
   background: rgba(255, 255, 255, 0.05);
   border-left: 4px solid var(--color-accent);
   backdrop-filter: blur(10px);
-  font-weight: 300; /* Light weight for quotes */
+  font-weight: 300;
+  /* Light weight for quotes */
 }
 
 blockquote {
@@ -196,7 +197,12 @@ blockquote {
 }
 
 /* Headers */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-headers);
   color: var(--color-primary);
   line-height: 1.2;
@@ -205,17 +211,23 @@ h1, h2, h3, h4, h5, h6 {
 h1 {
   font-size: 2.5rem;
   margin: 2rem 0;
-  font-weight: 800; /* ExtraBold for main headers */
+  font-weight: 800;
+  /* ExtraBold for main headers */
 }
 
 h2 {
   font-size: 2rem;
   margin: 1.5rem 0;
-  font-weight: 700; /* Bold for secondary headers */
+  font-weight: 700;
+  /* Bold for secondary headers */
 }
 
-h3, h4, h5, h6 {
-  font-weight: 600; /* SemiBold for smaller headers */
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+  /* SemiBold for smaller headers */
 }
 
 /* Links */

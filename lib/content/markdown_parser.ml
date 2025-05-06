@@ -60,7 +60,11 @@ let parse_yaml_frontmatter yaml_str =
 
 (** Parse markdown content into HTML *)
 let parse_markdown content =
-  let html = Omd.of_string content |> Omd.to_html in
+  (* Make sure we're only parsing the content AFTER frontmatter *)
+  let frontmatter_yaml, content_without_frontmatter = extract_frontmatter content in
+  (* Debug: Print to confirm frontmatter was removed *)
+  Stdio.printf "Frontmatter removed: %b\n" (Option.is_some frontmatter_yaml);
+  let html = Omd.of_string content_without_frontmatter |> Omd.to_html in
   html
 
 (** Parse a markdown file with frontmatter into a content_page *)
@@ -72,6 +76,7 @@ let parse_markdown_file ~path ~content =
     | None -> empty_frontmatter
   in
 
+  (* Ensure we only pass the content WITHOUT frontmatter to the HTML generator *)
   let html_content = parse_markdown markdown_content in
   let url_path =
     match frontmatter.slug with
@@ -88,7 +93,7 @@ let parse_markdown_file ~path ~content =
   {
     path;
     frontmatter;
-    content = markdown_content;
+    content = markdown_content; (* Store markdown without frontmatter *)
     html_content = Some html_content;
     url_path;
   }

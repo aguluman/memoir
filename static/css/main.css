@@ -5,25 +5,124 @@
   --color-accent: #0066cc;
   --color-background: #ffffff;
   --color-text: #333333;
-  --font-main: 'JetBrains Mono', monospace;
-  --font-headers: 'Montserrat', sans-serif;
+  --font-main: 'JetBrains Mono NL Nerd Font', monospace;
+  --font-headers: 'JetBrains Mono NL Nerd Font', monospace;
   --max-width: 800px;
   --spacing-unit: 1rem;
 }
 
 /* Typography */
 @font-face {
-  font-family: 'JetBrains Mono';
-  src: url('/static/fonts/JetBrainsMono-Regular.woff2') format('woff2');
-  font-weight: normal;
+  font-family: 'JetBrains Mono NL Nerd Font';
+  src: url('/static/fonts/JetBrainsMononlNerdFontMono-Thin.ttf') format('truetype');
+  font-weight: 100;
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'Montserrat';
-  src: url('/static/fonts/Montserrat-Bold.woff2') format('woff2');
-  font-weight: bold;
+  font-family: 'JetBrains Mono NL Nerd Font';
+  src: url('/static/fonts/JetBrainsMononlNerdFontMono-ExtraLight.ttf') format('truetype');
+  font-weight: 200;
   font-style: normal;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono NL Nerd Font';
+  src: url('/static/fonts/JetBrainsMononlNerdFontMono-Light.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono NL Nerd Font';
+  src: url('/static/fonts/JetBrainsMononlNerdFontMono-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono NL Nerd Font';
+  src: url('/static/fonts/JetBrainsMononlNerdFontMono-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono NL Nerd Font';
+  src: url('/static/fonts/JetBrainsMononlNerdFontMono-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono NL Nerd Font';
+  src: url('/static/fonts/JetBrainsMononlNerdFontMono-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono NL Nerd Font';
+  src: url('/static/fonts/JetBrainsMononlNerdFontMono-ExtraBold.ttf') format('truetype');
+  font-weight: 800;
+  font-style: normal;
+}
+
+/* Italic variants */
+@font-face {
+  font-family: 'JetBrains Mono NL Nerd Font';
+  src: url('/static/fonts/JetBrainsMononlNerdFontMono-ThinItalic.ttf') format('truetype');
+  font-weight: 100;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono NL Nerd Font';
+  src: url('/static/fonts/JetBrainsMononlNerdFontMono-ExtraLightItalic.ttf') format('truetype');
+  font-weight: 200;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono NL Nerd Font';
+  src: url('/static/fonts/JetBrainsMononlNerdFontMono-LightItalic.ttf') format('truetype');
+  font-weight: 300;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono NL Nerd Font';
+  src: url('/static/fonts/JetBrainsMononlNerdFontMono-Italic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono NL Nerd Font';
+  src: url('/static/fonts/JetBrainsMononlNerdFontMono-MediumItalic.ttf') format('truetype');
+  font-weight: 500;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono NL Nerd Font';
+  src: url('/static/fonts/JetBrainsMononlNerdFontMono-SemiBoldItalic.ttf') format('truetype');
+  font-weight: 600;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono NL Nerd Font';
+  src: url('/static/fonts/JetBrainsMononlNerdFontMono-BoldItalic.ttf') format('truetype');
+  font-weight: 700;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono NL Nerd Font';
+  src: url('/static/fonts/JetBrainsMononlNerdFontMono-ExtraBoldItalic.ttf') format('truetype');
+  font-weight: 800;
+  font-style: italic;
 }
 
 body {
@@ -84,6 +183,8 @@ body {
   background: rgba(255, 255, 255, 0.05);
   border-left: 4px solid var(--color-accent);
   backdrop-filter: blur(10px);
+  font-weight: 300;
+  /* Light weight for quotes */
 }
 
 blockquote {
@@ -91,10 +192,17 @@ blockquote {
   padding: 1rem 2rem;
   border-left: 4px solid var(--color-accent);
   background: #f8f8f8;
+  font-weight: 300;
+  font-style: italic;
 }
 
 /* Headers */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-headers);
   color: var(--color-primary);
   line-height: 1.2;
@@ -103,11 +211,23 @@ h1, h2, h3, h4, h5, h6 {
 h1 {
   font-size: 2.5rem;
   margin: 2rem 0;
+  font-weight: 800;
+  /* ExtraBold for main headers */
 }
 
 h2 {
   font-size: 2rem;
   margin: 1.5rem 0;
+  font-weight: 700;
+  /* Bold for secondary headers */
+}
+
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+  /* SemiBold for smaller headers */
 }
 
 /* Links */
@@ -147,6 +267,10 @@ footer {
   background: var(--color-primary);
   color: white;
   text-align: center;
+}
+
+strong {
+  font-weight: 700;
 }
 
 /* Responsive Design */

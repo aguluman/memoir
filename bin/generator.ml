@@ -126,10 +126,25 @@ let write_output_file ~content ~path =
 
 (* Process markdown content *)
 let _process_markdown content =
-  (* TODO: Remove underscore when used *)
-  let open Omd in
-  let md = of_string content in
-  to_html md
+  (* Extract frontmatter first using a regex to match the section between --- markers *)
+  let frontmatter_pattern = "^---\n\\(\\(.\\|\n\\)*?\\)\n---\n" in
+  let re = Str.regexp frontmatter_pattern in
+  
+  if Str.string_match re content 0 then
+    (* Get content after frontmatter *)
+    let content_without_frontmatter = 
+      String.sub content (Str.match_end ()) 
+        (String.length content - Str.match_end ())
+    in
+    (* Convert only the content part to HTML *)
+    let open Omd in
+    let md = of_string content_without_frontmatter in
+    to_html md
+  else
+    (* If no frontmatter found, process whole content *)
+    let open Omd in
+    let md = of_string content in
+    to_html md
 
 (* Enhanced static asset copying with content type detection *)
 let copy_static_assets () =
@@ -162,13 +177,12 @@ let copy_static_assets () =
   else Printf.printf "Warning: Static directory %s does not exist\n" src
 
 (* Render HTML page *)
-let _render_page ~title:_ ~content =
-  (* TODO: Remove underscore when used *)
+let _render_page ~page_title ~content =
   let open Tyxml.Html in
   let doc =
     html
       (head
-         (title (txt "Thoughts and Tiny-Experiments"))
+         (title (txt page_title))
          [
            meta ~a:[ a_charset "utf-8" ] ();
            meta
@@ -182,7 +196,7 @@ let _render_page ~title:_ ~content =
          ])
       (body
          [
-           header [ h1 [ txt "Doing It Scared" ] ];
+           header [ h1 [ txt page_title ] ];
            main [ Tyxml.Html.Unsafe.data content ];
            footer
              [
@@ -222,10 +236,41 @@ type route_metadata = {
 }
 
 let extract_route_metadata file_path =
-  let _content = read_file file_path in
-  (* TODO: Implement YAML frontmatter parsing *)
-  { title = None; _date = None; _description = None; _tags = [] }
+  let content = read_file file_path in
+  let frontmatter_pattern = "^---\n\\(\\(.\\|\n\\)*?\\)\n---\n" in
+  let re = Str.regexp frontmatter_pattern in
+  
+  if Str.string_match re content 0 then
+    let yaml_str = Str.matched_group 1 content in
+    try
+      (* Use your existing YAML parsing logic from markdown_parser.ml *)
+      match Yaml.of_string yaml_str with
+      | Error _ -> { title = None; _date = None; _description = None; _tags = [] }
+      | Ok yaml ->
+          let get_string yaml key =
+            match Yaml.Util.find key yaml with
+            | Ok (Some (`String s)) -> Some s
+            | _ -> None
+          in
+          let get_string_list yaml key =
+            match Yaml.Util.find key yaml with
+            | Ok (Some (`A lst)) ->
+                List.filter_map (function
+                  | `String s -> Some s
+                  | _ -> None) lst
+            | _ -> []
+          in
+          {
+            title = get_string yaml "title";
+            _date = get_string yaml "date";
+            _description = get_string yaml "description";
+            _tags = get_string_list yaml "tags";
+          }
+    with _ -> { title = None; _date = None; _description = None; _tags = [] }
+  else
+    { title = None; _date = None; _description = None; _tags = [] }
 
+(* Process Page Route *)
 let process_route route =
   let output_path =
     match route.content_type with
@@ -248,7 +293,7 @@ let process_route route =
       let html_content = _process_markdown content in
       let page =
         _render_page
-          ~title:(Option.value metadata.title ~default:"Untitled")
+          ~page_title:(Option.value metadata.title ~default:"Untitled")
           ~content:html_content
       in
       write_output_file ~content:page ~path:output_path
