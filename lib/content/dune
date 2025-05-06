@@ -1,0 +1,4 @@
+(library
+ (name memoir_content)
+ (public_name memoir.content)
+ (libraries base core_unix omd yaml content_types))

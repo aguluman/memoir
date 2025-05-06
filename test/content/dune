@@ -1,0 +1,12 @@
+(tests
+ (names content_tests)
+ (libraries
+  alcotest
+  qcheck
+  qcheck-alcotest
+  memoir_lib
+  test_helpers
+  memoir.types
+  memoir.content)
+ (flags
+  (:standard -w -33)))

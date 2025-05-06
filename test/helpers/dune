@@ -1,0 +1,3 @@
+(library
+ (name test_helpers)
+ (libraries alcotest qcheck qcheck-alcotest memoir_lib))

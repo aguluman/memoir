@@ -32,37 +32,37 @@ This document provides a detailed breakdown of tasks needed to implement the OCa
 - [x] 1.4.5 Test deployment pipeline with a simple page
 
 ### Testing Framework Setup
-- [ ] 1.5.1 Configure Alcotest testing framework
-- [ ] 1.5.2 Create basic test structure
-- [ ] 1.5.3 Set up QCheck for property-based testing
-- [ ] 1.5.4 Create test helper modules
-- [ ] 1.5.5 Set up test directories for each component
+- [x] 1.5.1 Configure Alcotest testing framework
+- [x] 1.5.2 Create basic test structure
+- [x] 1.5.3 Set up QCheck for property-based testing
+- [x] 1.5.4 Create test helper modules
+- [x] 1.5.5 Set up test directories for each component
 
 ## Phase 2: Core Components Development
 
 ### Content Processing System
-- [ ] 2.1.1 Implement basic data types in lib/types/
-- [ ] 2.1.2 Create markdown parser with frontmatter support
-- [ ] 2.1.3 Implement YAML frontmatter extractor
-- [ ] 2.1.4 Build file-based content loader system
-- [ ] 2.1.5 Create path resolution and routing system
-- [ ] 2.1.6 Write tests for content processing
+- [x] 2.1.1 Implement basic data types in lib/types/
+- [x] 2.1.2 Create markdown parser with frontmatter support
+- [x] 2.1.3 Implement YAML frontmatter extractor
+- [x] 2.1.4 Build file-based content loader system
+- [x] 2.1.5 Create path resolution and routing system
+- [x] 2.1.6 Write tests for content processing
 
 ### TyXML Template System
-- [ ] 2.2.1 Create base HTML layout template
-- [ ] 2.2.2 Implement header component
-- [ ] 2.2.3 Implement footer component
-- [ ] 2.2.4 Create responsive navigation menu
-- [ ] 2.2.5 Build metadata and SEO components
-- [ ] 2.2.6 Write tests for HTML generation
+- [x] 2.2.1 Create base HTML layout template
+- [x] 2.2.2 Implement header component
+- [x] 2.2.3 Implement footer component
+- [x] 2.2.4 Create responsive navigation menu
+- [x] 2.2.5 Build metadata and SEO components
+- [x] 2.2.6 Write tests for HTML generation
 
 ### Static Site Generation
-- [ ] 2.3.1 Implement file output system
-- [ ] 2.3.2 Create static asset copying mechanism
-- [ ] 2.3.3 Build path mapping for URLs
-- [ ] 2.3.4 Implement route collection and processing
-- [ ] 2.3.5 Create incremental build system
-- [ ] 2.3.6 Test full site generation
+- [x] 2.3.1 Implement file output system
+- [x] 2.3.2 Create static asset copying mechanism
+- [x] 2.3.3 Build path mapping for URLs
+- [x] 2.3.4 Implement route collection and processing
+- [x] 2.3.5 Create incremental build system
+- [x] 2.3.6 Test full site generation
 
 ### Basic Styling Implementation
 - [ ] 2.4.1 Create CSS reset/normalize
@@ -128,6 +128,17 @@ This document provides a detailed breakdown of tasks needed to implement the OCa
 - [ ] 3.6.4 Implement form validation
 - [ ] 3.6.5 Add social media links component
 - [ ] 3.6.6 Create GitHub activity integration
+
+### Journal Section
+- [ ] 3.7.1 Create journal entry template with frontmatter
+- [ ] 3.7.2 Implement daily entry listing page
+- [ ] 3.7.3 Build journal entry permalinks system
+- [ ] 3.7.4 Create calendar-based navigation
+- [ ] 3.7.5 Implement date-based archive view
+- [ ] 3.7.6 Add journal entry categories/tags
+- [ ] 3.7.7 Create journal search functionality
+- [ ] 3.7.8 Implement entry metadata display (time spent, mood, tags)
+
 
 ## Phase 4: Client-Side Features 
 
