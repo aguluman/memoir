@@ -20,31 +20,31 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
-      # Add universe repository for darcs
-      - name: Add universe repository
+      - name: Add universe repository and install dependencies
         run: |
           sudo add-apt-repository universe
           sudo apt-get update
+          sudo apt-get install -y bubblewrap g++-multilib gcc-multilib mercurial musl-tools rsync
 
       - name: Set up OCaml
         uses: ocaml/setup-ocaml@v2
         with:
           ocaml-compiler: 5.3.x
-          dune-cache: true  # More efficient caching
+          dune-cache: true
           opam-repositories: |
             default: https://github.com/ocaml/opam-repository.git
-          cache-prefix: v1  # Enable caching
+          cache-prefix: v1
 
       - name: Install dependencies
         run: opam install . --deps-only --with-doc --with-test
-          
+
       - name: Build and generate site
         run: |
           eval $(opam env)
@@ -52,14 +52,13 @@ jobs:
           mkdir -p _site
           dune exec bin/generator.exe
           cp CNAME _site/ || true
-          
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
-          retention-days: 1  # Reduced retention since we deploy immediately
+          retention-days: 5  # Reduced retention since we deploy immediately
 
-          
   deploy:
     needs: build
     runs-on: ubuntu-latest
