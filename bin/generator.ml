@@ -5,7 +5,7 @@ type config_type = {
   author : string;
   _base_url : string; (* TODO: Remove underscore when used *)
   output_dir : string;
-  _content_dir : string; (* TODO: Remove underscore when used *)
+  content_dir : string;
   _template_dir : string; (* TODO: Remove underscore when used *)
   static_dir : string;
 }
@@ -18,7 +18,7 @@ let config =
     author = "Chukwuma Akunyili";
     _base_url = "https://aguluman.github.io/memoir/";
     output_dir = "_site";
-    _content_dir = "content";
+    content_dir = "content";
     _template_dir = "templates";
     static_dir = "static";
   }
@@ -95,6 +95,35 @@ let write_file path content =
       (Failure
          (Printf.sprintf "Failed to create file %s: %s" normalized_path msg))
 
+(* File type detection *)
+type file_type =
+  | HTML
+  | CSS
+  | JavaScript
+  | Image
+  | Other
+
+let determine_file_type path =
+  match String.lowercase_ascii (Filename.extension path) with
+  | ".html" | ".htm" -> HTML
+  | ".css" -> CSS
+  | ".js" -> JavaScript
+  | ".png" | ".jpg" | ".jpeg" | ".gif" | ".svg" | ".webp" -> Image
+  | _ -> Other
+
+let write_output_file ~content ~path =
+  let dir = Filename.dirname path in
+  ensure_directory_exists dir;
+  let file_type = determine_file_type path in
+  let oc =
+    match file_type with
+    | Image -> open_out_bin path (* Binary mode for images *)
+    | _ -> open_out path (* Text mode for other files *)
+  in
+  output_string oc content;
+  close_out oc;
+  Printf.printf "Written: %s\n" path
+
 (* Process markdown content *)
 let _process_markdown content =
   (* TODO: Remove underscore when used *)
@@ -102,7 +131,7 @@ let _process_markdown content =
   let md = of_string content in
   to_html md
 
-(* Copy static assets with enhanced error handling *)
+(* Enhanced static asset copying with content type detection *)
 let copy_static_assets () =
   let rec copy_dir src_dir dst_dir =
     Printf.printf "Copying directory: %s -> %s\n" src_dir dst_dir;
@@ -111,14 +140,17 @@ let copy_static_assets () =
       let entries = Sys.readdir src_dir in
       Array.iter
         (fun entry ->
-          if entry <> ".git" && entry <> "_site" && entry <> "node_modules" then
+          if
+            not
+              (List.mem entry [ ".git"; "_site"; "node_modules"; ".DS_Store" ])
+          then
             let src_path = Filename.concat src_dir entry in
             let dst_path = Filename.concat dst_dir entry in
             if Sys.is_directory src_path then copy_dir src_path dst_path
             else (
               Printf.printf "Copying file: %s\n" entry;
               let content = read_file src_path in
-              write_file dst_path content))
+              write_output_file ~content ~path:dst_path))
         entries
     with Sys_error msg ->
       raise
@@ -181,6 +213,46 @@ and content_type =
   | Journal
   | Asset
 
+type route_metadata = {
+  title : string option;
+  (* Keeping these fields for future use *)
+  _date : string option;
+  _description : string option;
+  _tags : string list;
+}
+
+let extract_route_metadata file_path =
+  let _content = read_file file_path in
+  (* TODO: Implement YAML frontmatter parsing *)
+  { title = None; _date = None; _description = None; _tags = [] }
+
+let process_route route =
+  let output_path =
+    match route.content_type with
+    | Asset ->
+        Filename.concat config.output_dir
+          (String.sub route.url_path 1 (String.length route.url_path - 1))
+    | _ ->
+        if route.url_path = "/" then
+          Filename.concat config.output_dir "index.html"
+        else
+          Filename.concat config.output_dir
+            (String.sub route.url_path 1 (String.length route.url_path - 1)
+            ^ "/index.html")
+  in
+  let metadata = extract_route_metadata route.file_path in
+  let content = read_file route.file_path in
+  match route.content_type with
+  | Asset -> write_output_file ~content ~path:output_path
+  | _ ->
+      let html_content = _process_markdown content in
+      let page =
+        _render_page
+          ~title:(Option.value metadata.title ~default:"Untitled")
+          ~content:html_content
+      in
+      write_output_file ~content:page ~path:output_path
+
 (* URL path mapping *)
 let clean_url_path path =
   let path = Filename.remove_extension path in
@@ -214,7 +286,7 @@ let collect_routes () =
             if Sys.is_directory path then process_dir path
             else
               let rel_path =
-                let prefix_len = String.length config._content_dir + 1 in
+                let prefix_len = String.length config.content_dir + 1 in
                 String.sub path prefix_len (String.length path - prefix_len)
               in
               let url_path = clean_url_path rel_path in
@@ -222,13 +294,13 @@ let collect_routes () =
               add_route ~url_path ~file_path:path ~content_type)
         (Sys.readdir dir)
   in
-  process_dir config._content_dir;
+  process_dir config.content_dir;
   List.rev !routes
 
 (* Cache for incremental builds *)
 type build_cache = {
   last_modified : (string * float) list;
-  mutable cache_file : string;
+  cache_file : string;
 }
 
 let load_build_cache () =
@@ -299,18 +371,7 @@ let generate_site () =
         if is_file_modified route.file_path acc then (
           Printf.printf "Processing modified route: %s -> %s\n" route.file_path
             route.url_path;
-          (match route.content_type with
-          | Asset ->
-              let content = read_file route.file_path in
-              let output_path =
-                Filename.concat config.output_dir
-                  (String.sub route.url_path 1
-                     (String.length route.url_path - 1))
-              in
-              write_file output_path content
-          | _ ->
-              (* TODO: Process markdown and generate HTML *)
-              ());
+          process_route route;
           update_cache_entry route.file_path acc)
         else (
           Printf.printf "Skipping unmodified route: %s\n" route.file_path;
