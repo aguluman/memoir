@@ -34,6 +34,8 @@
   --heading-color: #222;
   --link-color: #0066cc;
   --background-color: #ffffff;
+  --content-max-width: 800px;  /* Maximum width for content */
+  --content-padding: 2rem;     /* Consistent padding around content */
 }
 
 body {
@@ -47,9 +49,19 @@ body {
 
 /* Layout */
 .container {
-  max-width: var(--max-width);
+  max-width: var(--content-max-width);
   margin: 0 auto;
-  padding: 0 var(--spacing-unit);
+  padding: 0 var(--content-padding);
+}
+
+.main-content {
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding: var(--content-padding);
+}
+
+.content-wrapper {
+  margin: 2rem auto;
 }
 
 /* Hero Section */
@@ -199,6 +211,7 @@ strong {
 @media (max-width: 768px) {
   :root {
     --spacing-unit: 0.5rem;
+    --content-padding: 1rem;  /* Smaller padding on mobile */
   }
 
   .hero-section {
@@ -216,5 +229,9 @@ strong {
   .hero-quote {
     font-size: 1rem;
     padding: 1rem;
+  }
+
+  .main-content {
+    padding: var(--content-padding);
   }
 }
