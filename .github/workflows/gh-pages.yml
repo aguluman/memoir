@@ -1,14 +1,11 @@
-# Simple workflow for deploying static content to GitHub Pages
 name: Deploy static site to GitHub Pages
 
 on:
   push:
     branches:
       - main
-  # Allow manual triggering
   workflow_dispatch:
 
-# Cancel in-progress runs
 concurrency:
   group: pages-${{ github.ref }}
   cancel-in-progress: true
@@ -19,39 +16,19 @@ permissions:
   id-token: write
 
 jobs:
-  build:
-    runs-on: ubuntu-24.04
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
-      - name: Add universe repository and install dependencies
-        run: |
-          sudo add-apt-repository universe
-          sudo apt-get update
-          sudo apt-get install -y bubblewrap g++-multilib gcc-multilib mercurial musl-tools rsync
-
-      - name: Set up OCaml
-        uses: ocaml/setup-ocaml@v2
-        with:
-          ocaml-compiler: 5.3.x
-          dune-cache: true
-          opam-repositories: |
-            default: https://github.com/ocaml/opam-repository.git
-          cache-prefix: v1
-
-      - name: Install dependencies
-        run: opam install . --deps-only --with-doc --with-test
-
-      - name: Build and generate site
-        run: |
-          eval $(opam env)
-          dune build
-          mkdir -p _site
-          dune exec bin/generator.exe
-          cp CNAME _site/ || true
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
@@ -59,13 +36,6 @@ jobs:
           path: _site
           retention-days: 5  # Reduced retention since we deploy immediately
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
