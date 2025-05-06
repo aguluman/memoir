@@ -30,7 +30,7 @@ jobs:
       - name: Set up OCaml
         uses: ocaml/setup-ocaml@v2
         with:
-          ocaml-compiler: 4.14.x
+          ocaml-compiler: 5.3.x
           dune-cache: true  # More efficient caching
           opam-repositories: |
             default: https://github.com/ocaml/opam-repository.git

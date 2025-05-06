@@ -11,7 +11,7 @@ homepage: "https://github.com/aguluman/memoir"
 doc: "https://github.com/aguluman/memoir"
 bug-reports: "https://github.com/aguluman/memoir/issues"
 depends: [
-  "ocaml" {>= "4.14.0"}
+  "ocaml" {>= "5.3.0"}
   "dune" {>= "3.18"}
   "str" {>= "1.0.0"}
   "tyxml" {>= "4.5.0"}
