@@ -125,6 +125,7 @@ let write_output_file ~content ~path =
   Printf.printf "Written: %s\n" path
 
 (* Process markdown content *)
+(* Process markdown content *)
 let _process_markdown content =
   (* Extract frontmatter first using a regex to match the section between --- markers *)
   let frontmatter_pattern = "^---\n\\(\\(.\\|\n\\)*?\\)\n---\n" in

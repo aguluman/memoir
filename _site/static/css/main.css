@@ -1,128 +1,39 @@
-/* Base styles and variables */
+/* Font Declarations */
+@font-face {
+  font-family: 'Primary';
+  src: 
+       url('../fonts/JetBrainsMonoNerdFont-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Primary';
+  src:
+       url('../fonts/JetBrainsMonoNerdFont-Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Secondary';
+  src: 
+       url('../fonts/JetBrainsMonoNerdFont-Medium.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Base Styles */
 :root {
-  --color-primary: #1a1a1a;
-  --color-secondary: #4a4a4a;
-  --color-accent: #0066cc;
-  --color-background: #ffffff;
-  --color-text: #333333;
-  --font-main: 'JetBrains Mono NL Nerd Font', monospace;
-  --font-headers: 'JetBrains Mono NL Nerd Font', monospace;
-  --max-width: 800px;
-  --spacing-unit: 1rem;
-}
-
-/* Typography */
-@font-face {
-  font-family: 'JetBrains Mono NL Nerd Font';
-  src: url('/static/fonts/JetBrainsMononlNerdFontMono-Thin.ttf') format('truetype');
-  font-weight: 100;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'JetBrains Mono NL Nerd Font';
-  src: url('/static/fonts/JetBrainsMononlNerdFontMono-ExtraLight.ttf') format('truetype');
-  font-weight: 200;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'JetBrains Mono NL Nerd Font';
-  src: url('/static/fonts/JetBrainsMononlNerdFontMono-Light.ttf') format('truetype');
-  font-weight: 300;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'JetBrains Mono NL Nerd Font';
-  src: url('/static/fonts/JetBrainsMononlNerdFontMono-Regular.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'JetBrains Mono NL Nerd Font';
-  src: url('/static/fonts/JetBrainsMononlNerdFontMono-Medium.ttf') format('truetype');
-  font-weight: 500;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'JetBrains Mono NL Nerd Font';
-  src: url('/static/fonts/JetBrainsMononlNerdFontMono-SemiBold.ttf') format('truetype');
-  font-weight: 600;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'JetBrains Mono NL Nerd Font';
-  src: url('/static/fonts/JetBrainsMononlNerdFontMono-Bold.ttf') format('truetype');
-  font-weight: 700;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'JetBrains Mono NL Nerd Font';
-  src: url('/static/fonts/JetBrainsMononlNerdFontMono-ExtraBold.ttf') format('truetype');
-  font-weight: 800;
-  font-style: normal;
-}
-
-/* Italic variants */
-@font-face {
-  font-family: 'JetBrains Mono NL Nerd Font';
-  src: url('/static/fonts/JetBrainsMononlNerdFontMono-ThinItalic.ttf') format('truetype');
-  font-weight: 100;
-  font-style: italic;
-}
-
-@font-face {
-  font-family: 'JetBrains Mono NL Nerd Font';
-  src: url('/static/fonts/JetBrainsMononlNerdFontMono-ExtraLightItalic.ttf') format('truetype');
-  font-weight: 200;
-  font-style: italic;
-}
-
-@font-face {
-  font-family: 'JetBrains Mono NL Nerd Font';
-  src: url('/static/fonts/JetBrainsMononlNerdFontMono-LightItalic.ttf') format('truetype');
-  font-weight: 300;
-  font-style: italic;
-}
-
-@font-face {
-  font-family: 'JetBrains Mono NL Nerd Font';
-  src: url('/static/fonts/JetBrainsMononlNerdFontMono-Italic.ttf') format('truetype');
-  font-weight: 400;
-  font-style: italic;
-}
-
-@font-face {
-  font-family: 'JetBrains Mono NL Nerd Font';
-  src: url('/static/fonts/JetBrainsMononlNerdFontMono-MediumItalic.ttf') format('truetype');
-  font-weight: 500;
-  font-style: italic;
-}
-
-@font-face {
-  font-family: 'JetBrains Mono NL Nerd Font';
-  src: url('/static/fonts/JetBrainsMononlNerdFontMono-SemiBoldItalic.ttf') format('truetype');
-  font-weight: 600;
-  font-style: italic;
-}
-
-@font-face {
-  font-family: 'JetBrains Mono NL Nerd Font';
-  src: url('/static/fonts/JetBrainsMononlNerdFontMono-BoldItalic.ttf') format('truetype');
-  font-weight: 700;
-  font-style: italic;
-}
-
-@font-face {
-  font-family: 'JetBrains Mono NL Nerd Font';
-  src: url('/static/fonts/JetBrainsMononlNerdFontMono-ExtraBoldItalic.ttf') format('truetype');
-  font-weight: 800;
-  font-style: italic;
+  --primary-font: 'Primary', sans-serif;
+  --secondary-font: 'Secondary', serif;
+  --text-color: #333;
+  --heading-color: #222;
+  --link-color: #0066cc;
+  --background-color: #ffffff;
 }
 
 body {

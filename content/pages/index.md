@@ -1,10 +1,10 @@
 ---
 title: "Facing Fearful Odds"
-description: "A software engineer's journey through the digital frontier - where ancient courage meets modern technology"
+description: "A software engineer's journey"
 date: 2025-05-06
 author: "Chukwuma Akunyili"
 layout: "home"
-tags: ["memoir", "engineering", "ocaml", "journey", "formula1"]
+tags: ["memoir", "engineering", "ocaml", "journey"]
 ---
 
 # Into The Digital Breach
