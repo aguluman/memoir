@@ -33,7 +33,7 @@ let start_server () =
     let uri = Dream.target req in
     (* Remove leading slash and normalize path *)
     let clean_path =
-      if uri = "/" then "index.html"
+      if uri = "/" then "pages/index"
       else String.sub uri 1 (String.length uri - 1)
     in
     let normalized_path = normalize_path clean_path in
