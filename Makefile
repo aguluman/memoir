@@ -42,7 +42,6 @@ help:
 	@echo "  $(GREEN)make format$(NC)       - Format OCaml code"
 	@echo "  $(GREEN)make watch$(NC)        - Watch files and rebuild automatically"
 	@echo "  $(GREEN)make preview$(NC)      - Preview the generated site in browser"
-	@echo "  $(GREEN)make serve-static$(NC) - Serve static files with Python server"
 	@echo ""
 	@echo "$(YELLOW)Content Commands:$(NC)"
 	@echo "  $(GREEN)make new-post$(NC)     - Create a new blog post"
@@ -51,6 +50,16 @@ help:
 	@echo "$(YELLOW)Deployment Commands:$(NC)"
 	@echo "  $(GREEN)make deploy$(NC)       - Deploy to GitHub Pages"
 	@echo "  $(GREEN)make check$(NC)        - Run all checks before deployment"
+	@echo "  $(GREEN)make check-links$(NC)  - Check for broken links in generated site"
+	@echo ""
+	@echo "$(YELLOW)Development Shortcuts:$(NC)"
+	@echo "  $(GREEN)make quick$(NC)        - Quick build and generate"
+	@echo "  $(GREEN)make full$(NC)         - Full build pipeline (clean, deps, build, test, generate)"
+	@echo ""
+	@echo "$(YELLOW)Debug Commands:$(NC)"
+	@echo "  $(GREEN)make debug-build$(NC)  - Show debug build information"
+	@echo "  $(GREEN)make debug-site$(NC)   - Show site structure and statistics"
+	@echo "  $(GREEN)make info$(NC)         - Show project information and directory status"
 	@echo ""
 
 # Primary commands - what you asked for
@@ -193,11 +202,6 @@ preview: generate
 		echo "$(RED)❌ No site found. Run 'make generate' first$(NC)"; \
 	fi
 
-.PHONY: serve-static
-serve-static: generate
-	@echo "$(BLUE)🌐 Starting static file server...$(NC)"
-	@echo "$(YELLOW)📍 Server available at: http://localhost:8000$(NC)"
-	@cd $(SITE_DIR) && python3 -m http.server 8000
 
 # Check commands
 .PHONY: check
@@ -214,7 +218,7 @@ check-links: generate
 
 # Deployment
 .PHONY: deploy
-deploy: check build-release generate
+deploy: check build-release check-links generate
 	@echo "$(BLUE)🚀 Deploying to GitHub Pages...$(NC)"
 	@git add $(SITE_DIR)
 	@git commit -m "Deploy site: $$(date)" || echo "$(YELLOW)⚠️  Nothing to commit$(NC)"
