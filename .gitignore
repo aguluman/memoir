@@ -51,7 +51,7 @@ node_modules/
 *.db
 *.sqlite
 
-# Guidelines
-guidelines/*
+# Guidelines 
+guidelines/
 
 docker-compose.yml

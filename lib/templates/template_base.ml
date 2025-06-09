@@ -39,11 +39,12 @@ let layout ?(lang = "en") ~title_text ~description ~page_class
        [
          (* Theme toggle button *)
          button
-           ~a:[ 
-             a_class [ "theme-toggle" ]; 
-             a_title "Toggle dark/light mode";
-             a_user_data "aria-label" "Toggle dark/light mode"
-           ]
+           ~a:
+             [
+               a_class [ "theme-toggle" ];
+               a_title "Toggle dark/light mode";
+               a_user_data "aria-label" "Toggle dark/light mode";
+             ]
            [
              span ~a:[ a_class [ "sun-icon" ] ] [ txt "☀️" ];
              span ~a:[ a_class [ "moon-icon" ] ] [ txt "🌙" ];
