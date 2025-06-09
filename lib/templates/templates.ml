@@ -44,4 +44,29 @@ let create_page ?(lang = "en") ?(current_path = "/") ?(page_class = "page")
       ~footer_content:[ Html.div [ footer ] ]
       ()
   in
-  doctype ^ Format.asprintf "%a" (Html.pp ()) html_output
+
+  (* Convert to string *)
+  let html_string = doctype ^ Format.asprintf "%a" (Html.pp ()) html_output in
+
+  (* Manually insert CSS and JS since template_base.ml changes aren't being applied *)
+  let html_with_css =
+    Str.replace_first
+      (Str.regexp_string
+         "<link rel=\"stylesheet\" href=\"/static/css/main.css\"/>")
+      "<link rel=\"stylesheet\" href=\"/static/css/main.css\"/><link \
+       rel=\"stylesheet\" href=\"/static/css/github-dark.css\"/>"
+      html_string
+  in
+
+  (* Add highlight.js and init script before closing body tag *)
+  let html_with_js =
+    Str.replace_first
+      (Str.regexp_string "</body>")
+      "<script \
+       src=\"/static/js/highlight.min.js\"></script><script>document.addEventListener('DOMContentLoaded', \
+       (event) => { document.querySelectorAll('pre code').forEach((el) => { \
+       hljs.highlightElement(el); }); });</script></body>"
+      html_with_css
+  in
+
+  html_with_js

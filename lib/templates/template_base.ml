@@ -16,6 +16,7 @@ let meta_tags ~description =
       ();
     meta ~a:[ a_name "description"; a_content description ] ();
     link ~rel:[ `Stylesheet ] ~href:"/static/css/main.css" ();
+    link ~rel:[ `Stylesheet ] ~href:"/static/css/highlight.css" ();
     (* Favicon *)
     link ~rel:[ `Icon ] ~href:"/static/images/favicon.png"
       ~a:[ a_mime_type "image/png" ]
@@ -23,6 +24,7 @@ let meta_tags ~description =
     (* Include any JavaScript *)
     script ~a:[ a_src "/static/js/main.js"; a_defer () ] (txt "");
     script ~a:[ a_src "/static/js/theme-toggle.js"; a_defer () ] (txt "");
+    script ~a:[ a_src "/static/js/highlight.min.js" ] (txt "");
   ]
 
 (** Base HTML layout to be used by all pages *)
@@ -30,6 +32,17 @@ let layout ?(lang = "en") ~title_text ~description ~page_class
     ?(additional_head = []) ~header_content ~content ~footer_content () =
   let open Html in
   let meta_content = meta_tags ~description @ additional_head in
+
+  (* Highlight.js initialization script *)
+  let highlight_init_script =
+    script
+      (txt
+         "document.addEventListener('DOMContentLoaded', (event) => { \n\
+         \      document.querySelectorAll('pre code').forEach((el) => { \n\
+         \        hljs.highlightElement(el); \n\
+         \      }); \n\
+         \    });")
+  in
 
   html
     ~a:[ a_lang lang ]
@@ -52,4 +65,5 @@ let layout ?(lang = "en") ~title_text ~description ~page_class
          header ~a:[ a_class [ "site-header" ] ] header_content;
          main content;
          footer ~a:[ a_class [ "site-footer" ] ] footer_content;
+         highlight_init_script;
        ])

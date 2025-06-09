@@ -54,4 +54,8 @@ node_modules/
 # Guidelines 
 guidelines/
 
+# Content folders to ignore
+content/*
+
+
 docker-compose.yml

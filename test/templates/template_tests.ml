@@ -32,7 +32,8 @@ module Template_tests = struct
     check bool "Contains header" true (String.contains html_string 'H')
 
   let test_footer () =
-    let footer_content = [ Html.div [ Html.txt "© 2025 Test User" ] ] in
+    let current_year = (Unix.gmtime (Unix.time ())).tm_year + 1900 in
+    let footer_content = [ Html.div [ Html.txt (Printf.sprintf "© %d Test User" current_year) ] ] in    
     let html_string =
       String.concat ""
         (List.map
