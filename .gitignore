@@ -28,6 +28,7 @@ _opam/
 # System files
 .DS_Store
 .DS_Store?
+_site/.build-cache
 ._*
 .Spotlight-V100
 .Trashes
@@ -50,6 +51,7 @@ node_modules/
 *.db
 *.sqlite
 
-
+# Guidelines
+guidelines/*
 
 docker-compose.yml

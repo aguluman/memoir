@@ -22,6 +22,7 @@ let meta_tags ~description =
       ();
     (* Include any JavaScript *)
     script ~a:[ a_src "/static/js/main.js"; a_defer () ] (txt "");
+    script ~a:[ a_src "/static/js/theme-toggle.js"; a_defer () ] (txt "");
   ]
 
 (** Base HTML layout to be used by all pages *)
@@ -36,6 +37,17 @@ let layout ?(lang = "en") ~title_text ~description ~page_class
     (body
        ~a:[ a_class [ page_class ] ]
        [
+         (* Theme toggle button *)
+         button
+           ~a:[ 
+             a_class [ "theme-toggle" ]; 
+             a_title "Toggle dark/light mode";
+             a_user_data "aria-label" "Toggle dark/light mode"
+           ]
+           [
+             span ~a:[ a_class [ "sun-icon" ] ] [ txt "☀️" ];
+             span ~a:[ a_class [ "moon-icon" ] ] [ txt "🌙" ];
+           ];
          header ~a:[ a_class [ "site-header" ] ] header_content;
          main content;
          footer ~a:[ a_class [ "site-footer" ] ] footer_content;
