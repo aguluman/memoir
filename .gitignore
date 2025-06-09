@@ -57,5 +57,7 @@ guidelines/
 # Content folders to ignore
 content/*
 
+# Static assets folder to ignore
+static/*
 
 docker-compose.yml
