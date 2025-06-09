@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Getting Started with OCaml</title><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/static/css/main.css"/></head><body><header><h1 class="site-title">Getting Started with OCaml</h1></header><main class="main-content"><div class="content-wrapper"><h1 id="getting-started-with-ocaml">Getting Started with OCaml</h1>
+<p>OCaml is a powerful functional programming language that combines expressiveness with strong static typing. In this post, I'll share my approach to learning OCaml and setting up a productive environment.</p>
+<h2 id="why-ocaml">Why OCaml?</h2>
+<p>OCaml offers a unique combination of features that make it both practical and theoretically interesting:</p>
+<ul>
+<li>Strong static typing that catches errors at compile time
+</li>
+<li>Type inference that reduces boilerplate
+</li>
+<li>Pattern matching for elegant data handling
+</li>
+<li>Functional programming with practical imperative features
+</li>
+<li>Great performance characteristics
+</li>
+</ul>
+<h2 id="setting-up-your-environment">Setting Up Your Environment</h2>
+<p>Here's a quick guide to setting up an OCaml development environment:</p>
+<pre><code class="language-bash"># Install opam (OCaml package manager)
+$ brew install opam  # macOS
+$ apt install opam  # Ubuntu/Debian
+
+# Initialize opam
+$ opam init
+
+# Install a specific OCaml version
+$ opam switch create 4.14.0
+
+# Install dune (build system)
+$ opam install dune
+
+# Install Merlin (for editor integration)
+$ opam install merlin
+</code></pre>
+<h2 id="your-first-ocaml-program">Your First OCaml Program</h2>
+<p>Let's write a simple &quot;Hello, World!&quot; program:</p>
+<pre><code class="language-ocaml">(* hello.ml *)
+let () = 
+  print_endline &quot;Hello, OCaml World!&quot;
+</code></pre>
+<p>Compile and run with:</p>
+<pre><code class="language-bash">$ ocamlc -o hello hello.ml
+$ ./hello
+</code></pre>
+<p>Or with dune:</p>
+<pre><code class="language-bash">$ echo '(executable (name hello))' &gt; dune
+$ dune build hello.exe
+$ _build/default/hello.exe
+</code></pre>
+<h2 id="key-concepts-to-learn">Key Concepts to Learn</h2>
+<p>As you continue your OCaml journey, focus on these fundamental concepts:</p>
+<ol>
+<li><strong>The type system</strong> - Understanding OCaml's expressive type system
+</li>
+<li><strong>Pattern matching</strong> - Learning to use this powerful feature effectively
+</li>
+<li><strong>Modules and functors</strong> - Organizing code for reusability
+</li>
+<li><strong>Error handling</strong> - Working with options and results
+</li>
+</ol>
+<h2 id="recommended-resources">Recommended Resources</h2>
+<p>Here are some resources I found helpful when learning OCaml:</p>
+<ul>
+<li><a href="https://dev.realworldocaml.org/">Real World OCaml</a>
+</li>
+<li><a href="https://ocaml.org/docs">OCaml.org Documentation</a>
+</li>
+<li><a href="https://www.cs.cornell.edu/courses/cs3110/">Cornell CS3110 - Data Structures and Functional Programming</a>
+</li>
+</ul>
+<h2 id="next-steps">Next Steps</h2>
+<p>In future posts, we'll dive deeper into specific OCaml patterns and explore how to build real-world applications with the language.</p>
+<hr />
+<p><em>Have questions about OCaml or functional programming? <a href="/contact">Reach out</a>!</em></p>
+</div></main><footer class="site-footer"><hr/><small>© 2025 Chukwuma Akunyili</small></footer></body></html>

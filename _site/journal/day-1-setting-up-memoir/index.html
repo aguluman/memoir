@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Day 1: Setting Up the Memoir Project</title><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/static/css/main.css"/></head><body><header><h1 class="site-title">Day 1: Setting Up the Memoir Project</h1></header><main class="main-content"><div class="content-wrapper"><h1 id="day-1-setting-up-the-memoir-project">Day 1: Setting Up the Memoir Project</h1>
+<p><strong>Date: June 7, 2025</strong></p>
+<p>Today I started work on Memoir, my OCaml-based static site generator. The goal is to build a minimalist yet powerful system that can render my writing with excellent performance while giving me complete control over the output.</p>
+<h2 id="morning-project-structure">Morning: Project Structure</h2>
+<p>Started the day by planning the project structure. Decided on a simple but effective organization:</p>
+<pre><code>memoir/
+├── bin/           # Executable entry points
+├── lib/           # Core library code
+│   ├── content/   # Content handling
+│   ├── templates/ # HTML templates
+│   └── types/     # Type definitions
+├── test/          # Test suite
+└── static/        # Static assets
+</code></pre>
+<p>Created the initial dune project structure with:</p>
+<pre><code class="language-bash">$ dune init project memoir
+</code></pre>
+<h2 id="afternoon-core-dependencies">Afternoon: Core Dependencies</h2>
+<p>Selected the core dependencies:</p>
+<ul>
+<li><strong>Dream</strong>: For the development server
+</li>
+<li><strong>TyXML</strong>: For type-safe HTML generation
+</li>
+<li><strong>Omd</strong>: For Markdown parsing
+</li>
+<li><strong>Yojson</strong>: For JSON config handling
+</li>
+</ul>
+<p>Added these to the dune file and created the initial project structure. Ran into some issues with Omd version compatibility but resolved by pinning to a specific version.</p>
+<h2 id="evening-first-templates">Evening: First Templates</h2>
+<p>Started implementing the basic templates system using TyXML. It feels very satisfying to have type safety while generating HTML! Writing the header component was particularly interesting:</p>
+<pre><code class="language-ocaml">(** Header component for all pages *)
+module Header = struct
+  (** Complete header component *)
+  let make ?(show_logo = true) () =
+    let open Html in
+    header
+      ~a:[ a_class [ &quot;site-header&quot; ] ]
+      [
+        div
+          ~a:[ a_class [ &quot;container&quot; ]; a_class [ &quot;header-container&quot; ] ]
+          [
+            (if show_logo then logo () else span []);
+            nav_toggle ();
+            navigation ();
+          ];
+      ]
+end
+</code></pre>
+<h2 id="key-learnings">Key Learnings</h2>
+<ol>
+<li>TyXML has a steeper learning curve than I expected, but the benefits of type safety are already apparent
+</li>
+<li>OCaml's module system is perfect for organizing UI components
+</li>
+<li>Need to decide on a better approach for handling frontmatter in Markdown files
+</li>
+</ol>
+<h2 id="tomorrows-plan">Tomorrow's Plan</h2>
+<ul>
+<li>Implement the Markdown parser with frontmatter extraction
+</li>
+<li>Begin work on the routing system
+</li>
+<li>Set up the initial CSS with a theme toggle feature
+</li>
+</ul>
+<hr />
+<p><em>Day 1 complete! Making steady progress and enjoying the process.</em></p>
+</div></main><footer class="site-footer"><hr/><small>© 2025 Chukwuma Akunyili</small></footer></body></html>

@@ -216,7 +216,7 @@ type route = {
 
 and content_type =
   | Page
-  | BlogPost
+  | Post
   | Project
   | Journal
   | Asset
@@ -271,15 +271,33 @@ let process_route route =
   let output_path =
     match route.content_type with
     | Asset ->
+        (* Static assets remain unchanged *)
         Filename.concat config.output_dir
           (String.sub route.url_path 1 (String.length route.url_path - 1))
     | _ ->
         if route.url_path = "/" then
+          (* Root index page *)
           Filename.concat config.output_dir "index.html"
         else
-          Filename.concat config.output_dir
-            (String.sub route.url_path 1 (String.length route.url_path - 1)
-            ^ "/index.html")
+          (* Get path without leading slash *)
+          let clean_path =
+            String.sub route.url_path 1 (String.length route.url_path - 1)
+          in
+
+          (* For paths like about/index or blog/index, we want to avoid creating duplicates *)
+          if
+            Filename.basename clean_path = "index"
+            ||
+            (* Also avoid duplicate index for files that would map to the same path *)
+            String.contains clean_path '/'
+            && String.ends_with ~suffix:"index/index" clean_path
+          then
+            (* For section index files like about/index.md *)
+            let dir = Filename.dirname clean_path in
+            Filename.concat config.output_dir (dir ^ "/index.html")
+          else
+            (* Normal files get /path/index.html *)
+            Filename.concat config.output_dir (clean_path ^ "/index.html")
   in
   let metadata = extract_route_metadata route.file_path in
   let content = read_file route.file_path in
@@ -300,6 +318,19 @@ let process_route route =
 (* URL path mapping *)
 let clean_url_path path =
   let path = Filename.remove_extension path in
+  (* Remove "content/pages/" or "pages/" prefix if it exists to create cleaner URLs *)
+  let path =
+    (* First remove content/ prefix *)
+    let path =
+      if Str.string_match (Str.regexp "content/\\(.*\\)") path 0 then
+        Str.matched_group 1 path
+      else path
+    in
+    (* Then remove pages/ prefix *)
+    if Str.string_match (Str.regexp "pages/\\(.*\\)") path 0 then
+      Str.matched_group 1 path
+    else path
+  in
   let path = if path = "index" then "/" else "/" ^ path in
   String.map
     (function
@@ -309,10 +340,10 @@ let clean_url_path path =
 
 let content_type_of_path path =
   match Filename.dirname path with
-  | "content/blog" -> BlogPost
-  | "content/projects" -> Project
-  | "content/journal" -> Journal
-  | "content/pages" -> Page
+  | "content/blog" | "content/pages/blog" -> Post
+  | "content/projects" | "content/pages/projects" -> Project
+  | "content/journal" | "content/pages/journal" -> Journal
+  | "content/pages" | "content" -> Page
   | _ when Filename.extension path = "" -> Asset
   | _ -> Page
 
@@ -400,6 +431,44 @@ let generate_site () =
   (* Ensure output directory exists *)
   ensure_directory_exists config.output_dir;
 
+  (* Remove duplicate index files if they exist *)
+  let remove_duplicate_index_files () =
+    let rec process_dir dir =
+      if Sys.file_exists dir && Sys.is_directory dir then
+        try
+          let entries = Sys.readdir dir in
+          Array.iter
+            (fun entry ->
+              if entry <> "." && entry <> ".." then
+                let path = Filename.concat dir entry in
+                if Sys.is_directory path then (
+                  (* Check if we have both dir/index.html and dir/index/index.html *)
+                  let index_path =
+                    Filename.concat dir (entry ^ "/index.html")
+                  in
+                  let nested_index_path =
+                    Filename.concat dir (entry ^ "/index/index.html")
+                  in
+                  if
+                    Sys.file_exists index_path
+                    && Sys.file_exists nested_index_path
+                  then (
+                    Printf.printf "Removing duplicate index file: %s\n"
+                      nested_index_path;
+                    Sys.remove nested_index_path;
+                    (* Also try to remove the empty index directory *)
+                    try
+                      Unix.rmdir (Filename.concat dir (entry ^ "/index"));
+                      Printf.printf "Removed empty directory: %s\n"
+                        (Filename.concat dir (entry ^ "/index"))
+                    with _ -> ());
+                  process_dir path))
+            entries
+        with Sys_error _ -> ()
+    in
+    process_dir (Filename.concat config.output_dir "")
+  in
+
   (* Copy static assets *)
   copy_static_assets ();
   print_endline "Static assets copied.";
@@ -423,6 +492,9 @@ let generate_site () =
       cache routes
   in
 
+  (* Remove any duplicate index files created during processing *)
+  remove_duplicate_index_files ();
+
   (* Save updated cache *)
   save_build_cache final_cache;
 
@@ -433,7 +505,53 @@ let generate_site () =
 let () =
   print_endline "Memoir Generation - OCaml Static Site Generator";
   try
-    generate_site ();
+    (* Force a full rebuild by ignoring the cache *)
+    let force_rebuild = true in
+    let generate_with_force () =
+      print_endline "Forcing full rebuild (ignoring cache)...";
+
+      (* Ensure output directory exists *)
+      ensure_directory_exists config.output_dir;
+
+      (* Copy static assets *)
+      copy_static_assets ();
+      print_endline "Static assets copied.";
+
+      (* Collect routes *)
+      let routes = collect_routes () in
+      Printf.printf "Collected %d routes\n" (List.length routes);
+
+      (* Process each route regardless of cache *)
+      List.iter
+        (fun route ->
+          Printf.printf "Processing route: %s -> %s\n" route.file_path
+            route.url_path;
+          process_route route)
+        routes;
+
+      (* Create empty cache *)
+      let cache =
+        {
+          last_modified = [];
+          cache_file = Filename.concat config.output_dir ".build-cache";
+        }
+      in
+
+      (* Update cache with all files *)
+      let final_cache =
+        List.fold_left
+          (fun acc route -> update_cache_entry route.file_path acc)
+          cache routes
+      in
+
+      (* Save cache *)
+      save_build_cache final_cache;
+
+      print_endline "Forced rebuild complete!"
+    in
+
+    if force_rebuild then generate_with_force () else generate_site ();
+
     exit 0
   with e ->
     prerr_endline ("Error: " ^ Printexc.to_string e);
