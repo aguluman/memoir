@@ -33,16 +33,16 @@ let start_server () =
     let uri = Dream.target req in
     (* Remove leading slash and normalize path *)
     let clean_path =
-      if uri = "/" then "pages/index"
-      else String.sub uri 1 (String.length uri - 1)
+      if uri = "/" then "index" else String.sub uri 1 (String.length uri - 1)
     in
     let normalized_path = normalize_path clean_path in
 
-    (* Try static subdirectory first, then fall back to root *)
+    (* Try static subdirectory first, then try direct path, then try pages subdirectory *)
     let possible_paths =
       [
         Filename.concat static_subdir normalized_path;
         Filename.concat static_dir normalized_path;
+        Filename.concat (Filename.concat static_dir "pages") normalized_path;
       ]
     in
 

@@ -1,5 +1,4 @@
 open Alcotest
-open Test_helpers
 
 (** Basic example of QCheck property-based test *)
 let property_test_example =

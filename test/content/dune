@@ -7,6 +7,4 @@
   memoir_lib
   test_helpers
   memoir.types
-  memoir.content)
- (flags
-  (:standard -w -33)))
+  memoir.content))

@@ -51,7 +51,13 @@ node_modules/
 *.db
 *.sqlite
 
-# Guidelines
-guidelines/*
+# Guidelines 
+guidelines/
+
+# Content folders to ignore
+content/*
+
+# Static assets folder to ignore
+static/*
 
 docker-compose.yml

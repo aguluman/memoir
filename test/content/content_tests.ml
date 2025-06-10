@@ -1,9 +1,7 @@
 open Alcotest
-open Test_helpers
 open Content_types
 open Memoir_content.Markdown_parser
 open Memoir_content.Routing
-open Stdio
 
 (** Test the markdown parser *)
 let test_markdown_parsing () =
@@ -37,7 +35,7 @@ let test_frontmatter_extraction () =
   match yaml_opt with
   | Some yaml ->
       check string "should extract correct yaml"
-        "title: Test Page\ndescription: A test page" yaml
+        "title: Test Page\ndescription: A test page" (String.trim yaml)
   | None -> fail "Expected frontmatter to be extracted"
 
 (** Test YAML frontmatter parsing *)

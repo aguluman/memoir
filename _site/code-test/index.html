@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Code Highlighting Test</title><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/static/css/main.css"/></head><body><header><h1 class="site-title">Code Highlighting Test</h1></header><main class="main-content"><div class="content-wrapper"><h1 id="syntax-highlighting-test">Syntax Highlighting Test</h1>
+<p>This page demonstrates syntax highlighting for various programming languages using highlight.js.</p>
+<h2 id="javascript-example">JavaScript Example</h2>
+<pre><code class="language-javascript">function helloWorld() {
+  console.log(&quot;Hello, world!&quot;);
+  return true;
+}
+
+// Object example
+const person = {
+  name: &quot;John&quot;,
+  age: 30,
+  greet() {
+    console.log(`Hello, my name is ${this.name}`);
+  }
+};
+</code></pre>
+<h2 id="ocaml-example">OCaml Example</h2>
+<pre><code class="language-ocaml">(* A simple OCaml function *)
+let rec factorial n =
+  if n &lt;= 1 then 1
+  else n * factorial (n - 1)
+
+let () =
+  let result = factorial 5 in
+  Printf.printf &quot;5! = %d\n&quot; result
+</code></pre>
+<h2 id="bash-example">Bash Example</h2>
+<pre><code class="language-bash">#!/bin/bash
+echo &quot;Hello from bash!&quot;
+
+# Loop example
+for i in {1..5}; do
+  echo &quot;Number: $i&quot;
+done
+
+if [ -f &quot;some_file.txt&quot; ]; then
+  echo &quot;File exists&quot;
+else
+  echo &quot;File not found&quot;
+fi
+</code></pre>
+<h2 id="python-example">Python Example</h2>
+<pre><code class="language-python"># A simple Python function
+def say_hello(name):
+    print(f&quot;Hello, {name}!&quot;)
+    return True
+
+# Call the function
+say_hello(&quot;World&quot;)
+</code></pre>
+<h2 id="no-language-specified">No Language Specified</h2>
+<pre><code>This is a code block without a specified language.
+It should still be formatted as pre/code but without language-specific highlighting.
+</code></pre>
+</div></main><footer class="site-footer"><hr/><small>© 2025 Chukwuma Akunyili</small></footer></body></html>

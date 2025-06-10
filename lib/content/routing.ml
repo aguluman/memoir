@@ -14,12 +14,31 @@ let path_to_url_path content_path =
 (** Convert content path to output file path *)
 let path_to_output_path content_path ~output_dir =
   let base_path = Stdlib.Filename.remove_extension content_path in
-  let html_file =
-    if String.equal (Stdlib.Filename.basename base_path) "index" then
-      base_path ^ ".html"
-    else Stdlib.Filename.concat base_path "index.html"
+
+  (* Remove both "content/" and "pages/" prefixes if they exist *)
+  let clean_base_path =
+    let without_content =
+      match String.chop_prefix base_path ~prefix:"content/" with
+      | Some suffix -> suffix
+      | None -> base_path
+    in
+    match String.chop_prefix without_content ~prefix:"pages/" with
+    | Some suffix -> suffix
+    | None -> without_content
   in
-  Stdlib.Filename.concat output_dir html_file
+
+  (* Handle the case for index.md files specially *)
+  if String.equal (Stdlib.Filename.basename clean_base_path) "index" then
+    (* If it's the root index.md file *)
+    if String.equal clean_base_path "index" then
+      Stdlib.Filename.concat output_dir "index.html"
+    else
+      (* For section index files like about/index.md *)
+      let dir = Stdlib.Filename.dirname clean_base_path in
+      Stdlib.Filename.concat output_dir (dir ^ "/index.html")
+  else
+    (* Normal files get path/index.html *)
+    Stdlib.Filename.concat output_dir (clean_base_path ^ "/index.html")
 
 (** Determine content type from directory path *)
 let determine_content_type dir =

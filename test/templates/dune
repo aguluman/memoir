@@ -1,5 +1,3 @@
 (tests
  (names template_tests)
- (libraries alcotest qcheck qcheck-alcotest memoir_lib test_helpers)
- (flags
-  (:standard -w -33 -w -27)))
+ (libraries alcotest qcheck qcheck-alcotest memoir_lib test_helpers str))
