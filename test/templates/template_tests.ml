@@ -1,5 +1,4 @@
 open Alcotest
-open Test_helpers
 open Tyxml
 open Memoir_templates
 open Memoir_templates.Navigation

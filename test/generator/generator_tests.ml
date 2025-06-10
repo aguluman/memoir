@@ -1,5 +1,4 @@
 open Alcotest
-open Test_helpers
 
 (** Test placeholder functionality *)
 let test_placeholder () = check bool "placeholder test" true true

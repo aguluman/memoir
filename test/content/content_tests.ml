@@ -1,9 +1,7 @@
 open Alcotest
-open Test_helpers
 open Content_types
 open Memoir_content.Markdown_parser
 open Memoir_content.Routing
-open Stdio
 
 (** Test the markdown parser *)
 let test_markdown_parsing () =

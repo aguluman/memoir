@@ -1,32 +1,18 @@
 open Alcotest
-open Test_helpers
 
 (** Mock DOM environment for client tests *)
 module Dom_mock = struct
   type element = {
-    mutable tag_name : string;
+    tag_name : string;
     mutable class_name : string;
-    mutable inner_html : string;
     mutable attributes : (string * string) list;
-    mutable style : (string * string) list;
-    mutable parent : element option;
     mutable children : element list;
   }
 
   let create_element tag_name =
-    {
-      tag_name;
-      class_name = "";
-      inner_html = "";
-      attributes = [];
-      style = [];
-      parent = None;
-      children = [];
-    }
+    { tag_name; class_name = ""; attributes = []; children = [] }
 
-  let add_child parent child =
-    parent.children <- parent.children @ [ child ];
-    child.parent <- Some parent
+  let add_child parent child = parent.children <- parent.children @ [ child ]
 
   let set_attribute el name value =
     el.attributes <-
@@ -91,7 +77,6 @@ let test_code_highlighting () =
   (* Add a code block *)
   let pre = Dom_mock.create_element "pre" in
   let code = Dom_mock.create_element "code" in
-  code.inner_html <- "let x = 10 in x + 20";
   Dom_mock.set_attribute code "class" "language-ocaml";
   Dom_mock.add_child pre code;
   Dom_mock.add_child body pre;
