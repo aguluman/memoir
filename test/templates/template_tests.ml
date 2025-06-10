@@ -18,8 +18,45 @@ module Template_tests = struct
         ()
     in
     let html_string = Format.asprintf "%a" (Html.pp ()) layout in
-    check bool "Contains title" true (String.contains html_string 'T');
-    check bool "Contains content" true (String.contains html_string 'C')
+
+    (* Helper function to check for string containment *)
+    let contains_substring str sub =
+      try
+        let _ = Str.search_forward (Str.regexp_string sub) str 0 in
+        true
+      with Not_found -> false
+    in
+
+    (* Check for essential elements *)
+    check bool "Contains page title" true (contains_substring html_string title);
+    check bool "Contains description meta tag" true
+      (contains_substring html_string description);
+    check bool "Contains doctype declaration" true
+      (contains_substring html_string "<!DOCTYPE html>");
+    check bool "Contains language attribute" true
+      (contains_substring html_string "lang=\"en\"");
+    check bool "Contains page class" true
+      (contains_substring html_string "class=\"test-page\"");
+    check bool "Contains content" true
+      (contains_substring html_string "Content");
+    check bool "Contains header" true (contains_substring html_string "Header");
+    check bool "Contains footer" true (contains_substring html_string "Footer");
+
+    (* Check for essential CSS and JS resources *)
+    check bool "Contains main.css link" true
+      (contains_substring html_string "/static/css/main.css");
+    check bool "Contains highlight.css link" true
+      (contains_substring html_string "/static/css/highlight.css");
+    check bool "Contains main.js script" true
+      (contains_substring html_string "/static/js/main.js");
+    check bool "Contains theme-toggle.js script" true
+      (contains_substring html_string "/static/js/theme-toggle.js");
+    check bool "Contains highlight.min.js script" true
+      (contains_substring html_string "/static/js/highlight.min.js");
+
+    (* Check for responsive meta tags *)
+    check bool "Contains viewport meta" true
+      (contains_substring html_string "viewport")
 
   let test_header () =
     let header_content = [ Html.div [ Html.txt "Header" ] ] in
@@ -29,7 +66,18 @@ module Template_tests = struct
            (fun elt -> Format.asprintf "%a" (Html.pp_elt ()) elt)
            header_content)
     in
-    check bool "Contains header" true (String.contains html_string 'H')
+    let contains_substring str sub =
+      try
+        let _ = Str.search_forward (Str.regexp_string sub) str 0 in
+        true
+      with Not_found -> false
+    in
+    check bool "Contains header text" true
+      (contains_substring html_string "Header");
+    check bool "Contains div element" true
+      (contains_substring html_string "<div>");
+    check bool "Contains closing div" true
+      (contains_substring html_string "</div>")
 
   let test_footer () =
     let current_year = (Unix.gmtime (Unix.time ())).tm_year + 1900 in

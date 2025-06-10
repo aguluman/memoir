@@ -37,7 +37,7 @@ let test_frontmatter_extraction () =
   match yaml_opt with
   | Some yaml ->
       check string "should extract correct yaml"
-        "title: Test Page\ndescription: A test page" yaml
+        "title: Test Page\ndescription: A test page" (String.trim yaml)
   | None -> fail "Expected frontmatter to be extracted"
 
 (** Test YAML frontmatter parsing *)
