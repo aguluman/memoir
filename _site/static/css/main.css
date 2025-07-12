@@ -40,7 +40,7 @@
   --accent-color: #0066cc;
   --accent-bg: #f8f9fa;
   --border-color: #eee;
-  --blockquote-bg: #f8f8f8;
+  --blockquote-bg: rgba(248, 248, 248, 0.6);
   --footer-bg: #f8f8f8;
   --footer-text: #333;
   --hero-overlay: rgba(0, 0, 0, 0.5);
@@ -66,7 +66,7 @@
   --accent-color: #66b3ff;
   --accent-bg: #161b22;
   --border-color: #30363d;
-  --blockquote-bg: #161b22;
+  --blockquote-bg: rgba(22, 27, 34, 0.7);
   --footer-bg: #161b22;
   --footer-text: #e1e5e9;
   --hero-overlay: rgba(0, 0, 0, 0.7);
@@ -86,7 +86,7 @@
     --accent-color: #66b3ff;
     --accent-bg: #161b22;
     --border-color: #30363d;
-    --blockquote-bg: #161b22;
+    --blockquote-bg: rgba(22, 27, 34, 0.7);
     --footer-bg: #161b22;
     --footer-text: #e1e5e9;
     --hero-overlay: rgba(0, 0, 0, 0.7);
@@ -221,9 +221,11 @@ blockquote {
   padding: 1rem 2rem;
   border-left: 4px solid var(--accent-color);
   background: var(--blockquote-bg);
+  opacity: 0.9;
   font-weight: 300;
   font-style: italic;
-  transition: background 0.3s ease, border-color 0.3s ease;
+  transition: background 0.3s ease, border-color 0.3s ease, opacity 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 /* Headers */
@@ -310,14 +312,14 @@ pre {
   box-sizing: border-box;
   overflow-x: auto;
   /* Add horizontal scrolling only when necessary */
-  padding: 0.5rem;
-  /* Reduced padding */
+  padding: 0.75rem;
   font-size: 0.95em;
   white-space: pre-wrap;
   /* Allow text wrapping in code blocks */
   word-break: break-word;
   /* Break long words if necessary */
   transition: background-color 0.3s ease, border-color 0.3s ease;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 code {

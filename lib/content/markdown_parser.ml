@@ -61,7 +61,56 @@ let parse_yaml_frontmatter yaml_str =
 
 (** Parse markdown content into HTML with syntax highlighting support *)
 let parse_markdown content =
-  let md = Omd.of_string content in
+  (* Pre-process content to fix common markdown issues *)
+  let preprocessed_content =
+    (* Fix issue with triple backticks without proper spacing *)
+    let fix_backtick_spacing content =
+      let backtick_regex = Str.regexp "```\\([^`\n]\\)" in
+      let result = ref content in
+      let pos = ref 0 in
+
+      while Str.string_match backtick_regex !result !pos do
+        let start_pos = Str.match_beginning () in
+
+        (* Add a newline after the backticks *)
+        let before = String.sub ~pos:0 ~len:(start_pos + 3) !result in
+        let after =
+          String.sub ~pos:(start_pos + 3)
+            ~len:(String.length !result - (start_pos + 3))
+            !result
+        in
+        result := before ^ "\n" ^ after;
+        pos := start_pos + 4
+      done;
+      !result
+    in
+
+    (* Fix issue with improperly terminated code blocks *)
+    let fix_unterminated_code_blocks content =
+      let open_backtick_regex = Str.regexp "```[^\n]*\n" in
+      let result = ref content in
+      let positions = ref [] in
+      let pos = ref 0 in
+
+      (* Find all occurrences of opening triple backticks *)
+      while Str.string_match open_backtick_regex !result !pos do
+        let start_pos = Str.match_beginning () in
+        let end_pos = Str.match_end () in
+        positions := !positions @ [ start_pos ];
+        pos := end_pos
+      done;
+
+      (* If we have an odd number of triple backticks, add a closing one *)
+      if Int.rem (List.length !positions) 2 = 1 then
+        result := !result ^ "\n```\n";
+
+      !result
+    in
+
+    content |> fix_backtick_spacing |> fix_unterminated_code_blocks
+  in
+
+  let md = Omd.of_string preprocessed_content in
 
   (* Convert to HTML with auto identifiers for headings *)
   let html = Omd.to_html ~auto_identifiers:true md in
