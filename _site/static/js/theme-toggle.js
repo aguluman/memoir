@@ -2,16 +2,26 @@
 (function() {
   'use strict';
 
+  // Apply theme immediately to prevent flicker - this runs before DOM is ready
+  (function applyThemeImmediately() {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else if (savedTheme === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+    // If no saved theme, leave as default (light mode from CSS)
+  })();
+
   /**
    * Initialize theme toggle functionality
    */
   function initThemeToggle() {
-    // Check for saved theme preference or default to system preference
+    // Check for saved theme preference or default to light mode
     const savedTheme = localStorage.getItem('theme');
-    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const defaultTheme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
-    
-    // Apply the initial theme
+    const defaultTheme = savedTheme || 'light'; // Default to light, no system preference check
+
+    // Apply the initial theme (this will update icons and ensure consistency)
     setTheme(defaultTheme);
     
     // Set up theme toggle button
@@ -28,7 +38,7 @@
       });
     }
     
-    // Listen for system theme changes
+    // Listen for system theme changes (optional - only if no manual preference is set)
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
       // Only auto-switch if user hasn't manually set a preference
       if (!localStorage.getItem('theme')) {
@@ -62,7 +72,7 @@
       themeToggle.style.transform = 'scale(0.9)';
       setTimeout(() => {
         themeToggle.style.transform = '';
-      }, 150);
+      }, 100);
     }
   }
 

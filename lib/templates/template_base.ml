@@ -15,6 +15,17 @@ let meta_tags ~description =
         [ a_name "viewport"; a_content "width=device-width, initial-scale=1.0" ]
       ();
     meta ~a:[ a_name "description"; a_content description ] ();
+    (* Ultra-fast theme application - runs before any CSS to prevent flicker *)
+    script
+      (txt
+         "(function() {\n\
+         \      const theme = localStorage.getItem('theme');\n\
+         \      if (theme === 'dark') {\n\
+         \        document.documentElement.setAttribute('data-theme', 'dark');\n\
+         \      } else if (theme === 'light') {\n\
+         \        document.documentElement.setAttribute('data-theme', 'light');\n\
+         \      }\n\
+         \    })();");
     link ~rel:[ `Stylesheet ] ~href:"/static/css/main.css" ();
     link ~rel:[ `Stylesheet ] ~href:"/static/css/highlight.css" ();
     (* Favicon *)
