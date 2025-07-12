@@ -1,6 +1,5 @@
 (** Main templates module that re-exports all template components *)
 
-open Header
 open Footer
 open Navigation
 open Seo
@@ -12,8 +11,6 @@ let create_page ?(lang = "en") ?(current_path = "/") ?(page_class = "page")
     ?(additional_head = []) ~title_text ~description ~content ~url () =
   let open Tyxml in
   let nav = Navigation.make ~current_path () in
-  let header = Header.make () in
-  let footer = Footer.make ~year ~name:author () in
 
   (* Get SEO meta content without the title element *)
   let seo_meta =
@@ -35,13 +32,18 @@ let create_page ?(lang = "en") ?(current_path = "/") ?(page_class = "page")
     open_graph @ twitter_card @ canonical @ schema
   in
 
-  (* Add header, navigation, page content, and footer to the layout *)
+  (* Add navigation, page content, and footer to the layout *)
   let html_output =
     layout ~lang ~title_text ~description ~page_class
       ~additional_head:(seo_meta @ additional_head)
-      ~header_content:[ Html.div [ header ] ]
-      ~content:(nav :: content)
-      ~footer_content:[ Html.div [ footer ] ]
+      ~header_content:[ Html.div [ nav ] ]
+      ~content
+      ~footer_content:
+        [
+          Html.div
+            ~a:[ Html.a_class [ "footer-bottom" ] ]
+            [ Footer.copyright ~year ~name:author () ];
+        ]
       ()
   in
 

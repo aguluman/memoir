@@ -92,7 +92,6 @@ test-verbose: build
 clean:
 	@echo "$(BLUE)🧹 Cleaning build artifacts...$(NC)"
 	@$(DUNE) clean
-	@rm -rf $(SITE_DIR)
 	@echo "$(GREEN)✅ Clean completed$(NC)"
 
 

@@ -1,3 +1,5 @@
+open Memoir_templates
+
 (* Configuration type *)
 type config_type = {
   _site_title : string; (* TODO: Remove underscore when used *)
@@ -266,6 +268,180 @@ let extract_route_metadata file_path =
     with _ -> { title = None; _date = None; _description = None; _tags = [] }
   else { title = None; _date = None; _description = None; _tags = [] }
 
+(* Helper type for journal entries *)
+type journal_listing_entry = {
+  title : string;
+  date : string option;
+  url : string;
+}
+
+(* Generate journal entry listings *)
+let generate_journal_entries_html journal_dir =
+  let entries = ref [] in
+  if Sys.file_exists journal_dir && Sys.is_directory journal_dir then (
+    let files = Sys.readdir journal_dir in
+    Array.iter
+      (fun file ->
+        let full_path = Filename.concat journal_dir file in
+        if
+          (not (Sys.is_directory full_path))
+          && Filename.extension file = ".md"
+          && file <> "index.md"
+        then
+          let metadata = extract_route_metadata full_path in
+          let entry : journal_listing_entry =
+            {
+              title =
+                (match metadata.title with
+                | Some t -> t
+                | None -> Filename.remove_extension file);
+              date = metadata._date;
+              url = "/" ^ Filename.remove_extension ("journal/" ^ file);
+            }
+          in
+          entries := entry :: !entries)
+      files;
+
+    (* Sort entries by date (newest first) *)
+    let sorted_entries =
+      List.sort
+        (fun a b ->
+          match (a.date, b.date) with
+          | Some date_a, Some date_b -> String.compare date_b date_a
+          | Some _, None -> -1
+          | None, Some _ -> 1
+          | None, None -> String.compare a.title b.title)
+        !entries
+    in
+
+    (* Generate HTML *)
+    if List.length sorted_entries > 0 then
+      let entries_html =
+        List.map
+          (fun entry ->
+            let date_str =
+              match entry.date with
+              | Some d ->
+                  Printf.sprintf "<span class=\"entry-date\">%s</span>" d
+              | None -> ""
+            in
+            Printf.sprintf
+              "<div class=\"journal-entry\">\n\
+              \  <h3><a href=\"%s\">%s</a></h3>\n\
+              \  %s\n\
+               </div>\n"
+              entry.url entry.title date_str)
+          sorted_entries
+      in
+      "<div class=\"journal-entries\">\n"
+      ^ String.concat "\n" entries_html
+      ^ "\n</div>"
+    else "<p><em>No journal entries found.</em></p>")
+  else "<p><em>Journal directory not found.</em></p>"
+
+(* Helper type for blog entries *)
+type blog_listing_entry = {
+  title : string;
+  date : string option;
+  url : string;
+  description : string option;
+}
+
+(* Generate blog entry listings *)
+let generate_blog_entries_html blog_dir =
+  let entries = ref [] in
+  if Sys.file_exists blog_dir && Sys.is_directory blog_dir then (
+    let files = Sys.readdir blog_dir in
+    Array.iter
+      (fun file ->
+        let full_path = Filename.concat blog_dir file in
+        if
+          (not (Sys.is_directory full_path))
+          && Filename.extension file = ".md"
+          && file <> "index.md"
+        then
+          let metadata = extract_route_metadata full_path in
+          let entry : blog_listing_entry =
+            {
+              title =
+                (match metadata.title with
+                | Some t -> t
+                | None -> Filename.remove_extension file);
+              date = metadata._date;
+              description = metadata._description;
+              url = "/" ^ Filename.remove_extension ("blog/" ^ file);
+            }
+          in
+          entries := entry :: !entries)
+      files;
+
+    (* Sort entries by date (newest first) *)
+    let sorted_entries =
+      List.sort
+        (fun a b ->
+          match (a.date, b.date) with
+          | Some date_a, Some date_b -> String.compare date_b date_a
+          | Some _, None -> -1
+          | None, Some _ -> 1
+          | None, None -> String.compare a.title b.title)
+        !entries
+    in
+
+    (* Generate HTML *)
+    if List.length sorted_entries > 0 then
+      let entries_html =
+        List.map
+          (fun entry ->
+            let date_str =
+              match entry.date with
+              | Some d ->
+                  Printf.sprintf "<span class=\"blog-entry-date\">%s</span>" d
+              | None -> ""
+            in
+            let description_str =
+              match entry.description with
+              | Some desc ->
+                  Printf.sprintf "<p class=\"blog-entry-description\">%s</p>" desc
+              | None -> ""
+            in
+            Printf.sprintf
+              "<article class=\"blog-entry\">\n\
+              \  <h3><a href=\"%s\">%s</a></h3>\n\
+              \  %s\n\
+              \  %s\n\
+               </article>\n"
+              entry.url entry.title date_str description_str)
+          sorted_entries
+      in
+      "<div class=\"blog-entries\">\n"
+      ^ String.concat "\n" entries_html
+      ^ "\n</div>"
+    else "<p><em>No blog posts found.</em></p>")
+  else "<p><em>Blog directory not found.</em></p>"
+
+(* URL path mapping *)
+let clean_url_path path =
+  let path = Filename.remove_extension path in
+  (* Remove "content/pages/" or "pages/" prefix if it exists to create cleaner URLs *)
+  let path =
+    (* First remove content/ prefix *)
+    let path =
+      if Str.string_match (Str.regexp "content/\\(.*\\)") path 0 then
+        Str.matched_group 1 path
+      else path
+    in
+    (* Then remove pages/ prefix *)
+    if Str.string_match (Str.regexp "pages/\\(.*\\)") path 0 then
+      Str.matched_group 1 path
+    else path
+  in
+  let path = if path = "index" then "/" else "/" ^ path in
+  String.map
+    (function
+      | '\\' -> '/'
+      | c -> c)
+    path
+
 (* Process Page Route *)
 let process_route route =
   let output_path =
@@ -312,31 +488,65 @@ let process_route route =
       let html_content =
         _process_markdown ~file_path:route.file_path ~content
       in
-      let page = _render_page ~page_title:title ~content:html_content in
-      write_output_file ~content:page ~path:output_path
 
-(* URL path mapping *)
-let clean_url_path path =
-  let path = Filename.remove_extension path in
-  (* Remove "content/pages/" or "pages/" prefix if it exists to create cleaner URLs *)
-  let path =
-    (* First remove content/ prefix *)
-    let path =
-      if Str.string_match (Str.regexp "content/\\(.*\\)") path 0 then
-        Str.matched_group 1 path
-      else path
-    in
-    (* Then remove pages/ prefix *)
-    if Str.string_match (Str.regexp "pages/\\(.*\\)") path 0 then
-      Str.matched_group 1 path
-    else path
-  in
-  let path = if path = "index" then "/" else "/" ^ path in
-  String.map
-    (function
-      | '\\' -> '/'
-      | c -> c)
-    path
+      (* Special handling for journal index page *)
+      let final_html_content =
+        if
+          Filename.basename route.file_path = "index.md"
+          && String.contains route.file_path '/'
+          && String.contains (Filename.dirname route.file_path) '/'
+          && Filename.basename (Filename.dirname route.file_path) = "journal"
+        then
+          (* This is the journal index page - inject journal entries *)
+          let journal_dir = Filename.dirname route.file_path in
+          let journal_entries_html =
+            generate_journal_entries_html journal_dir
+          in
+          (* Replace the placeholder div with actual journal entries *)
+          let pattern = "<div id=\"journal-entries-placeholder\"></div>" in
+          let replacement = journal_entries_html in
+          Str.global_replace
+            (Str.regexp_string pattern)
+            replacement html_content
+        else if
+          Filename.basename route.file_path = "index.md"
+          && String.contains route.file_path '/'
+          && String.contains (Filename.dirname route.file_path) '/'
+          && Filename.basename (Filename.dirname route.file_path) = "blog"
+        then
+          (* This is the blog index page - inject blog entries *)
+          let blog_dir = Filename.dirname route.file_path in
+          let blog_entries_html =
+            generate_blog_entries_html blog_dir
+          in
+          (* Replace the placeholder div with actual blog entries *)
+          let pattern = "<div id=\"blog-entries-placeholder\"></div>" in
+          let replacement = blog_entries_html in
+          Str.global_replace
+            (Str.regexp_string pattern)
+            replacement html_content
+        else html_content
+      in
+      let url_path =
+        "/" ^ clean_url_path (Filename.remove_extension route.file_path)
+      in
+      let description =
+        match metadata._description with
+        | Some d -> d
+        | None -> "A page from Chukwuma Akunyili's memoir"
+      in
+      let year = 2025 in
+      let author = "Chukwuma Akunyili" in
+
+      (* Create proper page using template system *)
+      let page_string =
+        Templates.create_page ~current_path:url_path ~year ~author
+          ~title_text:title ~description
+          ~content:[ Tyxml.Html.Unsafe.data final_html_content ]
+          ~url:("https://fearful-odds.rocks" ^ url_path)
+          ()
+      in
+      write_output_file ~content:page_string ~path:output_path
 
 let content_type_of_path path =
   match Filename.dirname path with
@@ -480,7 +690,7 @@ let generate_site () =
   (* Process each route *)
   let final_cache =
     List.fold_left
-      (fun acc route ->
+      (fun acc (route : route) ->
         if is_file_modified route.file_path acc then (
           Printf.printf "Processing modified route: %s -> %s\n" route.file_path
             route.url_path;
@@ -523,7 +733,7 @@ let () =
 
       (* Process each route regardless of cache *)
       List.iter
-        (fun route ->
+        (fun (route : route) ->
           Printf.printf "Processing route: %s -> %s\n" route.file_path
             route.url_path;
           process_route route)
@@ -540,7 +750,7 @@ let () =
       (* Update cache with all files *)
       let final_cache =
         List.fold_left
-          (fun acc route -> update_cache_entry route.file_path acc)
+          (fun acc (route : route) -> update_cache_entry route.file_path acc)
           cache routes
       in
 
