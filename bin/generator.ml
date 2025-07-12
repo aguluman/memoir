@@ -339,6 +339,86 @@ let generate_journal_entries_html journal_dir =
     else "<p><em>No journal entries found.</em></p>")
   else "<p><em>Journal directory not found.</em></p>"
 
+(* Helper type for blog entries *)
+type blog_listing_entry = {
+  title : string;
+  date : string option;
+  url : string;
+  description : string option;
+}
+
+(* Generate blog entry listings *)
+let generate_blog_entries_html blog_dir =
+  let entries = ref [] in
+  if Sys.file_exists blog_dir && Sys.is_directory blog_dir then (
+    let files = Sys.readdir blog_dir in
+    Array.iter
+      (fun file ->
+        let full_path = Filename.concat blog_dir file in
+        if
+          (not (Sys.is_directory full_path))
+          && Filename.extension file = ".md"
+          && file <> "index.md"
+        then
+          let metadata = extract_route_metadata full_path in
+          let entry : blog_listing_entry =
+            {
+              title =
+                (match metadata.title with
+                | Some t -> t
+                | None -> Filename.remove_extension file);
+              date = metadata._date;
+              description = metadata._description;
+              url = "/" ^ Filename.remove_extension ("blog/" ^ file);
+            }
+          in
+          entries := entry :: !entries)
+      files;
+
+    (* Sort entries by date (newest first) *)
+    let sorted_entries =
+      List.sort
+        (fun a b ->
+          match (a.date, b.date) with
+          | Some date_a, Some date_b -> String.compare date_b date_a
+          | Some _, None -> -1
+          | None, Some _ -> 1
+          | None, None -> String.compare a.title b.title)
+        !entries
+    in
+
+    (* Generate HTML *)
+    if List.length sorted_entries > 0 then
+      let entries_html =
+        List.map
+          (fun entry ->
+            let date_str =
+              match entry.date with
+              | Some d ->
+                  Printf.sprintf "<span class=\"blog-entry-date\">%s</span>" d
+              | None -> ""
+            in
+            let description_str =
+              match entry.description with
+              | Some desc ->
+                  Printf.sprintf "<p class=\"blog-entry-description\">%s</p>" desc
+              | None -> ""
+            in
+            Printf.sprintf
+              "<article class=\"blog-entry\">\n\
+              \  <h3><a href=\"%s\">%s</a></h3>\n\
+              \  %s\n\
+              \  %s\n\
+               </article>\n"
+              entry.url entry.title date_str description_str)
+          sorted_entries
+      in
+      "<div class=\"blog-entries\">\n"
+      ^ String.concat "\n" entries_html
+      ^ "\n</div>"
+    else "<p><em>No blog posts found.</em></p>")
+  else "<p><em>Blog directory not found.</em></p>"
+
 (* URL path mapping *)
 let clean_url_path path =
   let path = Filename.remove_extension path in
@@ -425,6 +505,23 @@ let process_route route =
           (* Replace the placeholder div with actual journal entries *)
           let pattern = "<div id=\"journal-entries-placeholder\"></div>" in
           let replacement = journal_entries_html in
+          Str.global_replace
+            (Str.regexp_string pattern)
+            replacement html_content
+        else if
+          Filename.basename route.file_path = "index.md"
+          && String.contains route.file_path '/'
+          && String.contains (Filename.dirname route.file_path) '/'
+          && Filename.basename (Filename.dirname route.file_path) = "blog"
+        then
+          (* This is the blog index page - inject blog entries *)
+          let blog_dir = Filename.dirname route.file_path in
+          let blog_entries_html =
+            generate_blog_entries_html blog_dir
+          in
+          (* Replace the placeholder div with actual blog entries *)
+          let pattern = "<div id=\"blog-entries-placeholder\"></div>" in
+          let replacement = blog_entries_html in
           Str.global_replace
             (Str.regexp_string pattern)
             replacement html_content

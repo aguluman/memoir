@@ -72,7 +72,7 @@
       themeToggle.style.transform = 'scale(0.9)';
       setTimeout(() => {
         themeToggle.style.transform = '';
-      }, 100);
+      }, 150);
     }
   }
 
