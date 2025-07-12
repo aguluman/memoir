@@ -11,7 +11,6 @@ let create_page ?(lang = "en") ?(current_path = "/") ?(page_class = "page")
     ?(additional_head = []) ~title_text ~description ~content ~url () =
   let open Tyxml in
   let nav = Navigation.make ~current_path () in
-  let footer = Footer.make ~year ~name:author () in
 
   (* Get SEO meta content without the title element *)
   let seo_meta =
@@ -39,7 +38,7 @@ let create_page ?(lang = "en") ?(current_path = "/") ?(page_class = "page")
       ~additional_head:(seo_meta @ additional_head)
       ~header_content:[ Html.div [ nav ] ]
       ~content
-      ~footer_content:[ Html.div [ footer ] ]
+      ~footer_content:[ Html.div ~a:[ Html.a_class [ "footer-bottom" ] ] [ Footer.copyright ~year ~name:author () ] ]
       ()
   in
 
