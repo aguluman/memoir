@@ -38,7 +38,12 @@ let create_page ?(lang = "en") ?(current_path = "/") ?(page_class = "page")
       ~additional_head:(seo_meta @ additional_head)
       ~header_content:[ Html.div [ nav ] ]
       ~content
-      ~footer_content:[ Html.div ~a:[ Html.a_class [ "footer-bottom" ] ] [ Footer.copyright ~year ~name:author () ] ]
+      ~footer_content:
+        [
+          Html.div
+            ~a:[ Html.a_class [ "footer-bottom" ] ]
+            [ Footer.copyright ~year ~name:author () ];
+        ]
       ()
   in
 
