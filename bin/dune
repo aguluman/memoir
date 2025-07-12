@@ -7,6 +7,8 @@
 (executable
  (name generator)
  (modules generator)
+ (flags
+  (:standard -w -69))
  (libraries
   memoir_lib
   js_of_ocaml

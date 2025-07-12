@@ -61,17 +61,66 @@ let parse_yaml_frontmatter yaml_str =
 
 (** Parse markdown content into HTML with syntax highlighting support *)
 let parse_markdown content =
-  let md = Omd.of_string content in
+  (* Pre-process content to fix common markdown issues *)
+  let preprocessed_content =
+    (* Fix issue with triple backticks without proper spacing *)
+    let fix_backtick_spacing content =
+      let backtick_regex = Str.regexp "```\\([^`\n]\\)" in
+      let result = ref content in
+      let pos = ref 0 in
+
+      while Str.string_match backtick_regex !result !pos do
+        let start_pos = Str.match_beginning () in
+
+        (* Add a newline after the backticks *)
+        let before = String.sub ~pos:0 ~len:(start_pos + 3) !result in
+        let after =
+          String.sub ~pos:(start_pos + 3)
+            ~len:(String.length !result - (start_pos + 3))
+            !result
+        in
+        result := before ^ "\n" ^ after;
+        pos := start_pos + 4
+      done;
+      !result
+    in
+
+    (* Fix issue with improperly terminated code blocks *)
+    let fix_unterminated_code_blocks content =
+      let open_backtick_regex = Str.regexp "```[^\n]*\n" in
+      let result = ref content in
+      let positions = ref [] in
+      let pos = ref 0 in
+
+      (* Find all occurrences of opening triple backticks *)
+      while Str.string_match open_backtick_regex !result !pos do
+        let start_pos = Str.match_beginning () in
+        let end_pos = Str.match_end () in
+        positions := !positions @ [ start_pos ];
+        pos := end_pos
+      done;
+
+      (* If we have an odd number of triple backticks, add a closing one *)
+      if Int.rem (List.length !positions) 2 = 1 then
+        result := !result ^ "\n```\n";
+
+      !result
+    in
+
+    content |> fix_backtick_spacing |> fix_unterminated_code_blocks
+  in
+
+  let md = Omd.of_string preprocessed_content in
 
   (* Convert to HTML with auto identifiers for headings *)
   let html = Omd.to_html ~auto_identifiers:true md in
 
   (* Process code blocks to add language classes for highlight.js *)
+  (* Using a more robust regex approach than AST transformation due to Omd API complexity *)
   let process_code_blocks html =
     let code_block_regex =
       Str.regexp "<pre><code\\([^>]*\\)>\\([\\s\\S]*?\\)</code></pre>"
     in
-    let language_regex = Str.regexp "```\\([a-zA-Z0-9_-]+\\)" in
     let result = ref html in
     let pos = ref 0 in
 
@@ -81,16 +130,19 @@ let parse_markdown content =
       let start_pos = Str.match_beginning () in
       let end_pos = Str.match_end () in
 
-      (* Check if we need to add language classes *)
-      if not (Str.string_match (Str.regexp "class=\"language-") code_attrs 0)
+      (* Only add language class if not already present *)
+      if not (String.is_substring code_attrs ~substring:"class=\"language-")
       then (
-        (* Check if the content starts with a language identifier *)
+        (* Extract language from data-lang attribute if present *)
+        let lang_regex = Str.regexp "data-lang=\"\\([^\"]+\\)\"" in
         let new_code_block =
-          if Str.string_match language_regex code_content 0 then
-            let lang = Str.matched_group 1 code_content in
-            Printf.sprintf "<pre><code class=\"language-%s\">%s</code></pre>"
-              lang code_content
-          else Printf.sprintf "<pre><code>%s</code></pre>" code_content
+          if Str.string_match lang_regex code_attrs 0 then
+            let lang = Str.matched_group 1 code_attrs in
+            Printf.sprintf "<pre><code class=\"language-%s\"%s>%s</code></pre>"
+              lang code_attrs code_content
+          else
+            Printf.sprintf "<pre><code%s>%s</code></pre>" code_attrs
+              code_content
         in
 
         let before = String.sub ~pos:0 ~len:start_pos !result in
@@ -107,7 +159,7 @@ let parse_markdown content =
 
   (*
    * We don't need to add highlight.js and CSS here as they're already included in template_base.ml.
-   * Leaving this function minimal to only process code blocks.
+   * Using improved regex processing that's safer than the previous version.
    *)
   html |> process_code_blocks
 
