@@ -24,7 +24,7 @@ let meta_tags ~description =
     (* Include any JavaScript *)
     script ~a:[ a_src "/static/js/main.js"; a_defer () ] (txt "");
     script ~a:[ a_src "/static/js/theme-toggle.js"; a_defer () ] (txt "");
-    script ~a:[ a_src "/static/js/highlight.min.js" ] (txt "");
+    script ~a:[ a_src "/static/js/highlight.min.js"; a_defer () ] (txt "");
   ]
 
 (** Base HTML layout to be used by all pages *)

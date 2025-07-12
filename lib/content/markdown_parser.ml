@@ -67,11 +67,11 @@ let parse_markdown content =
   let html = Omd.to_html ~auto_identifiers:true md in
 
   (* Process code blocks to add language classes for highlight.js *)
+  (* Using a more robust regex approach than AST transformation due to Omd API complexity *)
   let process_code_blocks html =
     let code_block_regex =
       Str.regexp "<pre><code\\([^>]*\\)>\\([\\s\\S]*?\\)</code></pre>"
     in
-    let language_regex = Str.regexp "```\\([a-zA-Z0-9_-]+\\)" in
     let result = ref html in
     let pos = ref 0 in
 
@@ -81,16 +81,19 @@ let parse_markdown content =
       let start_pos = Str.match_beginning () in
       let end_pos = Str.match_end () in
 
-      (* Check if we need to add language classes *)
-      if not (Str.string_match (Str.regexp "class=\"language-") code_attrs 0)
+      (* Only add language class if not already present *)
+      if not (String.is_substring code_attrs ~substring:"class=\"language-")
       then (
-        (* Check if the content starts with a language identifier *)
+        (* Extract language from data-lang attribute if present *)
+        let lang_regex = Str.regexp "data-lang=\"\\([^\"]+\\)\"" in
         let new_code_block =
-          if Str.string_match language_regex code_content 0 then
-            let lang = Str.matched_group 1 code_content in
-            Printf.sprintf "<pre><code class=\"language-%s\">%s</code></pre>"
-              lang code_content
-          else Printf.sprintf "<pre><code>%s</code></pre>" code_content
+          if Str.string_match lang_regex code_attrs 0 then
+            let lang = Str.matched_group 1 code_attrs in
+            Printf.sprintf "<pre><code class=\"language-%s\"%s>%s</code></pre>"
+              lang code_attrs code_content
+          else
+            Printf.sprintf "<pre><code%s>%s</code></pre>" code_attrs
+              code_content
         in
 
         let before = String.sub ~pos:0 ~len:start_pos !result in
@@ -107,7 +110,7 @@ let parse_markdown content =
 
   (*
    * We don't need to add highlight.js and CSS here as they're already included in template_base.ml.
-   * Leaving this function minimal to only process code blocks.
+   * Using improved regex processing that's safer than the previous version.
    *)
   html |> process_code_blocks
 
