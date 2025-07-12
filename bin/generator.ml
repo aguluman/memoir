@@ -422,8 +422,8 @@ let process_route route =
           let journal_entries_html =
             generate_journal_entries_html journal_dir
           in
-          (* Replace the placeholder text with actual journal entries *)
-          let pattern = "(Journal entries will appear here automatically)" in
+          (* Replace the placeholder div with actual journal entries *)
+          let pattern = "<div id=\"journal-entries-placeholder\"></div>" in
           let replacement = journal_entries_html in
           Str.global_replace
             (Str.regexp_string pattern)

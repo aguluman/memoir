@@ -45,6 +45,8 @@
   --footer-text: #333;
   --hero-overlay: rgba(0, 0, 0, 0.5);
   --content-bg: rgba(255, 255, 255, 0.05);
+  --card-bg: #ffffff;
+  --text-muted: #666666;
 
   --content-max-width: 800px;
   /* Maximum width for content */
@@ -71,6 +73,8 @@
   --footer-text: #e1e5e9;
   --hero-overlay: rgba(0, 0, 0, 0.7);
   --content-bg: rgba(255, 255, 255, 0.1);
+  --card-bg: #21262d;
+  --text-muted: #8b949e;
 
   color-scheme: dark;
 }
@@ -91,6 +95,8 @@
     --footer-text: #e1e5e9;
     --hero-overlay: rgba(0, 0, 0, 0.7);
     --content-bg: rgba(255, 255, 255, 0.1);
+    --card-bg: #21262d;
+    --text-muted: #8b949e;
 
     color-scheme: dark;
   }
