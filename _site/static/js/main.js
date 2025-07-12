@@ -6,7 +6,77 @@
    * Initialize navigation functionality
    */
   function initNavigation() {
-    // Mobile navigation toggle (from header.ml)
+    // Mobile navigation toggle
+    const mobileToggle = document.querySelector('.mobile-nav-toggle');
+    const navList = document.querySelector('#primary-navigation');
+    
+    if (mobileToggle && navList) {
+      mobileToggle.addEventListener('click', function() {
+        const isVisible = navList.getAttribute('data-visible') === 'true';
+        
+        mobileToggle.setAttribute('aria-expanded', !isVisible);
+        navList.setAttribute('data-visible', !isVisible);
+        
+        // Add body class to prevent scrolling when menu is open
+        if (!isVisible) {
+          document.body.classList.add('nav-open');
+        } else {
+          document.body.classList.remove('nav-open');
+        }
+      });
+    }
+
+    // Close mobile navigation when clicking on nav links
+    const navLinks = document.querySelectorAll('.nav-list a');
+    navLinks.forEach(link => {
+      link.addEventListener('click', function() {
+        if (mobileToggle && navList) {
+          mobileToggle.setAttribute('aria-expanded', 'false');
+          navList.setAttribute('data-visible', 'false');
+          document.body.classList.remove('nav-open');
+        }
+      });
+    });
+
+    // Close mobile navigation when clicking outside
+    document.addEventListener('click', function(e) {
+      if (navList && navList.getAttribute('data-visible') === 'true') {
+        // If clicking outside the navigation and not on the toggle button
+        if (!e.target.closest('.nav-list') && !e.target.closest('.mobile-nav-toggle')) {
+          mobileToggle.setAttribute('aria-expanded', 'false');
+          navList.setAttribute('data-visible', 'false');
+          document.body.classList.remove('nav-open');
+        }
+      }
+    });
+
+    // Handle escape key to close mobile navigation
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && navList && navList.getAttribute('data-visible') === 'true') {
+        mobileToggle.setAttribute('aria-expanded', 'false');
+        navList.setAttribute('data-visible', 'false');
+        document.body.classList.remove('nav-open');
+      }
+    });
+    
+    // Active navigation state based on current URL
+    const currentPath = window.location.pathname;
+    const navItems = document.querySelectorAll('.nav-item');
+    
+    navItems.forEach(item => {
+      const link = item.querySelector('a');
+      if (link) {
+        const href = link.getAttribute('href');
+        // Match exact path or if it's the homepage
+        if (href === currentPath || 
+            (href === '/' && currentPath === '/') ||
+            (href !== '/' && currentPath.startsWith(href))) {
+          item.classList.add('active');
+        }
+      }
+    });
+    
+    // Legacy support for old navigation structure
     const navToggle = document.querySelector('.nav-toggle');
     const primaryNav = document.querySelector('.primary-navigation');
     
@@ -18,21 +88,8 @@
         primaryNav.setAttribute('data-visible', !isExpanded);
       });
     }
-
-    // Mobile navigation toggle (from navigation.ml)
-    const mobileToggle = document.querySelector('.mobile-nav-toggle');
-    const navList = document.querySelector('#primary-navigation');
     
-    if (mobileToggle && navList) {
-      mobileToggle.addEventListener('click', function() {
-        const isVisible = navList.getAttribute('data-visible') === 'true';
-        
-        mobileToggle.setAttribute('aria-expanded', !isVisible);
-        navList.setAttribute('data-visible', !isVisible);
-      });
-    }
-
-    // Dropdown menu functionality
+    // Dropdown menu functionality (if present)
     const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
     
     dropdownToggles.forEach(toggle => {
@@ -49,30 +106,6 @@
         
         // Toggle current dropdown
         toggle.setAttribute('aria-expanded', !isExpanded);
-      });
-    });
-
-    // Close dropdowns when clicking outside
-    document.addEventListener('click', function(e) {
-      if (!e.target.closest('.has-dropdown')) {
-        dropdownToggles.forEach(toggle => {
-          toggle.setAttribute('aria-expanded', 'false');
-        });
-      }
-    });
-
-    // Close mobile navigation when clicking on nav links
-    const navLinks = document.querySelectorAll('.nav-links a, .dropdown-menu a');
-    navLinks.forEach(link => {
-      link.addEventListener('click', function() {
-        if (navToggle && primaryNav) {
-          navToggle.setAttribute('aria-expanded', 'false');
-          primaryNav.setAttribute('data-visible', 'false');
-        }
-        if (mobileToggle && navList) {
-          mobileToggle.setAttribute('aria-expanded', 'false');
-          navList.setAttribute('data-visible', 'false');
-        }
       });
     });
   }
