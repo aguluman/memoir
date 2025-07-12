@@ -1,11 +1,50 @@
+/* BEGIN code blocks - makes code blocks vertically expand while horizontally scroll */
+pre {
+    overflow: visible;
+    margin: 1.5rem 0;
+    border-radius: 8px;
+    background: var(--accent-bg);
+    max-width: 100%;
+}
+
+pre code {
+    /* Normally code blocks have inline display mode
+       so that it is aligned left-to-right.
+       That messes up with the overflow setting because
+       they are for top-to-bottom.
+    */
+    display: block;
+    overflow-x: auto;
+    padding: 1rem;
+    border-radius: 8px;
+    font-family: 'Primary', 'Courier New', monospace;
+    line-height: 1.4;
+    white-space: pre;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
 pre code.hljs {
     display: block;
     overflow-x: auto;
+    padding: 1rem;
+    max-width: 100%;
 }
 
 code.hljs {
-    padding: 3px 5px
+    padding: 3px 5px;
+    border-radius: 4px;
 }
+
+/* Inline code styling */
+:not(pre) > code {
+    background: var(--accent-bg);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-family: 'Primary', 'Courier New', monospace;
+    font-size: 0.9em;
+}
+/* END code blocks */
 
 /*!
     Theme: GitHub Dark
