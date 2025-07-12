@@ -3,7 +3,7 @@ name: Deploy static site to GitHub Pages
 on:
   push:
     branches:
-      - routing-feature-for-each-page
+      - main
   workflow_dispatch:
 
 # Single deployment job since we're not building
