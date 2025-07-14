@@ -28,7 +28,7 @@ help:
 	@echo ""
 	@echo "$(YELLOW)Primary Development Commands:$(NC)"
 	@echo "  $(GREEN)make generate$(NC)          - Generate the static site"
-	@echo "  $(GREEN)make server$(NC)            - Start development server on http://$(HOST):$(PORT)"
+	@echo "  $(GREEN)make serve$(NC)             - Start development server on http://$(HOST):$(PORT)"
 	@echo ""
 	@echo "$(YELLOW)Build & Test Commands:$(NC)"
 	@echo "  $(GREEN)make build$(NC)            - Build the project"
@@ -56,8 +56,8 @@ generate: build
 	@$(DUNE) exec bin/generator.exe
 	@echo "$(GREEN)✅ Site generated successfully in $(SITE_DIR)/$(NC)"
 
-.PHONY: server
-server: build
+.PHONY: serve
+serve: build
 	@echo "$(BLUE)🌐 Starting development server...$(NC)"
 	@echo "$(YELLOW)📍 Server will be available at: http://$(HOST):$(PORT)$(NC)"
 	@echo "$(MAGENTA)🛑 Press Ctrl+C to stop the server$(NC)"
