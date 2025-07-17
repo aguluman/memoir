@@ -38,7 +38,7 @@ help:
 	@echo "  $(GREEN)make clean$(NC)            - Clean build artifacts"
 	@echo ""
 	@echo "$(YELLOW)Utility Commands:$(NC)"
-	@echo "  $(GREEN)make format$(NC)           - Format OCaml code"
+	@echo "  $(GREEN)make fmt$(NC)              - Format OCaml code"
 	@echo "  $(GREEN)make watch$(NC)            - Watch files and rebuild automatically"
 	@echo ""
 	@echo "$(YELLOW)Content Commands:$(NC)"
@@ -96,11 +96,21 @@ clean:
 
 
 # Development utilities
-.PHONY: format
-format:
+# Development utilities
+.PHONY: fmt
+fmt:
 	@echo "$(BLUE)💅 Formatting OCaml code...$(NC)"
 	@$(DUNE) fmt
-	@echo "$(GREEN)✅ Code formatted$(NC)"
+	@echo "$(GREEN)✅ OCaml code formatted$(NC)"
+	@echo "$(BLUE)💅 Formatting CSS files...$(NC)"
+	@npx prettier --write "$(SITE_DIR)/static/css/*.css"
+	@echo "$(GREEN)✅ CSS formatted$(NC)"
+	@echo "$(BLUE)💅 Formatting HTML files...$(NC)"
+	@npx prettier --write "$(SITE_DIR)/**/*.html"
+	@echo "$(GREEN)✅ HTML formatted$(NC)"
+	@echo "$(BLUE)💅 Formatting JavaScript files...$(NC)"
+	@npx prettier --write "$(SITE_DIR)/static/js/*.js"
+	@echo "$(GREEN)✅ JavaScript formatted$(NC)"
 
 .PHONY: watch
 watch:
@@ -171,4 +181,4 @@ $(CONTENT_DIR):
 	@mkdir -p $(CONTENT_DIR)/pages $(CONTENT_DIR)/blog
 
 # Phony targets to avoid conflicts with files
-.PHONY: help generate server build test test-watch test-verbose clean format  watch new-post new-page info
+.PHONY: help generate server build test test-watch test-verbose clean fmt fmt-css  watch new-post new-page info
