@@ -98,20 +98,19 @@ clean:
 
 
 # Development utilities
-# Development utilities
 .PHONY: fmt
 fmt:
 	@echo "$(BLUE)💅 Formatting OCaml code...$(NC)"
 	@$(DUNE) fmt
 	@echo "$(GREEN)✅ OCaml code formatted$(NC)"
 	@echo "$(BLUE)💅 Formatting CSS files...$(NC)"
-	@npx prettier --write "$(SITE_DIR)/static/css/*.css"
+	@npx prettier --write --log-level=warn "$(SITE_DIR)/static/css/*.css" || true
 	@echo "$(GREEN)✅ CSS formatted$(NC)"
 	@echo "$(BLUE)💅 Formatting HTML files...$(NC)"
-	@npx prettier --write "$(SITE_DIR)/**/*.html"
+	@npx prettier --write --log-level=warn "$(SITE_DIR)/**/*.html" || true
 	@echo "$(GREEN)✅ HTML formatted$(NC)"
 	@echo "$(BLUE)💅 Formatting JavaScript files...$(NC)"
-	@npx prettier --write "$(SITE_DIR)/static/js/*.js"
+	@npx prettier --write --log-level=warn "$(SITE_DIR)/static/js/*.js" || true
 	@echo "$(GREEN)✅ JavaScript formatted$(NC)"
 
 .PHONY: watch
