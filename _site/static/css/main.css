@@ -1082,6 +1082,76 @@ main p:last-of-type {
     padding: 0 1rem 0.5rem;
   }
 
+  /* Fix margin consistency for all content elements */
+  main > * {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  /* Ensure consistent padding for all text content */
+  main h1,
+  main h2,
+  main h3,
+  main h4,
+  main h5,
+  main h6,
+  main p,
+  main ul,
+  main ol,
+  main blockquote {
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  /* Fix ordered and unordered lists - preserve numbering and proper positioning */
+  main ul,
+  main ol {
+    padding-left: 1rem;
+    padding-right: 0;
+    margin: 0;
+    list-style-position: inside;
+  }
+
+  /* Ensure list items have proper spacing and alignment */
+  main li {
+    margin-bottom: 0.5rem;
+    padding-left: 0.3rem;
+    line-height: 1.6;
+  }
+
+  /* Override the base ul styling for mobile to prevent conflicts */
+  main ul {
+    list-style-type: none;
+  }
+
+  main ul li::before {
+    content: "→";
+    color: var(--accent-color);
+    position: absolute;
+    left: 0;
+    margin-left: -0.8rem;
+  }
+
+  /* Ensure ordered lists show proper numbers */
+  main ol {
+    list-style-type: decimal;
+    counter-reset: item;
+  }
+
+  main ol li {
+    position: relative;
+    padding-left: 0.3rem;
+  }
+
+  /* Fix blockquote margins specifically */
+  blockquote {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    border-left: 4px solid var(--accent-color);
+  }
+
   pre {
     margin: 0.75rem 0;
     width: auto;
@@ -1100,7 +1170,7 @@ main p:last-of-type {
 
   main h1 + p,
   main h2 + p {
-    margin: 1rem auto;
+    margin: 1rem 0;
     padding: 1rem;
     font-size: 1rem;
   }
@@ -1118,7 +1188,7 @@ main p:last-of-type {
   }
 
   main p:last-of-type {
-    margin: 2rem auto 1rem;
+    margin: 2rem 0 1rem;
     padding: 1.5rem;
     font-size: 1.1rem;
   }
