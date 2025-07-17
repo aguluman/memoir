@@ -28,7 +28,7 @@ help:
 	@echo ""
 	@echo "$(YELLOW)Primary Development Commands:$(NC)"
 	@echo "  $(GREEN)make generate$(NC)          - Generate the static site"
-	@echo "  $(GREEN)make server$(NC)            - Start development server on http://$(HOST):$(PORT)"
+	@echo "  $(GREEN)make serve$(NC)             - Start development server on http://$(HOST):$(PORT)"
 	@echo ""
 	@echo "$(YELLOW)Build & Test Commands:$(NC)"
 	@echo "  $(GREEN)make build$(NC)            - Build the project"
@@ -38,7 +38,7 @@ help:
 	@echo "  $(GREEN)make clean$(NC)            - Clean build artifacts"
 	@echo ""
 	@echo "$(YELLOW)Utility Commands:$(NC)"
-	@echo "  $(GREEN)make format$(NC)           - Format OCaml code"
+	@echo "  $(GREEN)make fmt$(NC)              - Format OCaml code"
 	@echo "  $(GREEN)make watch$(NC)            - Watch files and rebuild automatically"
 	@echo ""
 	@echo "$(YELLOW)Content Commands:$(NC)"
@@ -55,9 +55,11 @@ generate: build
 	@echo "$(BLUE)🚀 Generating static site...$(NC)"
 	@$(DUNE) exec bin/generator.exe
 	@echo "$(GREEN)✅ Site generated successfully in $(SITE_DIR)/$(NC)"
+	@echo "$(BLUE)🔍 Running formatter on generated files...$(NC)"
+	@$(MAKE) fmt
 
-.PHONY: server
-server: build
+.PHONY: serve
+serve: build
 	@echo "$(BLUE)🌐 Starting development server...$(NC)"
 	@echo "$(YELLOW)📍 Server will be available at: http://$(HOST):$(PORT)$(NC)"
 	@echo "$(MAGENTA)🛑 Press Ctrl+C to stop the server$(NC)"
@@ -96,11 +98,20 @@ clean:
 
 
 # Development utilities
-.PHONY: format
-format:
+.PHONY: fmt
+fmt:
 	@echo "$(BLUE)💅 Formatting OCaml code...$(NC)"
 	@$(DUNE) fmt
-	@echo "$(GREEN)✅ Code formatted$(NC)"
+	@echo "$(GREEN)✅ OCaml code formatted$(NC)"
+	@echo "$(BLUE)💅 Formatting CSS files...$(NC)"
+	@npx prettier --write --log-level=warn "$(SITE_DIR)/static/css/*.css" || true
+	@echo "$(GREEN)✅ CSS formatted$(NC)"
+	@echo "$(BLUE)💅 Formatting HTML files...$(NC)"
+	@npx prettier --write --log-level=warn "$(SITE_DIR)/**/*.html" || true
+	@echo "$(GREEN)✅ HTML formatted$(NC)"
+	@echo "$(BLUE)💅 Formatting JavaScript files...$(NC)"
+	@npx prettier --write --log-level=warn "$(SITE_DIR)/static/js/*.js" || true
+	@echo "$(GREEN)✅ JavaScript formatted$(NC)"
 
 .PHONY: watch
 watch:
@@ -171,4 +182,4 @@ $(CONTENT_DIR):
 	@mkdir -p $(CONTENT_DIR)/pages $(CONTENT_DIR)/blog
 
 # Phony targets to avoid conflicts with files
-.PHONY: help generate server build test test-watch test-verbose clean format  watch new-post new-page info
+.PHONY: help generate server build test test-watch test-verbose clean fmt fmt-css  watch new-post new-page info

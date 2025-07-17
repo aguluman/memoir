@@ -296,7 +296,7 @@ let generate_journal_entries_html journal_dir =
                 | Some t -> t
                 | None -> Filename.remove_extension file);
               date = metadata._date;
-              url = "/" ^ Filename.remove_extension ("journal/" ^ file);
+              url = "/journal/" ^ Filename.remove_extension file;
             }
           in
           entries := entry :: !entries)
@@ -369,7 +369,7 @@ let generate_blog_entries_html blog_dir =
                 | None -> Filename.remove_extension file);
               date = metadata._date;
               description = metadata._description;
-              url = "/" ^ Filename.remove_extension ("blog/" ^ file);
+              url = "/blog/" ^ Filename.remove_extension file;
             }
           in
           entries := entry :: !entries)
@@ -401,7 +401,8 @@ let generate_blog_entries_html blog_dir =
             let description_str =
               match entry.description with
               | Some desc ->
-                  Printf.sprintf "<p class=\"blog-entry-description\">%s</p>" desc
+                  Printf.sprintf "<p class=\"blog-entry-description\">%s</p>"
+                    desc
               | None -> ""
             in
             Printf.sprintf
@@ -516,9 +517,7 @@ let process_route route =
         then
           (* This is the blog index page - inject blog entries *)
           let blog_dir = Filename.dirname route.file_path in
-          let blog_entries_html =
-            generate_blog_entries_html blog_dir
-          in
+          let blog_entries_html = generate_blog_entries_html blog_dir in
           (* Replace the placeholder div with actual blog entries *)
           let pattern = "<div id=\"blog-entries-placeholder\"></div>" in
           let replacement = blog_entries_html in
