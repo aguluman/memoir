@@ -113,10 +113,18 @@ fmt:
 	@npx prettier --write --log-level=warn "$(SITE_DIR)/static/js/*.js" || true
 	@echo "$(GREEN)✅ JavaScript formatted$(NC)"
 
-.PHONY: watch
-watch:
-	@echo "$(BLUE)👀 Watching for changes...$(NC)"
-	@$(DUNE) build --watch
+.PHONY: dev
+dev: build
+	@echo "$(BLUE)🚀 Starting development mode...$(NC)"
+	@echo "$(YELLOW)📍 Server: http://localhost:3000 | Auto-reload enabled$(NC)"
+	@echo "$(YELLOW)📍 Watching: content/ and static/ for changes$(NC)"
+	@echo "$(MAGENTA)🛑 Press Ctrl+C to stop$(NC)"
+	@(browser-sync start --server "_site" --files "_site/**/*" --port 3000 --no-open --no-notify &) && \
+	npx nodemon --watch content --watch static -e md,css,js --exec "make generate"
+
+.PHONY: watch  
+watch: dev
+
 
 # Content creation helpers
 .PHONY: new-post
@@ -166,10 +174,18 @@ info:
 	@echo "Build directory: $(BUILD_DIR)"
 	@echo "Site directory: $(SITE_DIR)"
 	@echo "Content directory: $(CONTENT_DIR)"
-	@echo "Server: http://$(HOST):$(PORT)"
+	@echo "OCaml server: http://$(HOST):$(PORT)"
+	@echo "BrowserSync dev server: http://localhost:3000"
 	@echo ""
-	@echo "$(BLUE)📁 Directory status:$(NC)"
-	@ls -la | grep -E "($(BUILD_DIR)|$(SITE_DIR)|$(CONTENT_DIR)|$(STATIC_DIR))"
+	@echo "$(BLUE)📊 Site size information:$(NC)"
+	@if [ -d "$(SITE_DIR)" ]; then \
+		echo "Total site size: $$(du -sh $(SITE_DIR) | cut -f1)"; \
+		echo "Breakdown:"; \
+		du -h --max-depth=1 $(SITE_DIR) | sort -hr; \
+	else \
+		echo "$(YELLOW)⚠️ Site directory doesn't exist. Run 'make generate' first.$(NC)"; \
+	fi
+
 
 # Default target
 .DEFAULT_GOAL := help
@@ -182,4 +198,4 @@ $(CONTENT_DIR):
 	@mkdir -p $(CONTENT_DIR)/pages $(CONTENT_DIR)/blog
 
 # Phony targets to avoid conflicts with files
-.PHONY: help generate server build test test-watch test-verbose clean fmt fmt-css  watch new-post new-page info
+.PHONY: help generate serve build test test-watch test-verbose clean fmt watch new-post new-page info
