@@ -55,6 +55,8 @@ generate: build
 	@echo "$(BLUE)🚀 Generating static site...$(NC)"
 	@$(DUNE) exec bin/generator.exe
 	@echo "$(GREEN)✅ Site generated successfully in $(SITE_DIR)/$(NC)"
+	@echo "$(BLUE)🔍 Running formatter on generated files...$(NC)"
+	@$(MAKE) fmt
 
 .PHONY: serve
 serve: build
