@@ -114,7 +114,8 @@ let collect_dynamic_pages () =
         let files = Sys.readdir dir |> Array.to_list in
         List.filter_map
           (fun file ->
-            if Stdlib.Filename.check_suffix file ".md" then
+            if Stdlib.Filename.check_suffix file ".md" && file <> "index.md"
+            then
               let file_path = Stdlib.Filename.concat dir file in
               try
                 let content = read_file file_path in

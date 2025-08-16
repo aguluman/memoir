@@ -224,7 +224,7 @@ let generate_rss_feed pages config =
   let items =
     List.map (fun page -> generate_rss_item page config) published_pages
   in
-  let items_xml = String.concat "\n" items in
+  let items_xml = String.concat "" items in
 
   let current_date =
     let now = Unix.time () in
