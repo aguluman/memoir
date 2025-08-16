@@ -2,7 +2,21 @@
 let port = 8080
 let host = "127.0.0.1"
 let static_dir = "_site"
-let static_subdir = Filename.concat static_dir "static"
+let static_subdir = Stdlib.Filename.concat static_dir "static"
+
+(* Configuration for RSS feed generation *)
+let rss_config =
+  {
+    Memoir_lib.site_title = "Chukwuma Akunyili's Blog";
+    site_description =
+      "Thoughts on software engineering, functional programming, and technology";
+    author = "Chukwuma Akunyili";
+    base_url = "https://fearful-odds.rocks";
+    output_dir = "_site";
+    content_dir = "content";
+    template_dir = "templates";
+    static_dir = "static";
+  }
 
 (* Helper function to read file content *)
 let read_file path =
@@ -23,13 +37,143 @@ let normalize_path path =
         | [] -> normalize [] rest)
     | x :: rest -> normalize (x :: acc) rest
   in
-  let parts = Str.split (Str.regexp_string Filename.dir_sep) path in
+  let parts = Str.split (Str.regexp_string Stdlib.Filename.dir_sep) path in
   let normalized = normalize [] parts |> List.rev in
-  String.concat Filename.dir_sep normalized
+  String.concat Stdlib.Filename.dir_sep normalized
+
+(* Simple frontmatter parser for RSS feed *)
+let parse_simple_frontmatter content =
+  let lines = String.split_on_char '\n' content in
+  let rec find_frontmatter acc in_frontmatter = function
+    | [] -> ([], String.concat "\n" (List.rev acc))
+    | "---" :: rest when not in_frontmatter -> find_frontmatter [] true rest
+    | "---" :: rest when in_frontmatter ->
+        (List.rev acc, String.concat "\n" rest)
+    | line :: rest when in_frontmatter ->
+        find_frontmatter (line :: acc) true rest
+    | line :: rest -> find_frontmatter (line :: acc) false rest
+  in
+  find_frontmatter [] false lines
+
+(* Extract title and date from frontmatter *)
+let extract_metadata frontmatter_lines =
+  let title = ref "Untitled" in
+  let date = ref None in
+  let description = ref None in
+  List.iter
+    (fun line ->
+      if String.length line > 6 && String.sub line 0 6 = "title:" then
+        let title_part = String.sub line 6 (String.length line - 6) in
+        let clean_title = String.trim title_part in
+        let final_title =
+          if
+            String.length clean_title > 2
+            && clean_title.[0] = '"'
+            && clean_title.[String.length clean_title - 1] = '"'
+          then String.sub clean_title 1 (String.length clean_title - 2)
+          else clean_title
+        in
+        title := final_title
+      else if String.length line > 5 && String.sub line 0 5 = "date:" then
+        let date_part = String.sub line 5 (String.length line - 5) in
+        let clean_date = String.trim date_part in
+        let final_date =
+          if
+            String.length clean_date > 2
+            && clean_date.[0] = '"'
+            && clean_date.[String.length clean_date - 1] = '"'
+          then String.sub clean_date 1 (String.length clean_date - 2)
+          else clean_date
+        in
+        date := Some final_date
+      else if String.length line > 12 && String.sub line 0 12 = "description:"
+      then
+        let desc_part = String.sub line 12 (String.length line - 12) in
+        let clean_desc = String.trim desc_part in
+        let final_desc =
+          if
+            String.length clean_desc > 2
+            && clean_desc.[0] = '"'
+            && clean_desc.[String.length clean_desc - 1] = '"'
+          then String.sub clean_desc 1 (String.length clean_desc - 2)
+          else clean_desc
+        in
+        description := Some final_desc)
+    frontmatter_lines;
+  (!title, !date, !description)
+
+(* Helper function to collect pages for RSS feed from actual content *)
+let collect_dynamic_pages () =
+  let content_base = "content/pages" in
+  let blog_dir = Stdlib.Filename.concat content_base "blog" in
+  let journal_dir = Stdlib.Filename.concat content_base "journal" in
+
+  let load_pages_from_dir dir url_prefix =
+    try
+      if Sys.file_exists dir && Sys.is_directory dir then
+        let files = Sys.readdir dir |> Array.to_list in
+        List.filter_map
+          (fun file ->
+            if Stdlib.Filename.check_suffix file ".md" then
+              let file_path = Stdlib.Filename.concat dir file in
+              try
+                let content = read_file file_path in
+                let frontmatter_lines, markdown_content =
+                  parse_simple_frontmatter content
+                in
+                let title, date, description =
+                  extract_metadata frontmatter_lines
+                in
+                let slug = Stdlib.Filename.remove_extension file in
+                let url = "/" ^ url_prefix ^ "/" ^ slug in
+                Some
+                  {
+                    Memoir_lib.metadata =
+                      {
+                        title;
+                        date;
+                        tags = [];
+                        summary = description;
+                        draft = false;
+                      };
+                    content = markdown_content;
+                    url;
+                    source_path = file_path;
+                  }
+              with _ -> None
+            else None)
+          files
+      else []
+    with _ -> []
+  in
+
+  let blog_pages = load_pages_from_dir blog_dir "blog" in
+  let journal_pages = load_pages_from_dir journal_dir "journal" in
+
+  let all_pages = blog_pages @ journal_pages in
+
+  (* Sort by date (newest first) *)
+  List.sort
+    (fun a b ->
+      match (a.Memoir_lib.metadata.date, b.Memoir_lib.metadata.date) with
+      | Some date_a, Some date_b -> String.compare date_b date_a
+      | Some _, None -> -1
+      | None, Some _ -> 1
+      | None, None -> 0)
+    all_pages
 
 (* Simple Dream server for development *)
 let start_server () =
-  let handler req =
+  let rss_handler _req =
+    let pages = collect_dynamic_pages () in
+    let rss_content = Memoir_lib.generate_rss_feed pages rss_config in
+    Lwt.return
+      (Dream.response
+         ~headers:[ ("Content-Type", "application/rss+xml; charset=utf-8") ]
+         rss_content)
+  in
+
+  let static_handler req =
     let uri = Dream.target req in
     (* Remove leading slash and normalize path *)
     let clean_path =
@@ -98,7 +242,10 @@ let start_server () =
 
   print_endline (Printf.sprintf "Starting server at http://%s:%d/" host port);
   print_endline "Press Ctrl+C to stop the server.";
-  Dream.run ~port @@ Dream.logger @@ Dream.router [ Dream.get "/**" handler ]
+  print_endline "RSS feed available at: http://127.0.0.1:8080/feed.xml";
+  Dream.run ~port @@ Dream.logger
+  @@ Dream.router
+       [ Dream.get "/feed.xml" rss_handler; Dream.get "/**" static_handler ]
 
 (* Entry point *)
 let () =
