@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>Chukwuma Akunyili&#39;s Blog</title>
+    <description>Thoughts on software engineering, functional programming, and technology</description>
+    <link>https://fearful-odds.rocks</link>
+    <image>
+      <url>https://fearful-odds.rocks/static/images/logo.svg</url>
+      <title>Chukwuma Akunyili&#39;s Blog</title>
+      <link>https://fearful-odds.rocks</link>
+    </image>
+    <atom:link href="https://fearful-odds.rocks/feed.xml" rel="self" type="application/rss+xml" />
+    <language>en</language>
+    <lastBuildDate>Sat, 16 Aug 2025 23:50:23 +0000</lastBuildDate>
+    <pubDate>Sat, 16 Aug 2025 23:50:23 +0000</pubDate>
+    <ttl>60</ttl>
+    <managingEditor>Chukwuma Akunyili</managingEditor>
+    <webMaster>Chukwuma Akunyili</webMaster>
+    <item>
+      <title>Azure Deployment Journey: OCaml Web Application with Dream Framework</title>
+      <link>https://fearful-odds.rocks/blog/azure-deployment-journey-ocaml-dream</link>
+      <description><![CDATA[A comprehensive guide to deploying OCaml applications on Azure App Service using Azure Container Registry - from authentication challenges to production success]]></description>
+      <dc:creator>Chukwuma Akunyili</dc:creator>
+      <pubDate>Sun, 10 Aug 2025 00:00:00 +0000</pubDate>
+      <guid isPermaLink="true">https://fearful-odds.rocks/blog/azure-deployment-journey-ocaml-dream</guid>
+      <category>OCaml</category>
+      <category>Azure</category>
+      <category>Dream Framework</category>
+      <category>Docker</category>
+      <category>DevOps</category>
+      <category>Cloud Deployment</category>
+    </item>
+    <item>
+      <title>Advent of Code with OCaml: Building a Complete Automation Pipeline</title>
+      <link>https://fearful-odds.rocks/blog/advent-of-code-ocaml-automation</link>
+      <description><![CDATA[How I built a fully automated OCaml solution pipeline for Advent of Code with input downloading, solution running, and automatic submission]]></description>
+      <dc:creator>Chukwuma Akunyili</dc:creator>
+      <pubDate>Sat, 12 Jul 2025 00:00:00 +0000</pubDate>
+      <guid isPermaLink="true">https://fearful-odds.rocks/blog/advent-of-code-ocaml-automation</guid>
+      <category>OCaml</category>
+      <category>Advent of Code</category>
+      <category>Automation</category>
+      <category>Functional Programming</category>
+    </item>
+    <item>
+      <title>Getting Started with OCaml</title>
+      <link>https://fearful-odds.rocks/blog/getting-started-with-ocaml</link>
+      <description><![CDATA[A beginner&#39;s guide to functional programming with OCaml]]></description>
+      <dc:creator>Chukwuma Akunyili</dc:creator>
+      <pubDate>Sun, 08 Jun 2025 00:00:00 +0000</pubDate>
+      <guid isPermaLink="true">https://fearful-odds.rocks/blog/getting-started-with-ocaml</guid>
+      <category>ocaml</category>
+      <category>functional-programming</category>
+      <category>tutorial</category>
+      <category>beginners</category>
+    </item>
+    <item>
+      <title>Day 1: Setting Up the Memoir Project</title>
+      <link>https://fearful-odds.rocks/journal/day-1-setting-up-memoir</link>
+      <description><![CDATA[First entry detailing the setup of my OCaml static site generator]]></description>
+      <dc:creator>Chukwuma Akunyili</dc:creator>
+      <pubDate>Sat, 07 Jun 2025 00:00:00 +0000</pubDate>
+      <guid isPermaLink="true">https://fearful-odds.rocks/journal/day-1-setting-up-memoir</guid>
+      <category>journal</category>
+      <category>ocaml</category>
+      <category>web</category>
+      <category>setup</category>
+    </item>
+  </channel>
+</rss>

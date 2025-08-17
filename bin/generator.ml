@@ -704,10 +704,16 @@ let generate_site () =
   (* Remove any duplicate index files created during processing *)
   remove_duplicate_index_files ();
 
-  (* Generate RSS feed from blog posts *)
+  (* Save updated cache *)
+  save_build_cache final_cache;
+
+  (* Generate RSS feed from blog posts and journal entries *)
   let generate_rss_feed_file () =
     let pages = ref [] in
     let blog_dir = Filename.concat config.content_dir "pages/blog" in
+    let journal_dir = Filename.concat config.content_dir "pages/journal" in
+
+    (* Process blog posts *)
     (if Sys.file_exists blog_dir && Sys.is_directory blog_dir then
        let files = Sys.readdir blog_dir in
        Array.iter
@@ -742,6 +748,41 @@ let generate_site () =
              pages := page :: !pages)
          files);
 
+    (* Process journal entries *)
+    (if Sys.file_exists journal_dir && Sys.is_directory journal_dir then
+       let files = Sys.readdir journal_dir in
+       Array.iter
+         (fun file ->
+           let full_path = Filename.concat journal_dir file in
+           if
+             (not (Sys.is_directory full_path))
+             && Filename.extension file = ".md"
+             && file <> "index.md"
+           then
+             let metadata = extract_route_metadata full_path in
+             let content = read_file full_path in
+             let page =
+               {
+                 Memoir_lib.metadata =
+                   {
+                     title =
+                       (match metadata.title with
+                       | Some t -> t
+                       | None -> Filename.remove_extension file);
+                     date = metadata._date;
+                     tags = metadata._tags;
+                     summary = metadata._description;
+                     draft = false;
+                     (* Assume published if it's in the site *)
+                   };
+                 content;
+                 url = "/journal/" ^ Filename.remove_extension file;
+                 source_path = full_path;
+               }
+             in
+             pages := page :: !pages)
+         files);
+
     let rss_config =
       {
         Memoir_lib.site_title = "Chukwuma Akunyili's Blog";
@@ -757,16 +798,26 @@ let generate_site () =
       }
     in
 
-    let rss_xml = Memoir_lib.generate_rss_feed (List.rev !pages) rss_config in
+    (* Sort pages by date (newest first) for RSS feed *)
+    let sorted_pages =
+      List.sort
+        (fun a b ->
+          match (a.Memoir_lib.metadata.date, b.Memoir_lib.metadata.date) with
+          | Some date_a, Some date_b -> String.compare date_b date_a
+          | Some _, None -> -1
+          | None, Some _ -> 1
+          | None, None -> 0)
+        (List.rev !pages)
+    in
+
+    let rss_xml = Memoir_lib.generate_rss_feed sorted_pages rss_config in
     let rss_output_path = Filename.concat config.output_dir "feed.xml" in
     write_file rss_output_path rss_xml;
-    Printf.printf "RSS feed generated at: %s\n" rss_output_path
+    Printf.printf "RSS feed generated at: %s (%d items)\n" rss_output_path
+      (List.length sorted_pages)
   in
 
   generate_rss_feed_file ();
-
-  (* Save updated cache *)
-  save_build_cache final_cache;
 
   print_endline "Site generation complete!";
   ()
@@ -816,6 +867,114 @@ let () =
 
       (* Save cache *)
       save_build_cache final_cache;
+
+      (* Generate RSS feed from blog posts and journal entries *)
+      let pages = ref [] in
+      let blog_dir = Filename.concat config.content_dir "pages/blog" in
+      let journal_dir = Filename.concat config.content_dir "pages/journal" in
+
+      (* Process blog posts *)
+      (if Sys.file_exists blog_dir && Sys.is_directory blog_dir then
+         let files = Sys.readdir blog_dir in
+         Array.iter
+           (fun file ->
+             let full_path = Filename.concat blog_dir file in
+             if
+               (not (Sys.is_directory full_path))
+               && Filename.extension file = ".md"
+               && file <> "index.md"
+             then
+               let metadata = extract_route_metadata full_path in
+               let content = read_file full_path in
+               let page =
+                 {
+                   Memoir_lib.metadata =
+                     {
+                       title =
+                         (match metadata.title with
+                         | Some t -> t
+                         | None -> Filename.remove_extension file);
+                       date = metadata._date;
+                       tags = metadata._tags;
+                       summary = metadata._description;
+                       draft = false;
+                       (* Assume published if it's in the site *)
+                     };
+                   content;
+                   url = "/blog/" ^ Filename.remove_extension file;
+                   source_path = full_path;
+                 }
+               in
+               pages := page :: !pages)
+           files);
+
+      (* Process journal entries *)
+      (if Sys.file_exists journal_dir && Sys.is_directory journal_dir then
+         let files = Sys.readdir journal_dir in
+         Array.iter
+           (fun file ->
+             let full_path = Filename.concat journal_dir file in
+             if
+               (not (Sys.is_directory full_path))
+               && Filename.extension file = ".md"
+               && file <> "index.md"
+             then
+               let metadata = extract_route_metadata full_path in
+               let content = read_file full_path in
+               let page =
+                 {
+                   Memoir_lib.metadata =
+                     {
+                       title =
+                         (match metadata.title with
+                         | Some t -> t
+                         | None -> Filename.remove_extension file);
+                       date = metadata._date;
+                       tags = metadata._tags;
+                       summary = metadata._description;
+                       draft = false;
+                       (* Assume published if it's in the site *)
+                     };
+                   content;
+                   url = "/journal/" ^ Filename.remove_extension file;
+                   source_path = full_path;
+                 }
+               in
+               pages := page :: !pages)
+           files);
+
+      let rss_config =
+        {
+          Memoir_lib.site_title = "Chukwuma Akunyili's Blog";
+          site_description =
+            "Thoughts on software engineering, functional programming, and \
+             technology";
+          author = config.author;
+          base_url = "https://fearful-odds.rocks";
+          output_dir = config.output_dir;
+          content_dir = config.content_dir;
+          template_dir = config._template_dir;
+          static_dir = config.static_dir;
+        }
+      in
+
+      (* Sort pages by date (newest first) for RSS feed *)
+      let sorted_pages =
+        List.sort
+          (fun a b ->
+            match (a.Memoir_lib.metadata.date, b.Memoir_lib.metadata.date) with
+            | Some date_a, Some date_b -> String.compare date_b date_a
+            | Some _, None -> -1
+            | None, Some _ -> 1
+            | None, None -> 0)
+          (List.rev !pages)
+      in
+
+      let rss_xml = Memoir_lib.generate_rss_feed sorted_pages rss_config in
+      let rss_output_path = Filename.concat config.output_dir "feed.xml" in
+      write_file rss_output_path rss_xml;
+      Printf.printf "RSS feed generated at: %s (%d items)\n" rss_output_path
+        (List.length sorted_pages);
 
       print_endline "Forced rebuild complete!"
     in
