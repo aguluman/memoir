@@ -537,11 +537,24 @@ let process_route route =
       let year = 2025 in
       let author = "Chukwuma Akunyili" in
 
+      (* Add webring navigation to content *)
+      let webring_html =
+        {|<div class="webring-nav">
+  <a href="https://ring.muhokama.fun/u/aguluman/pred" class="webring-link webring-prev prev" title="Previous site in the webring">← Pred</a>
+  <p class="webring-description center">
+    Hey, this site is part of 
+    <a href="https://ring.muhokama.fun" target="_blank" rel="noopener noreferrer">ring.muhokama.fun!</a>
+  </p>
+  <a href="https://ring.muhokama.fun/u/aguluman/succ" class="webring-link webring-next next" title="Next site in the webring">Succ →</a>
+</div>|}
+      in
+      let final_html_with_webring = final_html_content ^ "\n" ^ webring_html in
+
       (* Create proper page using template system *)
       let page_string =
         Templates.create_page ~current_path:url_path ~year ~author
           ~title_text:title ~description
-          ~content:[ Tyxml.Html.Unsafe.data final_html_content ]
+          ~content:[ Tyxml.Html.Unsafe.data final_html_with_webring ]
           ~url:("https://fearful-odds.rocks" ^ url_path)
           ()
       in
