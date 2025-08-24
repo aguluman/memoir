@@ -11,11 +11,26 @@
     </image>
     <atom:link href="https://fearful-odds.rocks/feed.xml" rel="self" type="application/rss+xml" />
     <language>en</language>
-    <lastBuildDate>Sun, 17 Aug 2025 02:42:27 +0000</lastBuildDate>
-    <pubDate>Sun, 17 Aug 2025 02:42:27 +0000</pubDate>
+    <lastBuildDate>Sun, 24 Aug 2025 12:26:12 +0000</lastBuildDate>
+    <pubDate>Sun, 24 Aug 2025 12:26:12 +0000</pubDate>
     <ttl>60</ttl>
     <managingEditor>Chukwuma Akunyili</managingEditor>
     <webMaster>Chukwuma Akunyili</webMaster>
+    <item>
+      <title>Modern PostgreSQL Connection Pooling in OCaml (2025): Caqti + Dream + Lwt</title>
+      <link>https://fearful-odds.rocks/blog/postgres-caqti-pooling-ocaml-2025</link>
+      <description><![CDATA[A practical, production-focused walkthrough of building a PostgreSQL connection pool in OCaml using Caqti_lwt_unix, with health checks, graceful shutdown, and Dream integration]]></description>
+      <dc:creator>Chukwuma Akunyili</dc:creator>
+      <pubDate>Sun, 24 Aug 2025 00:00:00 +0000</pubDate>
+      <guid isPermaLink="true">https://fearful-odds.rocks/blog/postgres-caqti-pooling-ocaml-2025</guid>
+      <category>OCaml</category>
+      <category>PostgreSQL</category>
+      <category>Caqti</category>
+      <category>Lwt</category>
+      <category>Dream</category>
+      <category>Backend</category>
+      <category>Production</category>
+    </item>
     <item>
       <title>Azure Deployment Journey: OCaml Web Application with Dream Framework</title>
       <link>https://fearful-odds.rocks/blog/azure-deployment-journey-ocaml-dream</link>
