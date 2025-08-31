@@ -11,11 +11,27 @@
     </image>
     <atom:link href="https://fearful-odds.rocks/feed.xml" rel="self" type="application/rss+xml" />
     <language>en</language>
-    <lastBuildDate>Sun, 24 Aug 2025 12:26:12 +0000</lastBuildDate>
-    <pubDate>Sun, 24 Aug 2025 12:26:12 +0000</pubDate>
+    <lastBuildDate>Sun, 31 Aug 2025 16:29:34 +0000</lastBuildDate>
+    <pubDate>Sun, 31 Aug 2025 16:29:34 +0000</pubDate>
     <ttl>60</ttl>
     <managingEditor>Chukwuma Akunyili</managingEditor>
     <webMaster>Chukwuma Akunyili</webMaster>
+    <item>
+      <title>Building Database Layer in OCaml: From UUID v7 to Standardized Error Handling</title>
+      <link>https://fearful-odds.rocks/blog/database-service-layer-sprint</link>
+      <description><![CDATA[A comprehensive sprint retrospective documenting the implementation of a near-production-ready database and service layer using OCaml, Caqti, UUID v7, and standardized error handling for the Chaufr MVP]]></description>
+      <dc:creator>Chukwuma Akunyili</dc:creator>
+      <pubDate>Sun, 31 Aug 2025 00:00:00 +0000</pubDate>
+      <guid isPermaLink="true">https://fearful-odds.rocks/blog/database-service-layer-sprint</guid>
+      <category>OCaml</category>
+      <category>Database</category>
+      <category>Caqti</category>
+      <category>UUID</category>
+      <category>Error Handling</category>
+      <category>PostgreSQL</category>
+      <category>Sprint Retrospective</category>
+      <category>Enterprise Architecture</category>
+    </item>
     <item>
       <title>Modern PostgreSQL Connection Pooling in OCaml (2025): Caqti + Dream + Lwt</title>
       <link>https://fearful-odds.rocks/blog/postgres-caqti-pooling-ocaml-2025</link>
