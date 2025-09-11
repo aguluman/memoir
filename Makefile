@@ -45,6 +45,10 @@ help:
 	@echo "  $(GREEN)make new-post$(NC)         - Create a new blog post"
 	@echo "  $(GREEN)make new-page$(NC)         - Create a new page"
 	@echo ""
+	@echo "$(YELLOW)Documentation Commands:$(NC)"
+	@echo "  $(GREEN)make docs$(NC)         	- Build documentation and show on the browser"
+	@echo "  $(GREEN)make docs-build$(NC)       - Build documentation only"
+	@echo ""
 	@echo "$(YELLOW)Debug Commands:$(NC)"
 	@echo "  $(GREEN)make info$(NC)             - Show project information and directory status"
 	@echo ""
@@ -55,6 +59,8 @@ generate: build
 	@echo "$(BLUE)🚀 Generating static site...$(NC)"
 	@$(DUNE) exec bin/generator.exe
 	@echo "$(GREEN)✅ Site generated successfully in $(SITE_DIR)/$(NC)"
+	@echo "$(BLUE)🔍 Copying documentation to site...$(NC)"
+	@$(MAKE) copy-docs
 	@echo "$(BLUE)🔍 Running formatter on generated files...$(NC)"
 	@$(MAKE) fmt
 
@@ -165,6 +171,23 @@ new-page:
 	echo "" >> "$$file"; \
 	echo "Your content here..." >> "$$file"; \
 	echo "$(GREEN)✅ Created: $$file$(NC)"
+
+.PHONY: docs docs-build copy-docs
+docs:
+	dune build @doc
+	cd _build/default/_doc/_html && python3 -m http.server 9090
+
+docs-build:
+	dune build @doc
+	@echo "Documentation built successfully in _build/default/_doc/_html/"
+
+copy-docs: docs-build
+	@echo "$(BLUE)📚 Copying documentation to $(SITE_DIR)/docs/$(NC)"
+	@rm -rf $(SITE_DIR)/docs
+	@mkdir -p $(SITE_DIR)/docs
+	@cp -r --preserve=all _build/default/_doc/_html/* $(SITE_DIR)/docs/
+	@chmod -R u+rwX,go+rX $(SITE_DIR)/docs/
+	@echo "$(GREEN)✅ Documentation copied to $(SITE_DIR)/docs/$(NC)"
 
 # Info commands
 .PHONY: info

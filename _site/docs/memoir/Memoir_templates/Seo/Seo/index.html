@@ -1,0 +1,405 @@
+<!doctype html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Seo (memoir.Memoir_templates.Seo.Seo)</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../../../odoc.support/odoc.css" />
+    <meta name="generator" content="odoc 3.1.0" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <script src="../../../../odoc.support/highlight.pack.js"></script>
+    <script>
+      hljs.initHighlightingOnLoad();
+    </script>
+  </head>
+  <body class="odoc">
+    <nav class="odoc-nav">
+      <a href="../index.html">Up</a> –
+      <a href="../../../../index.html">Index</a> &#x00BB;
+      <a href="../../../index.html">memoir</a> &#x00BB;
+      <a href="../../index.html">Memoir_templates</a> &#x00BB;
+      <a href="../index.html">Seo</a> &#x00BB; Seo
+    </nav>
+    <header class="odoc-preamble">
+      <h1>
+        Module <code><span>Seo.Seo</span></code>
+      </h1>
+      <p>SEO and metadata components for page heads</p>
+    </header>
+    <div class="odoc-content">
+      <div class="odoc-spec">
+        <div class="spec value anchored" id="val-basic_meta">
+          <a href="#val-basic_meta" class="anchor"></a
+          ><code
+            ><span
+              ><span class="keyword">val</span> basic_meta :
+              <span
+                ><span class="label">title_text</span>:<span
+                  >string
+                  <span class="xref-unresolved">Tyxml</span>.Html.wrap</span
+                >
+                <span class="arrow">&#45;&gt;</span></span
+              >
+              <span
+                ><span class="label">description</span>:<span
+                  ><span class="xref-unresolved">Html_types</span>.text
+                  <span class="xref-unresolved">Tyxml</span>.Html.wrap</span
+                >
+                <span class="arrow">&#45;&gt;</span></span
+              >
+              <span
+                ><span
+                  ><span>[&gt; `Meta <span>| `Title</span> ]</span>
+                  <span class="xref-unresolved">Tyxml</span>.Html.elt</span
+                >
+                list</span
+              ></span
+            ></code
+          >
+        </div>
+        <div class="spec-doc"><p>Generate basic meta tags</p></div>
+      </div>
+      <div class="odoc-spec">
+        <div class="spec value anchored" id="val-open_graph_meta">
+          <a href="#val-open_graph_meta" class="anchor"></a
+          ><code
+            ><span
+              ><span class="keyword">val</span> open_graph_meta :
+              <span
+                ><span class="label">title_text</span>:<span
+                  ><span class="xref-unresolved">Html_types</span>.text
+                  <span class="xref-unresolved">Tyxml</span>.Html.wrap</span
+                >
+                <span class="arrow">&#45;&gt;</span></span
+              >
+              <span
+                ><span class="label">description</span>:<span
+                  ><span class="xref-unresolved">Html_types</span>.text
+                  <span class="xref-unresolved">Tyxml</span>.Html.wrap</span
+                >
+                <span class="arrow">&#45;&gt;</span></span
+              >
+              <span
+                ><span class="label">url</span>:<span
+                  ><span class="xref-unresolved">Html_types</span>.text
+                  <span class="xref-unresolved">Tyxml</span>.Html.wrap</span
+                >
+                <span class="arrow">&#45;&gt;</span></span
+              >
+              <span
+                ><span class="optlabel">?image</span>:<span
+                  ><span class="xref-unresolved">Html_types</span>.text
+                  <span class="xref-unresolved">Tyxml</span>.Html.wrap</span
+                >
+                <span class="arrow">&#45;&gt;</span></span
+              >
+              <span
+                ><span class="optlabel">?type_</span>:<span
+                  ><span class="xref-unresolved">Html_types</span>.text
+                  <span class="xref-unresolved">Tyxml</span>.Html.wrap</span
+                >
+                <span class="arrow">&#45;&gt;</span></span
+              >
+              <span>unit <span class="arrow">&#45;&gt;</span></span>
+              <span
+                ><span
+                  ><span
+                    >[&gt; <span class="xref-unresolved">Html_types</span>.meta
+                    ]</span
+                  >
+                  <span class="xref-unresolved">Tyxml</span>.Html.elt</span
+                >
+                list</span
+              ></span
+            ></code
+          >
+        </div>
+        <div class="spec-doc">
+          <p>Generate Open Graph meta tags for social sharing</p>
+        </div>
+      </div>
+      <div class="odoc-spec">
+        <div class="spec value anchored" id="val-twitter_card_meta">
+          <a href="#val-twitter_card_meta" class="anchor"></a
+          ><code
+            ><span
+              ><span class="keyword">val</span> twitter_card_meta :
+              <span
+                ><span class="label">title_text</span>:<span
+                  ><span class="xref-unresolved">Html_types</span>.text
+                  <span class="xref-unresolved">Tyxml</span>.Html.wrap</span
+                >
+                <span class="arrow">&#45;&gt;</span></span
+              >
+              <span
+                ><span class="label">description</span>:<span
+                  ><span class="xref-unresolved">Html_types</span>.text
+                  <span class="xref-unresolved">Tyxml</span>.Html.wrap</span
+                >
+                <span class="arrow">&#45;&gt;</span></span
+              >
+              <span
+                ><span class="optlabel">?image</span>:<span
+                  ><span class="xref-unresolved">Html_types</span>.text
+                  <span class="xref-unresolved">Tyxml</span>.Html.wrap</span
+                >
+                <span class="arrow">&#45;&gt;</span></span
+              >
+              <span
+                ><span class="optlabel">?card_type</span>:<span
+                  ><span class="xref-unresolved">Html_types</span>.text
+                  <span class="xref-unresolved">Tyxml</span>.Html.wrap</span
+                >
+                <span class="arrow">&#45;&gt;</span></span
+              >
+              <span
+                ><span class="optlabel">?twitter_handle</span>:<span
+                  ><span class="xref-unresolved">Html_types</span>.text
+                  <span class="xref-unresolved">Tyxml</span>.Html.wrap</span
+                >
+                <span class="arrow">&#45;&gt;</span></span
+              >
+              <span>unit <span class="arrow">&#45;&gt;</span></span>
+              <span
+                ><span
+                  ><span
+                    >[&gt; <span class="xref-unresolved">Html_types</span>.meta
+                    ]</span
+                  >
+                  <span class="xref-unresolved">Tyxml</span>.Html.elt</span
+                >
+                list</span
+              ></span
+            ></code
+          >
+        </div>
+        <div class="spec-doc"><p>Generate Twitter Card meta tags</p></div>
+      </div>
+      <div class="odoc-spec">
+        <div class="spec value anchored" id="val-canonical_url">
+          <a href="#val-canonical_url" class="anchor"></a
+          ><code
+            ><span
+              ><span class="keyword">val</span> canonical_url :
+              <span
+                ><span class="label">url</span>:<span
+                  ><span class="xref-unresolved">Tyxml</span>.Html.Xml.uri
+                  <span class="xref-unresolved">Tyxml</span>.Html.wrap</span
+                >
+                <span class="arrow">&#45;&gt;</span></span
+              >
+              <span
+                ><span
+                  >[&gt; <span class="xref-unresolved">Html_types</span>.link
+                  ]</span
+                >
+                <span class="xref-unresolved">Tyxml</span>.Html.elt</span
+              ></span
+            ></code
+          >
+        </div>
+        <div class="spec-doc"><p>Generate canonical URL meta tag</p></div>
+      </div>
+      <div class="odoc-spec">
+        <div class="spec value anchored" id="val-article_meta">
+          <a href="#val-article_meta" class="anchor"></a
+          ><code
+            ><span
+              ><span class="keyword">val</span> article_meta :
+              <span
+                ><span class="label">author</span>:<span
+                  ><span class="xref-unresolved">Html_types</span>.text
+                  <span class="xref-unresolved">Tyxml</span>.Html.wrap</span
+                >
+                <span class="arrow">&#45;&gt;</span></span
+              >
+              <span
+                ><span class="label">date</span>:<span
+                  ><span class="xref-unresolved">Html_types</span>.text
+                  <span class="xref-unresolved">Tyxml</span>.Html.wrap</span
+                >
+                <span class="arrow">&#45;&gt;</span></span
+              >
+              <span
+                ><span class="label">tags</span>:<span
+                  ><span
+                    ><span class="xref-unresolved">Html_types</span>.text
+                    <span class="xref-unresolved">Tyxml</span>.Html.wrap</span
+                  >
+                  list</span
+                >
+                <span class="arrow">&#45;&gt;</span></span
+              >
+              <span
+                ><span
+                  ><span
+                    >[&gt; <span class="xref-unresolved">Html_types</span>.meta
+                    ]</span
+                  >
+                  <span class="xref-unresolved">Tyxml</span>.Html.elt</span
+                >
+                list</span
+              ></span
+            ></code
+          >
+        </div>
+        <div class="spec-doc">
+          <p>Generate article-specific metadata for blog posts</p>
+        </div>
+      </div>
+      <div class="odoc-spec">
+        <div class="spec value anchored" id="val-schema_jsonld">
+          <a href="#val-schema_jsonld" class="anchor"></a
+          ><code
+            ><span
+              ><span class="keyword">val</span> schema_jsonld :
+              <span
+                ><span class="label">schema_type</span>:string
+                <span class="arrow">&#45;&gt;</span></span
+              >
+              <span
+                ><span class="label">title_text</span>:string
+                <span class="arrow">&#45;&gt;</span></span
+              >
+              <span
+                ><span class="label">description</span>:string
+                <span class="arrow">&#45;&gt;</span></span
+              >
+              <span
+                ><span class="label">url</span>:string
+                <span class="arrow">&#45;&gt;</span></span
+              >
+              <span
+                ><span class="optlabel">?image</span>:string
+                <span class="arrow">&#45;&gt;</span></span
+              >
+              <span
+                ><span class="optlabel">?additional_fields</span>:<span
+                  ><span
+                    >(string *
+                    <span class="xref-unresolved">Yojson</span>.Basic.t)</span
+                  >
+                  list</span
+                >
+                <span class="arrow">&#45;&gt;</span></span
+              >
+              <span>unit <span class="arrow">&#45;&gt;</span></span>
+              <span
+                ><span
+                  >[&gt; <span class="xref-unresolved">Html_types</span>.script
+                  ]</span
+                >
+                <span class="xref-unresolved">Tyxml</span>.Html.elt</span
+              ></span
+            ></code
+          >
+        </div>
+        <div class="spec-doc">
+          <p>Generate schema.org JSON-LD structured data</p>
+        </div>
+      </div>
+      <div class="odoc-spec">
+        <div class="spec value anchored" id="val-make_head">
+          <a href="#val-make_head" class="anchor"></a
+          ><code
+            ><span
+              ><span class="keyword">val</span> make_head :
+              <span
+                ><span class="label">title_text</span>:<span
+                  ><span
+                    ><span class="xref-unresolved">Html_types</span>.text
+                    <span class="xref-unresolved">Tyxml</span>.Html.wrap</span
+                  >
+                  <span class="xref-unresolved">Tyxml</span>.Html.wrap</span
+                >
+                <span class="arrow">&#45;&gt;</span></span
+              >
+              <span
+                ><span class="label">description</span>:<span
+                  ><span class="xref-unresolved">Html_types</span>.text
+                  <span class="xref-unresolved">Tyxml</span>.Html.wrap</span
+                >
+                <span class="arrow">&#45;&gt;</span></span
+              >
+              <span
+                ><span class="label">url</span>:<span
+                  ><span class="xref-unresolved">Html_types</span>.text
+                  <span class="xref-unresolved">Tyxml</span>.Html.wrap</span
+                >
+                <span class="arrow">&#45;&gt;</span></span
+              >
+              <span
+                ><span class="optlabel">?image</span>:<span
+                  ><span class="xref-unresolved">Html_types</span>.text
+                  <span class="xref-unresolved">Tyxml</span>.Html.wrap</span
+                >
+                <span class="arrow">&#45;&gt;</span></span
+              >
+              <span
+                ><span class="optlabel">?type_</span>:<span
+                  ><span class="xref-unresolved">Html_types</span>.text
+                  <span class="xref-unresolved">Tyxml</span>.Html.wrap</span
+                >
+                <span class="arrow">&#45;&gt;</span></span
+              >
+              <span
+                ><span class="optlabel">?twitter_handle</span>:<span
+                  ><span class="xref-unresolved">Html_types</span>.text
+                  <span class="xref-unresolved">Tyxml</span>.Html.wrap</span
+                >
+                <span class="arrow">&#45;&gt;</span></span
+              >
+              <span
+                ><span class="optlabel">?schema_type</span>:<span
+                  ><span
+                    ><span class="xref-unresolved">Html_types</span>.text
+                    <span class="xref-unresolved">Tyxml</span>.Html.wrap</span
+                  >
+                  <span class="xref-unresolved">Tyxml</span>.Html.wrap</span
+                >
+                <span class="arrow">&#45;&gt;</span></span
+              >
+              <span
+                ><span class="optlabel">?additional_fields</span>:<span
+                  ><span
+                    >(string *
+                    <span class="xref-unresolved">Yojson</span>.Basic.t)</span
+                  >
+                  list</span
+                >
+                <span class="arrow">&#45;&gt;</span></span
+              >
+              <span
+                ><span class="optlabel">?additional_meta</span>:
+                <span
+                  ><span
+                    ><span
+                      >(<span
+                        >[&gt; `Link <span>| `Meta</span>
+                        <span>| `Script</span> <span>| `Title</span> ]</span
+                      >
+                      <span class="keyword">as</span> 'a)</span
+                    >
+                    <span class="xref-unresolved">Tyxml</span>.Html.elt</span
+                  >
+                  list</span
+                >
+                <span class="arrow">&#45;&gt;</span></span
+              >
+              <span>unit <span class="arrow">&#45;&gt;</span></span>
+              <span
+                ><span
+                  ><span class="type-var">'a</span>
+                  <span class="xref-unresolved">Tyxml</span>.Html.elt</span
+                >
+                list</span
+              ></span
+            ></code
+          >
+        </div>
+        <div class="spec-doc">
+          <p>Generate complete SEO metadata for a page</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
