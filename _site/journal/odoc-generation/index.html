@@ -1,12 +1,12 @@
 <!doctype html><!doctype html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
-    <title>Journal</title>
+    <title>Day X: Summoning Odoc – A Joyful Documentation Portal Appears</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Daily entries and reflections on software engineering"
+      content="Adding odoc generated API docs to the Memoir site with Makefile magic, laughter, and a shiny /docs route"
     />
     <script>
       (function () {
@@ -25,28 +25,37 @@
     <script src="/static/js/main.js" defer="defer"></script>
     <script src="/static/js/theme-toggle.js" defer="defer"></script>
     <script src="/static/js/highlight.min.js" defer="defer"></script>
-    <meta property="og:title" content="Journal" />
+    <meta
+      property="og:title"
+      content="Day X: Summoning Odoc – A Joyful Documentation Portal Appears"
+    />
     <meta
       property="og:description"
-      content="Daily entries and reflections on software engineering"
+      content="Adding odoc generated API docs to the Memoir site with Makefile magic, laughter, and a shiny /docs route"
     />
     <meta
       property="og:url"
-      content="https://fearful-odds.rocks//journal/index"
+      content="https://fearful-odds.rocks//journal/odoc-generation"
     />
     <meta property="og:image" content="/static/images/default-og.jpg" />
     <meta property="og:type" content="article" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@siteauthor" />
-    <meta name="twitter:title" content="Journal" />
+    <meta
+      name="twitter:title"
+      content="Day X: Summoning Odoc – A Joyful Documentation Portal Appears"
+    />
     <meta
       name="twitter:description"
-      content="Daily entries and reflections on software engineering"
+      content="Adding odoc generated API docs to the Memoir site with Makefile magic, laughter, and a shiny /docs route"
     />
     <meta name="twitter:image" content="/static/images/default-og.jpg" />
-    <link rel="canonical" href="https://fearful-odds.rocks//journal/index" />
+    <link
+      rel="canonical"
+      href="https://fearful-odds.rocks//journal/odoc-generation"
+    />
     <script data-type="application/ld+json">
-      {&quot;@context&quot;:&quot;https://schema.org&quot;,&quot;@type&quot;:&quot;WebPage&quot;,&quot;name&quot;:&quot;Journal&quot;,&quot;description&quot;:&quot;Daily entries and reflections on software engineering&quot;,&quot;url&quot;:&quot;https://fearful-odds.rocks//journal/index&quot;,&quot;image&quot;:&quot;/static/images/default-og.jpg&quot;}
+      {&quot;@context&quot;:&quot;https://schema.org&quot;,&quot;@type&quot;:&quot;WebPage&quot;,&quot;name&quot;:&quot;Day X: Summoning Odoc – A Joyful Documentation Portal Appears&quot;,&quot;description&quot;:&quot;Adding odoc generated API docs to the Memoir site with Makefile magic, laughter, and a shiny /docs route&quot;,&quot;url&quot;:&quot;https://fearful-odds.rocks//journal/odoc-generation&quot;,&quot;image&quot;:&quot;/static/images/default-og.jpg&quot;}
     </script>
   </head>
   <body class="page">
@@ -153,40 +162,170 @@
       </div>
     </header>
     <main>
-      <h1 id="daily-journal">Daily Journal</h1>
+      <h1 id="day-x-summoning-odoc-a-joyful-documentation-portal-appears">
+        Day X: Summoning Odoc – A Joyful Documentation Portal Appears 😄
+      </h1>
       <p>
-        This is my engineering journal — a collection of daily thoughts,
-        learnings, and reflections as I navigate the world of software
-        development. Unlike more structured blog posts, these entries capture
-        the day-to-day reality of problem-solving and discovery.
+        <strong>Date: September 13, 2025</strong><br />
+        Mood: Caffeinated. Determined. Mildly dramatic. Ecstatically nerdy.
       </p>
-      <h2 id="recent-entries">Recent Entries</h2>
-      <div class="journal-entries">
-        <div class="journal-entry">
-          <h3>
-            <a href="/journal/odoc-generation"
-              >Day X: Summoning Odoc – A Joyful Documentation Portal Appears</a
-            >
-          </h3>
-          <span class="entry-date">2025-09-13</span>
-        </div>
-
-        <div class="journal-entry">
-          <h3>
-            <a href="/journal/day-1-setting-up-memoir"
-              >Day 1: Setting Up the Memoir Project</a
-            >
-          </h3>
-          <span class="entry-date">2025-06-07</span>
-        </div>
-      </div>
-      <hr />
       <p>
-        <em
-          >Interested in my thoughts on a particular technology or challenge?
-          <a href="/contact">Reach out</a>!</em
+        Today I taught Memoir a new trick: how to proudly host its own API
+        documentation at <code>/docs</code>. Yes, the code can now talk about
+        itself! (Self‑reflection is healthy — even for OCaml modules.)
+      </p>
+      <p>
+        Visit the freshly conjured portal here (bring snacks):<br />
+        ➡️
+        <a href="https://www.fearful-odds.rocks/docs"
+          >https://www.fearful-odds.rocks/docs</a
         >
       </p>
+      <hr />
+      <h2 id="why-this-was-fun-and-necessary">
+        Why This Was Fun (And Necessary)
+      </h2>
+      <p>
+        I’ve been building components, types, templates — but unless you enjoy
+        spelunking through <code>lib/</code> with a headlamp and a mug of
+        determination, discovering APIs wasn’t exactly… delightful.
+      </p>
+      <p>
+        Enter <strong>odoc</strong>: elegant, semantic, link-rich documentation
+        that makes the <code>Content_types</code>, <code>templates</code>, and
+        friends feel like they’re walking a red carpet.
+      </p>
+      <p>
+        So today’s quest:
+        <em
+          >Automate odoc generation, pipe it directly into the built site, and
+          make it effortless to keep docs updated.</em
+        >
+      </p>
+      <p>Mission accomplished, with sparkles. ✨</p>
+      <hr />
+      <h2 id="the-commit-that-did-the-heavy-lifting">
+        The Commit That Did the Heavy Lifting
+      </h2>
+      <pre><code>commit 3bc3df1f1d9df5f84ba8190b9560056b2b25c3ee
+Author: Chukwuma Akunyili
+Date:   Thu Sep 11 10:20:17 2025 +0100
+
+		Enhance documentation build process and add new commands
+
+		- Added docs, docs-build, and copy-docs commands
+		- Integrated docs copy step into site generation
+		- Published odoc HTML under _site/docs
+</code></pre>
+      <p>
+        This commit didn’t just add files — it upgraded the <em>workflow</em>.
+        The site generator now treats documentation as a first-class citizen. 🎓
+      </p>
+      <hr />
+      <h2 id="makefile-magic-a-kaizen-moment">
+        Makefile Magic 🔧 (A Kaizen Moment)
+      </h2>
+      <p>Three new spells (ahem, targets) joined the Makefile:</p>
+      <pre><code class="language-Makefile">docs:        # Build docs &amp; serve them locally on :9090
+	dune build @doc
+	cd _build/default/_doc/_html &amp;&amp; python3 -m http.server 9090
+
+docs-build:  # Just build odoc output
+	dune build @doc
+
+copy-docs: docs-build  # Ship docs into the public site
+	rm -rf $(SITE_DIR)/docs
+	mkdir -p $(SITE_DIR)/docs
+	cp -r _build/default/_doc/_html/* $(SITE_DIR)/docs/
+</code></pre>
+      <p>
+        And inside the existing <code>generate</code> target: a cheerful new
+        line:
+      </p>
+      <pre><code>🔍 Copying documentation to site...
+</code></pre>
+      <p>
+        Which triggers <code>make copy-docs</code> so I never forget to publish
+        API docs again. Future Me is grateful. Present Me is smug.
+      </p>
+      <hr />
+      <h2 id="directory-alchemy">Directory Alchemy 🗂️</h2>
+      <p>Before:</p>
+      <pre><code>_build/default/_doc/_html/  # Hidden in the build labyrinth
+</code></pre>
+      <p>After running <code>make generate</code>:</p>
+      <pre><code>_site/
+	docs/
+		index.html
+		memoir/
+			Content_types/
+			Memoir_content/
+			Memoir_lib/
+			Memoir_templates/
+</code></pre>
+      <p>
+        Now <code>/docs</code> is a living, linkable, style-aligned knowledge
+        hub embedded in the site — no sidecar hosting, no manual copy-paste
+        rituals.
+      </p>
+      <hr />
+      <h2 id="a-peek-at-the-generated-odoc-because-it-makes-me-grin">
+        A Peek at the Generated Odoc (Because It Makes Me Grin)
+      </h2>
+      <p>
+        Inside <code>Content_types</code> you’ll find type definitions like
+        <code>frontmatter</code> beautifully rendered — with each field
+        anchor‑linked like a polite citizen of the Web.
+      </p>
+      <p>
+        It feels professional. It <em>is</em> professional. But also: it’s fun
+        seeing my types dress up for production.
+      </p>
+      <hr />
+      <h2 id="lessons-with-smiles">Lessons (with Smiles)</h2>
+      <ol>
+        <li>
+          Automating documentation is like brushing your teeth — do it early, do
+          it often, and future you avoids decay.
+        </li>
+        <li>
+          Adding a <code>copy-docs</code> step prevents “Oops, stale docs”
+          embarrassment.
+        </li>
+        <li>
+          odoc output integrates smoothly with a static site — zero drama, 100%
+          structured goodness.
+        </li>
+        <li>Writing Makefile targets is still oddly therapeutic.</li>
+        <li>
+          Joyful tooling makes me <em>want</em> to document. That’s a win.
+        </li>
+      </ol>
+      <hr />
+      <h2 id="next-playful-ideas">Next Playful Ideas 🎯</h2>
+      <ul>
+        <li>
+          Add a link to <code>/docs</code> in the navigation (with a subtle ✨?)
+        </li>
+        <li>
+          Auto-regenerate docs on <code>watch</code> mode during development
+        </li>
+        <li>Explore adding module-level examples that double as tests</li>
+        <li>Generate a changelog page powered by git history</li>
+      </ul>
+      <hr />
+      <h2 id="closing-vibes">Closing Vibes</h2>
+      <p>
+        Today wasn’t just about “docs.” It was about making the codebase
+        <em>approachable</em>, <em>welcoming</em>, and a little bit
+        <em>sparkly</em>. If someone smiles while browsing <code>/docs</code>,
+        that’s mission success.
+      </p>
+      <p>
+        Onward — and may your modules always compile on the first try (or at
+        least after reading the docs 😉).
+      </p>
+      <p>Happy Hacking</p>
 
       <div class="webring-nav">
         <a

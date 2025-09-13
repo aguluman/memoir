@@ -11,11 +11,24 @@
     </image>
     <atom:link href="https://fearful-odds.rocks/feed.xml" rel="self" type="application/rss+xml" />
     <language>en</language>
-    <lastBuildDate>Thu, 11 Sep 2025 09:13:51 +0000</lastBuildDate>
-    <pubDate>Thu, 11 Sep 2025 09:13:51 +0000</pubDate>
+    <lastBuildDate>Sat, 13 Sep 2025 21:48:37 +0000</lastBuildDate>
+    <pubDate>Sat, 13 Sep 2025 21:48:37 +0000</pubDate>
     <ttl>60</ttl>
     <managingEditor>Chukwuma Akunyili</managingEditor>
     <webMaster>Chukwuma Akunyili</webMaster>
+    <item>
+      <title>Day X: Summoning Odoc – A Joyful Documentation Portal Appears</title>
+      <link>https://fearful-odds.rocks/journal/odoc-generation</link>
+      <description><![CDATA[Adding odoc generated API docs to the Memoir site with Makefile magic, laughter, and a shiny /docs route]]></description>
+      <dc:creator>Chukwuma Akunyili</dc:creator>
+      <pubDate>Sat, 13 Sep 2025 00:00:00 +0000</pubDate>
+      <guid isPermaLink="true">https://fearful-odds.rocks/journal/odoc-generation</guid>
+      <category>journal</category>
+      <category>ocaml</category>
+      <category>documentation</category>
+      <category>odoc</category>
+      <category>automation</category>
+    </item>
     <item>
       <title>Building Database Layer in OCaml: From UUID v7 to Standardized Error Handling</title>
       <link>https://fearful-odds.rocks/blog/database-service-layer-sprint</link>
