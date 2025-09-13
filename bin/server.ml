@@ -1,5 +1,5 @@
 (* Configuration *)
-let port = 8080
+let port = 6060
 let host = "127.0.0.1"
 let static_dir = "_site"
 let static_subdir = Stdlib.Filename.concat static_dir "static"
