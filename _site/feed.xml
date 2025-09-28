@@ -11,11 +11,28 @@
     </image>
     <atom:link href="https://fearful-odds.rocks/feed.xml" rel="self" type="application/rss+xml" />
     <language>en</language>
-    <lastBuildDate>Sun, 21 Sep 2025 13:41:21 +0000</lastBuildDate>
-    <pubDate>Sun, 21 Sep 2025 13:41:21 +0000</pubDate>
+    <lastBuildDate>Sun, 28 Sep 2025 10:46:10 +0000</lastBuildDate>
+    <pubDate>Sun, 28 Sep 2025 10:46:10 +0000</pubDate>
     <ttl>60</ttl>
     <managingEditor>Chukwuma Akunyili</managingEditor>
     <webMaster>Chukwuma Akunyili</webMaster>
+    <item>
+      <title>Model Validation &amp; Time Utilities Sprint: From Basic Models to Proper Validation Layer</title>
+      <link>https://fearful-odds.rocks/blog/model-mapping-and-validation-in-ocaml</link>
+      <description><![CDATA[A weekend sprint documenting the evolution from basic OCaml models to comprehensive validation infrastructure with field enhancements, time utilities, and cryptographic security improvements for the Chaufr MVP]]></description>
+      <dc:creator>Chukwuma Akunyili</dc:creator>
+      <pubDate>Sun, 28 Sep 2025 00:00:00 +0000</pubDate>
+      <guid isPermaLink="true">https://fearful-odds.rocks/blog/model-mapping-and-validation-in-ocaml</guid>
+      <category>OCaml</category>
+      <category>Model Validation</category>
+      <category>Database Models</category>
+      <category>Time Utilities</category>
+      <category>Cryptographic Security</category>
+      <category>Ptime</category>
+      <category>Mirage-Crypto</category>
+      <category>Sprint Retrospective</category>
+      <category>Production Architecture</category>
+    </item>
     <item>
       <title>Database Testing in OCaml: From CRUD to Connection Pool Stress Testing</title>
       <link>https://fearful-odds.rocks/blog/database-testing-for-chaufr</link>

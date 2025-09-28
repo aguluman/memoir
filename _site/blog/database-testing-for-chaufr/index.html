@@ -810,42 +810,15 @@ let uid =
         Performance and Scalability Results
       </h2>
       <h3 id="benchmark-configuration">Benchmark Configuration</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Parameter</th>
-            <th>Environment Variable</th>
-            <th>Default</th>
-            <th>Purpose</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Stress Concurrency</td>
-            <td><code>DB_STRESS_CONCURRENCY</code></td>
-            <td>32</td>
-            <td>Concurrent workers for pool testing</td>
-          </tr>
-          <tr>
-            <td>Stress Iterations</td>
-            <td><code>DB_STRESS_ITERS</code></td>
-            <td>20</td>
-            <td>Operations per worker</td>
-          </tr>
-          <tr>
-            <td>Ping Iterations</td>
-            <td><code>DB_PING_ITERATIONS</code></td>
-            <td>50</td>
-            <td>Ping benchmark sample size</td>
-          </tr>
-          <tr>
-            <td>Ping Threshold</td>
-            <td><code>DB_PING_THRESHOLD_MS</code></td>
-            <td>300.0</td>
-            <td>Maximum acceptable ping time</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-container">
+        | Parameter | Environment Variable | Default | Purpose |
+        |-----------|---------------------|---------|---------| | Stress
+        Concurrency | `DB_STRESS_CONCURRENCY` | 32 | Concurrent workers for pool
+        testing | | Stress Iterations | `DB_STRESS_ITERS` | 20 | Operations per
+        worker | | Ping Iterations | `DB_PING_ITERATIONS` | 50 | Ping benchmark
+        sample size | | Ping Threshold | `DB_PING_THRESHOLD_MS` | 300.0 |
+        Maximum acceptable ping time |
+      </div>
       <hr />
       <h2 id="development-deployment-considerations">
         Development Deployment Considerations
