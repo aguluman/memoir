@@ -2,21 +2,21 @@ open Tyxml
 
 (** Webring navigation component *)
 module Webring = struct
+  (** Configuration for webring *)
   type webring_config = {
     webring_name : string;
     webring_url : string;
     member_id : string;
     base_url : string;
   }
-  (** Configuration for webring *)
 
   (** Default webring configuration - you can customize this *)
   let default_config =
     {
       webring_name = "ring.muhokama.fun";
       webring_url = "https://ring.muhokama.fun";
+      (* My webring member ID *)
       member_id = "aguluman";
-      (* Your webring member ID *)
       base_url = "https://ring.muhokama.fun/u";
     }
 

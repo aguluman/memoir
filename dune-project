@@ -1,4 +1,4 @@
-(lang dune 3.18)
+(lang dune 3.20)
 
 (name memoir)
 
@@ -27,31 +27,14 @@
  (depends
   (ocaml
    (>= 5.3.0))
-  dune
+  (dune
+   (>= 3.18.0))
   (str
    (>= 1.0.0))
   (tyxml
    (>= 4.5.0))
   (omd
    (>= 1.3.2))
-  ; Markdown parser
-  (yaml
-   (>= 3.0.0))
-  ; For frontmatter parsing
-  (yojson
-   (>= 2.0.0))
-  (lwt
-   (>= 5.5.0))
-  (js_of_ocaml
-   (>= 4.0.0))
-  (js_of_ocaml-ppx
-   (>= 4.0.0))
-  (js_of_ocaml-lwt
-   (>= 4.0.0))
-  (bigstringaf
-   (>= 0.9.0))
-  (threads
-   (>= 0.0.0))
   (dream
    (>= 1.0.0~alpha4))
   (alcotest :with-test)

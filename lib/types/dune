@@ -1,4 +1,3 @@
 (library
  (name content_types)
- (public_name memoir.types)
- (libraries base yojson yaml))
+ (public_name memoir.types))

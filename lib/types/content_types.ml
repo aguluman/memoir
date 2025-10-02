@@ -1,7 +1,6 @@
 (** Content types for the Memoir static site generator *)
 
-open Base
-
+(** Frontmatter metadata for content pages *)
 type frontmatter = {
   title : string;
   description : string option;
@@ -14,7 +13,6 @@ type frontmatter = {
   author : string option;
   featured_image : string option;
 }
-(** Frontmatter metadata for content pages *)
 
 (** Default empty frontmatter *)
 let empty_frontmatter =
@@ -31,6 +29,7 @@ let empty_frontmatter =
     featured_image = None;
   }
 
+(** A content page with frontmatter and markdown content *)
 type content_page = {
   path : string; (* File path relative to content directory *)
   frontmatter : frontmatter;
@@ -38,7 +37,6 @@ type content_page = {
   html_content : string option; (* Generated HTML content *)
   url_path : string; (* URL path for the generated page *)
 }
-(** A content page with frontmatter and markdown content *)
 
 (** Content type for different sections of the site *)
 type content_type =
@@ -62,10 +60,10 @@ let string_of_content_type = function
   | Project -> "project"
   | Journal -> "journal"
 
+(** Route information for generating pages *)
 type route = {
   source_path : string; (* Original source file path *)
   output_path : string; (* Output file path *)
   url_path : string; (* URL path *)
   content_type : content_type;
 }
-(** Route information for generating pages *)

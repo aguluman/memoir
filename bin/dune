@@ -7,41 +7,11 @@
 (executable
  (name generator)
  (modules generator)
- (flags
-  (:standard -w -69))
- (libraries
-  memoir_lib
-  js_of_ocaml
-  tyxml
-  omd
-  str
-  yaml
-  core_unix
-  bigstringaf
-  threads
-  memoir.types
-  memoir.content
-  memoir.templates)
+ (flags (:standard))
+ (libraries memoir_lib memoir.types memoir.content memoir.templates)
  (modes native))
 
 (library
  (name memoir_bin)
  (modules generator_lib)
- (libraries
-  memoir_lib
-  js_of_ocaml
-  tyxml
-  omd
-  str
-  yaml
-  core_unix
-  bigstringaf
-  threads
-  memoir.types
-  memoir.content
-  memoir.templates))
-
-(rule
- (targets server.bc.js)
- (action
-  (run %{bin:js_of_ocaml} --source-map %{dep:server.bc} -o %{targets})))
+ (libraries memoir_lib memoir.types memoir.content memoir.templates))
