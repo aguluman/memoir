@@ -17,7 +17,7 @@
 
 (homepage "https://github.com/aguluman/memoir")
 
-(documentation "https://github.com/aguluman/memoir")
+(documentation "https://fearful-odds.rocks/docs")
 
 (package
  (name memoir)
