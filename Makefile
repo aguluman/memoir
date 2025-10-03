@@ -7,7 +7,7 @@ BUILD_DIR = _build
 SITE_DIR = _site
 STATIC_DIR = static
 CONTENT_DIR = content
-PORT = 8080
+PORT = 6060
 HOST = 127.0.0.1
 
 # Colors for output

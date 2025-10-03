@@ -10,8 +10,3 @@
  (flags (:standard))
  (libraries memoir_lib memoir.types memoir.content memoir.templates)
  (modes native))
-
-(library
- (name memoir_bin)
- (modules generator_lib)
- (libraries memoir_lib memoir.types memoir.content memoir.templates))
