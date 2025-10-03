@@ -13,7 +13,7 @@
 
 (authors "Chukwuma Akunyili")
 
-(maintainers "Chukwuma Akunyili <chukwumaakunyili@gmail.com>")
+(maintainers "Chukwuma Akunyili")
 
 (homepage "https://github.com/aguluman/memoir")
 

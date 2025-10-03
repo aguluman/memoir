@@ -4,11 +4,11 @@ version: "0.1.0"
 synopsis: "An OCaml-powered memoir website and static site generator"
 description:
   "A modern portfolio and memoir website built with OCaml, featuring static site generation and interactive components"
-maintainer: ["Chukwuma Akunyili <chukwumaakunyili@gmail.com>"]
+maintainer: ["Chukwuma Akunyili"]
 authors: ["Chukwuma Akunyili"]
 license: "GPL-3.0-only"
 homepage: "https://github.com/aguluman/memoir"
-doc: "https://github.com/aguluman/memoir"
+doc: "https://fearful-odds.rocks/docs"
 bug-reports: "https://github.com/aguluman/memoir/issues"
 depends: [
   "ocaml" {>= "5.3.0"}
