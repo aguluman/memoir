@@ -27,7 +27,8 @@ help:
 	@echo "$(MAGENTA)=============================$(NC)"
 	@echo ""
 	@echo "$(YELLOW)Primary Development Commands:$(NC)"
-	@echo "  $(GREEN)make generate$(NC)         - Generate the static site"
+	@echo "  $(GREEN)make generate$(NC)         - Generate the static site (incremental)"
+	@echo "  $(GREEN)make generate-force$(NC)   - Force full rebuild (ignore cache)"
 	@echo "  $(GREEN)make serve$(NC)            - Start development server on http://$(HOST):$(PORT)"
 	@echo ""
 	@echo "$(YELLOW)Build & Test Commands:$(NC)"
@@ -39,9 +40,11 @@ help:
 	@echo ""
 	@echo "$(YELLOW)Utility Commands:$(NC)"
 	@echo "  $(GREEN)make fmt$(NC)              - Format OCaml code"
+	@echo "  $(GREEN)make analyze-size$(NC)     - Analyze the size of the generated site"
 	@echo ""
 	@echo "$(YELLOW)Content Commands:$(NC)"
 	@echo "  $(GREEN)make new-post$(NC)         - Create a new blog post"
+	@echo "  $(GREEN)make new-journal$(NC)      - Create a new journal entry"
 	@echo "  $(GREEN)make new-page$(NC)         - Create a new page"
 	@echo ""
 	@echo "$(YELLOW)Documentation Commands:$(NC)"
@@ -49,11 +52,21 @@ help:
 	@echo "  $(GREEN)make docs-build$(NC)       - Build documentation only"
 	@echo ""
 
-# Primary commands - what you asked for
+# Primary commands
 .PHONY: generate
 generate: build
 	@echo "$(BLUE)🚀 Generating static site...$(NC)"
 	@$(DUNE) exec bin/generator.exe
+	@echo "$(GREEN)✅ Site generated successfully in $(SITE_DIR)/$(NC)"
+	@echo "$(BLUE)🔍 Copying documentation to site...$(NC)"
+	@$(MAKE) copy-docs
+	@echo "$(BLUE)🔍 Running formatter on generated files...$(NC)"
+	@$(MAKE) fmt
+
+.PHONY: generate-force
+generate-force: build
+	@echo "$(BLUE)🚀 Forcing full site generation (ignoring cache)...$(NC)"
+	@$(DUNE) exec bin/generator.exe -- --force
 	@echo "$(GREEN)✅ Site generated successfully in $(SITE_DIR)/$(NC)"
 	@echo "$(BLUE)🔍 Copying documentation to site...$(NC)"
 	@$(MAKE) copy-docs
@@ -67,12 +80,14 @@ serve: build
 	@echo "$(MAGENTA)🛑 Press Ctrl+C to stop the server$(NC)"
 	@$(DUNE) exec --watch bin/server.exe
 
+
 # Build commands
 .PHONY: build
 build:
 	@echo "$(BLUE)🔧 Building project...$(NC)"
 	@$(DUNE) build
 	@echo "$(GREEN)✅ Build completed$(NC)"
+
 
 # Test commands
 .PHONY: test
@@ -90,6 +105,7 @@ test-watch:
 test-verbose: build
 	@echo "$(BLUE)🧪 Running tests with verbose output...$(NC)"
 	@$(DUNE) runtest --verbose
+
 
 # Clean commands
 .PHONY: clean
@@ -115,15 +131,27 @@ fmt:
 	@npx prettier --write --log-level=warn "$(SITE_DIR)/static/js/*.js" || true
 	@echo "$(GREEN)✅ JavaScript formatted$(NC)"
 
+.PHONY: analyze-size
+analyze-size:
+	@echo "$(BLUE)📊 Analyzing site size...$(NC)"
+	@echo ""
+	@du -sh $(SITE_DIR)
+	@echo ""
+	@echo "$(YELLOW)Size breakdown by directory:$(NC)"
+	@du -sh $(SITE_DIR)/* | sort -rh
+	@echo ""
+	@echo "$(YELLOW)Largest files:$(NC)"
+	@find $(SITE_DIR) -type f -exec du -h {} + | sort -rh | head -20
+
+
 # Content creation helpers
 .PHONY: new-post
-new-post:
+new-post: $(CONTENT_DIR)
 	@read -p "Enter blog post title: " title; \
 	slug=$$(echo "$$title" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-\|-$$//g'); \
-	file="$(CONTENT_DIR)/blog/$$slug.md"; \
+	file="$(CONTENT_DIR)/pages/blog/$$slug.md"; \
 	date=$$(date +%Y-%m-%d); \
 	echo "$(BLUE)📝 Creating new blog post: $$file$(NC)"; \
-	mkdir -p $$(dirname "$$file"); \
 	echo "---" > "$$file"; \
 	echo "title: \"$$title\"" >> "$$file"; \
 	echo "date: $$date" >> "$$file"; \
@@ -137,11 +165,30 @@ new-post:
 	echo "Your content here..." >> "$$file"; \
 	echo "$(GREEN)✅ Created: $$file$(NC)"
 
+.PHONY: new-journal
+new-journal: $(CONTENT_DIR)
+	@read -p "Enter journal entry title: " title; \
+	slug=$$(echo "$$title" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-\|-$$//g'); \
+	file="$(CONTENT_DIR)/pages/journal/$$slug.md"; \
+	date=$$(date +%Y-%m-%d); \
+	echo "$(BLUE)📔 Creating new journal entry: $$file$(NC)"; \
+	echo "---" > "$$file"; \
+	echo "title: \"$$title\"" >> "$$file"; \
+	echo "date: $$date" >> "$$file"; \
+	echo "tags: []" >> "$$file"; \
+	echo "description: \"\"" >> "$$file"; \
+	echo "---" >> "$$file"; \
+	echo "" >> "$$file"; \
+	echo "# $$title" >> "$$file"; \
+	echo "" >> "$$file"; \
+	echo "Your thoughts here..." >> "$$file"; \
+	echo "$(GREEN)✅ Created: $$file$(NC)"
+	
 .PHONY: new-page
-new-page:
+new-page: $(CONTENT_DIR)
 	@read -p "Enter page title: " title; \
 	slug=$$(echo "$$title" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-\|-$$//g'); \
-	file="$(CONTENT_DIR)/pages/$$slug.md"; \
+	file="$(CONTENT_DIR)/pages/$$slug/index.md"; \
 	echo "$(BLUE)📄 Creating new page: $$file$(NC)"; \
 	mkdir -p $$(dirname "$$file"); \
 	echo "---" > "$$file"; \
@@ -155,6 +202,7 @@ new-page:
 	echo "Your content here..." >> "$$file"; \
 	echo "$(GREEN)✅ Created: $$file$(NC)"
 
+# Documentation commands
 .PHONY: docs docs-build copy-docs
 docs:
 	dune build @doc
@@ -172,7 +220,6 @@ copy-docs: docs-build
 	@chmod -R u+rwX,go+rX $(SITE_DIR)/docs/
 	@echo "$(GREEN)✅ Documentation copied to $(SITE_DIR)/docs/$(NC)"
 
-
 # Default target
 .DEFAULT_GOAL := help
 
@@ -181,7 +228,4 @@ $(SITE_DIR):
 	@mkdir -p $(SITE_DIR)
 
 $(CONTENT_DIR):
-	@mkdir -p $(CONTENT_DIR)/pages $(CONTENT_DIR)/blog
-
-# Phony targets to avoid conflicts with files
-.PHONY: help generate serve build test test-watch test-verbose clean fmt new-post new-page
+	@mkdir -p $(CONTENT_DIR)/pages/blog $(CONTENT_DIR)/pages/journal

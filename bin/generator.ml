@@ -128,36 +128,6 @@ let process_markdown ~file_path ~content =
   | Some html -> html
   | None -> ""
 
-(* Enhanced static asset copying with content type detection *)
-let copy_static_assets () =
-  let rec copy_dir src_dir dst_dir =
-    Printf.printf "Copying directory: %s -> %s\n" src_dir dst_dir;
-    ensure_directory_exists dst_dir;
-    try
-      let entries = Sys.readdir src_dir in
-      Array.iter
-        (fun entry ->
-          if
-            not
-              (List.mem entry [ ".git"; "_site"; "node_modules"; ".DS_Store" ])
-          then
-            let src_path = Filename.concat src_dir entry in
-            let dst_path = Filename.concat dst_dir entry in
-            if Sys.is_directory src_path then copy_dir src_path dst_path
-            else (
-              Printf.printf "Copying file: %s\n" entry;
-              let content = read_file src_path in
-              write_output_file ~content ~path:dst_path))
-        entries
-    with Sys_error msg ->
-      raise
-        (Failure (Printf.sprintf "Failed to copy directory %s: %s" src_dir msg))
-  in
-  let src = config.static_dir in
-  let dst = Filename.concat config.output_dir "static" in
-  if Sys.file_exists src then copy_dir src dst
-  else Printf.printf "Warning: Static directory %s does not exist\n" src
-
 (* Route and URL mapping types *)
 type route = {
   url_path : string;
@@ -543,7 +513,8 @@ let collect_routes () =
 
 (* Cache for incremental builds *)
 type build_cache = {
-  last_modified : (string * float) list;
+  last_modified : (string * float * string) list;
+      (* path, mtime, content_hash *)
   cache_file : string;
 }
 
@@ -572,23 +543,66 @@ let save_build_cache cache =
   in
   write_file cache.cache_file content
 
+let hash_file path =
+  let content = read_file path in
+  Digest.to_hex (Digest.string content)
+
+let is_index_page file_path =
+  String.ends_with ~suffix:"/index.md" file_path
+  && (String.contains file_path "blog" || String.contains file_path "journal")
+
 let is_file_modified file_path cache =
   try
-    let stat = Unix.stat file_path in
-    match List.assoc_opt file_path cache.last_modified with
-    | Some last_mtime -> stat.Unix.st_mtime > last_mtime
-    | None -> true
-  with Unix.Unix_error _ -> true
+    (* Always rebuild blog/journal index pages since they aggregate other content *)
+    if is_index_page file_path then true
+    else
+      let stat = Unix.stat file_path in
+      let current_hash = hash_file file_path in
+      match
+        List.find_opt (fun (p, _, _) -> p = file_path) cache.last_modified
+      with
+      | Some (_, last_mtime, last_hash) ->
+          stat.Unix.st_mtime > last_mtime || current_hash <> last_hash
+      | None -> true
+  with _ -> true
 
 let update_cache_entry file_path cache =
   try
     let stat = Unix.stat file_path in
     let last_modified =
-      (file_path, stat.Unix.st_mtime)
-      :: List.filter (fun (p, _) -> p <> file_path) cache.last_modified
+      (file_path, stat.Unix.st_mtime, hash_file file_path)
+      :: List.filter (fun (p, _, _) -> p <> file_path) cache.last_modified
     in
     { cache with last_modified }
   with Unix.Unix_error _ -> cache
+
+(* When processing journal/blog posts, invalidate their index pages *)
+let update_cache_with_dependencies file_path cache =
+  let updated_cache = update_cache_entry file_path cache in
+  (* If this is a journal/blog post, mark the index as needing rebuild *)
+  if
+    String.contains file_path "/journal/"
+    && file_path <> "content/pages/journal/index.md"
+  then
+    (* Remove journal index from cache so it gets rebuilt *)
+    let last_modified =
+      List.filter
+        (fun (p, _, _) -> p <> "content/pages/journal/index.md")
+        updated_cache.last_modified
+    in
+    { updated_cache with last_modified }
+  else if
+    String.contains file_path "/blog/"
+    && file_path <> "content/pages/blog/index.md"
+  then
+    (* Remove blog index from cache so it gets rebuilt *)
+    let last_modified =
+      List.filter
+        (fun (p, _, _) -> p <> "content/pages/blog/index.md")
+        updated_cache.last_modified
+    in
+    { updated_cache with last_modified }
+  else updated_cache
 
 (* Generate site *)
 let generate_site () =
@@ -638,10 +652,6 @@ let generate_site () =
     process_dir (Filename.concat config.output_dir "")
   in
 
-  (* Copy static assets *)
-  copy_static_assets ();
-  print_endline "Static assets copied.";
-
   (* Collect and process routes *)
   let routes = collect_routes () in
   Printf.printf "Collected %d routes\n" (List.length routes);
@@ -654,7 +664,7 @@ let generate_site () =
           Printf.printf "Processing modified route: %s -> %s\n" route.file_path
             route.url_path;
           process_route route;
-          update_cache_entry route.file_path acc)
+          update_cache_with_dependencies route.file_path acc)
         else (
           Printf.printf "Skipping unmodified route: %s\n" route.file_path;
           acc))
@@ -786,17 +796,17 @@ let generate_site () =
 let () =
   print_endline "Memoir Generation - OCaml Static Site Generator";
   try
-    (* Force a full rebuild by ignoring the cache *)
-    let force_rebuild = true in
-    let generate_with_force () =
+    (* Check for --force flag in command line arguments *)
+    let force_rebuild =
+      Array.length Sys.argv > 1
+      && (Sys.argv.(1) = "--force" || Sys.argv.(1) = "-f")
+    in
+
+    if force_rebuild then (
       print_endline "Forcing full rebuild (ignoring cache)...";
 
       (* Ensure output directory exists *)
       ensure_directory_exists config.output_dir;
-
-      (* Copy static assets *)
-      copy_static_assets ();
-      print_endline "Static assets copied.";
 
       (* Collect routes *)
       let routes = collect_routes () in
@@ -858,7 +868,6 @@ let () =
                        tags = metadata._tags;
                        summary = metadata._description;
                        draft = false;
-                       (* Assume published if it's in the site *)
                      };
                    content;
                    url = "/blog/" ^ Filename.remove_extension file;
@@ -893,7 +902,6 @@ let () =
                        tags = metadata._tags;
                        summary = metadata._description;
                        draft = false;
-                       (* Assume published if it's in the site *)
                      };
                    content;
                    url = "/journal/" ^ Filename.remove_extension file;
@@ -936,10 +944,10 @@ let () =
       Printf.printf "RSS feed generated at: %s (%d items)\n" rss_output_path
         (List.length sorted_pages);
 
-      print_endline "Forced rebuild complete!"
-    in
-
-    if force_rebuild then generate_with_force () else generate_site ();
+      print_endline "Forced rebuild complete!")
+    else (
+      print_endline "Using incremental build (cache enabled)...";
+      generate_site ());
 
     exit 0
   with e ->
