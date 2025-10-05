@@ -7,7 +7,7 @@ let static_subdir = Stdlib.Filename.concat static_dir "static"
 (* Configuration for RSS feed generation *)
 let rss_config =
   {
-    Memoir_lib.site_title = "Chukwuma Akunyili's Blog";
+    Memoir_lib.site_title = "Chukwuma Akunyili's Website";
     site_description =
       "Thoughts on software engineering, functional programming, and technology";
     author = "Chukwuma Akunyili";

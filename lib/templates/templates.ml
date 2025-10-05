@@ -55,8 +55,7 @@ let create_page ?(lang = "en") ?(current_path = "/") ?(page_class = "page")
     Str.replace_first
       (Str.regexp_string
          "<link rel=\"stylesheet\" href=\"/static/css/main.css\"/>")
-      "<link rel=\"stylesheet\" href=\"/static/css/main.css\"/><link \
-       rel=\"stylesheet\" href=\"/static/css/github-dark.css\"/>"
+      "<link rel=\"stylesheet\" href=\"/static/css/main.css\"/><link/>"
       html_string
   in
 

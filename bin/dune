@@ -7,6 +7,5 @@
 (executable
  (name generator)
  (modules generator)
- (flags (:standard))
  (libraries memoir_lib memoir.types memoir.content memoir.templates)
  (modes native))

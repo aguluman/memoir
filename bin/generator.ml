@@ -128,36 +128,6 @@ let process_markdown ~file_path ~content =
   | Some html -> html
   | None -> ""
 
-(* Enhanced static asset copying with content type detection *)
-let copy_static_assets () =
-  let rec copy_dir src_dir dst_dir =
-    Printf.printf "Copying directory: %s -> %s\n" src_dir dst_dir;
-    ensure_directory_exists dst_dir;
-    try
-      let entries = Sys.readdir src_dir in
-      Array.iter
-        (fun entry ->
-          if
-            not
-              (List.mem entry [ ".git"; "_site"; "node_modules"; ".DS_Store" ])
-          then
-            let src_path = Filename.concat src_dir entry in
-            let dst_path = Filename.concat dst_dir entry in
-            if Sys.is_directory src_path then copy_dir src_path dst_path
-            else (
-              Printf.printf "Copying file: %s\n" entry;
-              let content = read_file src_path in
-              write_output_file ~content ~path:dst_path))
-        entries
-    with Sys_error msg ->
-      raise
-        (Failure (Printf.sprintf "Failed to copy directory %s: %s" src_dir msg))
-  in
-  let src = config.static_dir in
-  let dst = Filename.concat config.output_dir "static" in
-  if Sys.file_exists src then copy_dir src dst
-  else Printf.printf "Warning: Static directory %s does not exist\n" src
-
 (* Route and URL mapping types *)
 type route = {
   url_path : string;
@@ -172,6 +142,13 @@ and content_type =
   | Journal
   | Asset
 
+(* Separate type for classifying content sections (for index invalidation) *)
+type content_section =
+  | Blog
+  | Journal
+  | Other
+
+(* Metadata type for route extraction *)
 type route_metadata = {
   title : string option;
   (* Keeping these fields for future use *)
@@ -217,157 +194,137 @@ let extract_route_metadata file_path =
     with _ -> { title = None; _date = None; _description = None; _tags = [] }
   else { title = None; _date = None; _description = None; _tags = [] }
 
-(* Helper type for journal entries *)
-type journal_listing_entry = {
-  title : string;
-  date : string option;
-  url : string;
-}
-
-(* Generate journal entry listings *)
-let generate_journal_entries_html journal_dir =
-  let entries = ref [] in
-  if Sys.file_exists journal_dir && Sys.is_directory journal_dir then (
-    let files = Sys.readdir journal_dir in
-    Array.iter
-      (fun file ->
-        let full_path = Filename.concat journal_dir file in
-        if
-          (not (Sys.is_directory full_path))
-          && Filename.extension file = ".md"
-          && file <> "index.md"
-        then
-          let metadata = extract_route_metadata full_path in
-          let entry : journal_listing_entry =
-            {
-              title =
-                (match metadata.title with
-                | Some t -> t
-                | None -> Filename.remove_extension file);
-              date = metadata._date;
-              url = "/journal/" ^ Filename.remove_extension file;
-            }
-          in
-          entries := entry :: !entries)
-      files;
-
-    (* Sort entries by date (newest first) *)
-    let sorted_entries =
-      List.sort
-        (fun a b ->
-          match (a.date, b.date) with
-          | Some date_a, Some date_b -> String.compare date_b date_a
-          | Some _, None -> -1
-          | None, Some _ -> 1
-          | None, None -> String.compare a.title b.title)
-        !entries
-    in
-
-    (* Generate HTML *)
-    if List.length sorted_entries > 0 then
-      let entries_html =
-        List.map
-          (fun entry ->
-            let date_str =
-              match entry.date with
-              | Some d ->
-                  Printf.sprintf "<span class=\"entry-date\">%s</span>" d
-              | None -> ""
-            in
-            Printf.sprintf
-              "<div class=\"journal-entry\">\n\
-              \  <h3><a href=\"%s\">%s</a></h3>\n\
-              \  %s\n\
-               </div>\n"
-              entry.url entry.title date_str)
-          sorted_entries
-      in
-      "<div class=\"journal-entries\">\n"
-      ^ String.concat "\n" entries_html
-      ^ "\n</div>"
-    else "<p><em>No journal entries found.</em></p>")
-  else "<p><em>Journal directory not found.</em></p>"
-
-(* Helper type for blog entries *)
-type blog_listing_entry = {
+(* Helper type for content entries *)
+type content_entry = {
   title : string;
   date : string option;
   url : string;
   description : string option;
 }
 
-(* Generate blog entry listings *)
-let generate_blog_entries_html blog_dir =
+(* Configuration for rendering different content types *)
+type entry_display_config = {
+  url_prefix : string;
+  entry_element : string; (* "article", "div", etc. *)
+  entry_class : string; (* "blog-entry", "journal-entry", etc. *)
+  container_class : string; (* "blog-entries", "journal-entries", etc. *)
+  date_class : string;
+  show_description : bool;
+  empty_message : string;
+  not_found_message : string;
+}
+
+(* Common function to process markdown files in a directory *)
+let process_content_files dir url_prefix =
   let entries = ref [] in
-  if Sys.file_exists blog_dir && Sys.is_directory blog_dir then (
-    let files = Sys.readdir blog_dir in
-    Array.iter
-      (fun file ->
-        let full_path = Filename.concat blog_dir file in
-        if
-          (not (Sys.is_directory full_path))
-          && Filename.extension file = ".md"
-          && file <> "index.md"
-        then
-          let metadata = extract_route_metadata full_path in
-          let entry : blog_listing_entry =
-            {
-              title =
-                (match metadata.title with
-                | Some t -> t
-                | None -> Filename.remove_extension file);
-              date = metadata._date;
-              description = metadata._description;
-              url = "/blog/" ^ Filename.remove_extension file;
-            }
-          in
-          entries := entry :: !entries)
-      files;
+  (if Sys.file_exists dir && Sys.is_directory dir then
+     let files = Sys.readdir dir in
+     Array.iter
+       (fun file ->
+         let full_path = Filename.concat dir file in
+         if
+           (not (Sys.is_directory full_path))
+           && Filename.extension file = ".md"
+           && file <> "index.md"
+         then
+           let metadata = extract_route_metadata full_path in
+           let entry : content_entry =
+             {
+               title =
+                 (match metadata.title with
+                 | Some t -> t
+                 | None -> Filename.remove_extension file);
+               date = metadata._date;
+               description = metadata._description;
+               url = url_prefix ^ Filename.remove_extension file;
+             }
+           in
+           entries := entry :: !entries)
+       files);
 
-    (* Sort entries by date (newest first) *)
-    let sorted_entries =
-      List.sort
-        (fun a b ->
-          match (a.date, b.date) with
-          | Some date_a, Some date_b -> String.compare date_b date_a
-          | Some _, None -> -1
-          | None, Some _ -> 1
-          | None, None -> String.compare a.title b.title)
-        !entries
-    in
+  (* Sort entries by date (newest first) *)
+  List.sort
+    (fun a b ->
+      match (a.date, b.date) with
+      | Some date_a, Some date_b -> String.compare date_b date_a
+      | Some _, None -> -1
+      | None, Some _ -> 1
+      | None, None -> String.compare a.title b.title)
+    !entries
 
-    (* Generate HTML *)
-    if List.length sorted_entries > 0 then
+(* Generic function to generate entry listings *)
+let generate_entries_html dir display_config =
+  if not (Sys.file_exists dir && Sys.is_directory dir) then
+    Printf.sprintf "<p><em>%s</em></p>" display_config.not_found_message
+  else
+    let sorted_entries = process_content_files dir display_config.url_prefix in
+    if List.length sorted_entries = 0 then
+      Printf.sprintf "<p><em>%s</em></p>" display_config.empty_message
+    else
       let entries_html =
         List.map
           (fun entry ->
             let date_str =
               match entry.date with
               | Some d ->
-                  Printf.sprintf "<span class=\"blog-entry-date\">%s</span>" d
+                  Printf.sprintf "<span class=\"%s\">%s</span>"
+                    display_config.date_class d
               | None -> ""
             in
             let description_str =
-              match entry.description with
-              | Some desc ->
-                  Printf.sprintf "<p class=\"blog-entry-description\">%s</p>"
-                    desc
-              | None -> ""
+              if display_config.show_description then
+                match entry.description with
+                | Some desc ->
+                    Printf.sprintf "<p class=\"%s-description\">%s</p>"
+                      display_config.entry_class desc
+                | None -> ""
+              else ""
             in
             Printf.sprintf
-              "<article class=\"blog-entry\">\n\
+              "<%s class=\"%s\">\n\
               \  <h3><a href=\"%s\">%s</a></h3>\n\
               \  %s\n\
               \  %s\n\
-               </article>\n"
-              entry.url entry.title date_str description_str)
+               </%s>\n"
+              display_config.entry_element display_config.entry_class entry.url
+              entry.title date_str description_str display_config.entry_element)
           sorted_entries
       in
-      "<div class=\"blog-entries\">\n"
-      ^ String.concat "\n" entries_html
-      ^ "\n</div>"
-    else "<p><em>No blog posts found.</em></p>")
-  else "<p><em>Blog directory not found.</em></p>"
+      Printf.sprintf "<div class=\"%s\">\n%s\n</div>"
+        display_config.container_class
+        (String.concat "\n" entries_html)
+
+(* Generate journal entry listings *)
+let generate_journal_entries_html journal_dir =
+  let config =
+    {
+      url_prefix = "/journal/";
+      entry_element = "div";
+      entry_class = "journal-entry";
+      container_class = "journal-entries";
+      date_class = "entry-date";
+      show_description = false;
+      empty_message = "No journal entries found.";
+      not_found_message = "Journal directory not found.";
+    }
+  in
+  generate_entries_html journal_dir config
+
+(* Generate blog entry listings *)
+let generate_blog_entries_html blog_dir =
+  let config =
+    {
+      url_prefix = "/blog/";
+      entry_element = "article";
+      entry_class = "blog-entry";
+      container_class = "blog-entries";
+      date_class = "blog-entry-date";
+      show_description = true;
+      empty_message = "No blog posts found.";
+      not_found_message = "Blog directory not found.";
+    }
+  in
+  generate_entries_html blog_dir config
 
 (* URL path mapping *)
 let clean_url_path path =
@@ -516,6 +473,16 @@ let content_type_of_path path =
   | _ when Filename.extension path = "" -> Asset
   | _ -> Page
 
+let classify_content_path file_path =
+  if Str.string_match (Str.regexp ".*/blog/.*") file_path 0 then Blog
+  else if Str.string_match (Str.regexp ".*/journal/.*") file_path 0 then Journal
+  else Other
+
+let get_index_path_for_section = function
+  | Blog -> Some "content/pages/blog/index.md"
+  | Journal -> Some "content/pages/journal/index.md"
+  | Other -> None
+
 let collect_routes () =
   let routes = ref [] in
   let add_route ~url_path ~file_path ~content_type =
@@ -541,9 +508,9 @@ let collect_routes () =
   process_dir config.content_dir;
   List.rev !routes
 
-(* Cache for incremental builds *)
+(* Cache for incremental builds - using content hash for reliability *)
 type build_cache = {
-  last_modified : (string * float) list;
+  file_hashes : (string * string) list; (* path, content_hash *)
   cache_file : string;
 }
 
@@ -552,43 +519,156 @@ let load_build_cache () =
   try
     let content = read_file cache_file in
     let lines = String.split_on_char '\n' content in
-    let last_modified =
+    let file_hashes =
       List.filter_map
         (fun line ->
           match String.split_on_char '|' line with
-          | [ path; time ] -> Some (path, float_of_string time)
-          | _ -> None)
+          | [ path; hash ] -> Some (path, hash)
+          | _ -> None (* Skip invalid or old format lines *))
         lines
     in
-    { last_modified; cache_file }
-  with _ -> { last_modified = []; cache_file }
+    { file_hashes; cache_file }
+  with _ -> { file_hashes = []; cache_file }
 
 let save_build_cache cache =
   let content =
     String.concat "\n"
       (List.map
-         (fun (path, time) -> Printf.sprintf "%s|%f" path time)
-         cache.last_modified)
+         (fun (path, hash) -> Printf.sprintf "%s|%s" path hash)
+         cache.file_hashes)
   in
   write_file cache.cache_file content
 
+let hash_file path =
+  let content = read_file path in
+  Digest.to_hex (Digest.string content)
+
+let is_index_page file_path =
+  String.ends_with ~suffix:"/index.md" file_path
+  &&
+  match classify_content_path file_path with
+  | Blog | Journal -> true
+  | Other -> false
+
 let is_file_modified file_path cache =
   try
-    let stat = Unix.stat file_path in
-    match List.assoc_opt file_path cache.last_modified with
-    | Some last_mtime -> stat.Unix.st_mtime > last_mtime
-    | None -> true
-  with Unix.Unix_error _ -> true
+    (* Always rebuild blog/journal index pages since they aggregate other content *)
+    if is_index_page file_path then true
+    else
+      let current_hash = hash_file file_path in
+      match List.find_opt (fun (p, _) -> p = file_path) cache.file_hashes with
+      | Some (_, last_hash) when last_hash <> "" ->
+          (* Compare content hashes - immune to timestamp changes from fmt *)
+          current_hash <> last_hash
+      | _ -> true (* No cache entry or empty hash - treat as modified *)
+  with _ -> true
 
 let update_cache_entry file_path cache =
   try
-    let stat = Unix.stat file_path in
-    let last_modified =
-      (file_path, stat.Unix.st_mtime)
-      :: List.filter (fun (p, _) -> p <> file_path) cache.last_modified
+    let current_hash = hash_file file_path in
+    let file_hashes =
+      (file_path, current_hash)
+      :: List.filter (fun (p, _) -> p <> file_path) cache.file_hashes
     in
-    { cache with last_modified }
+    { cache with file_hashes }
   with Unix.Unix_error _ -> cache
+
+(* When processing journal/blog posts, invalidate their index pages *)
+let update_cache_with_dependencies file_path cache =
+  let updated_cache = update_cache_entry file_path cache in
+
+  match classify_content_path file_path with
+  | (Blog | Journal) as section -> (
+      match get_index_path_for_section section with
+      | Some index_path when file_path <> index_path ->
+          let file_hashes =
+            List.filter
+              (fun (p, _) -> p <> index_path)
+              updated_cache.file_hashes
+          in
+          { updated_cache with file_hashes }
+      | _ -> updated_cache)
+  | Other -> updated_cache
+
+(* Generic function to collect content from a directory for RSS feed *)
+let collect_content_from_dir dir url_prefix =
+  if not (Sys.file_exists dir && Sys.is_directory dir) then []
+  else
+    let files = Sys.readdir dir in
+    Array.fold_left
+      (fun acc file ->
+        let full_path = Filename.concat dir file in
+        if
+          (not (Sys.is_directory full_path))
+          && Filename.extension file = ".md"
+          && file <> "index.md"
+        then
+          let metadata = extract_route_metadata full_path in
+          let content = read_file full_path in
+          let page =
+            {
+              Memoir_lib.metadata =
+                {
+                  title =
+                    (match metadata.title with
+                    | Some t -> t
+                    | None -> Filename.remove_extension file);
+                  date = metadata._date;
+                  tags = metadata._tags;
+                  summary = metadata._description;
+                  draft = false;
+                };
+              content;
+              url = url_prefix ^ Filename.remove_extension file;
+              source_path = full_path;
+            }
+          in
+          page :: acc
+        else acc)
+      [] files
+
+(* Extract RSS feed generation into a separate function *)
+let generate_rss_feed () =
+  let blog_dir = Filename.concat config.content_dir "pages/blog" in
+  let journal_dir = Filename.concat config.content_dir "pages/journal" in
+
+  (* Collect content from both directories *)
+  let blog_pages = collect_content_from_dir blog_dir "/blog/" in
+  let journal_pages = collect_content_from_dir journal_dir "/journal/" in
+  let pages = blog_pages @ journal_pages in
+
+  let rss_config =
+    {
+      Memoir_lib.site_title = "Chukwuma Akunyili's Blog";
+      site_description =
+        "Thoughts on software engineering, functional programming, and \
+         technology";
+      author = config.author;
+      base_url = "https://fearful-odds.rocks";
+      output_dir = config.output_dir;
+      content_dir = config.content_dir;
+      template_dir = config.template_dir;
+      static_dir = config.static_dir;
+    }
+  in
+
+  (* Sort pages by date (newest first) for RSS feed *)
+  let sorted_pages =
+    List.sort
+      (fun a b ->
+        match (a.Memoir_lib.metadata.date, b.Memoir_lib.metadata.date) with
+        | Some date_a, Some date_b -> String.compare date_b date_a
+        | Some _, None -> -1
+        | None, Some _ -> 1
+        | None, None -> 0)
+      pages
+  in
+
+  let rss_xml = Memoir_lib.generate_rss_feed sorted_pages rss_config in
+  let rss_output_path = Filename.concat config.output_dir "feed.xml" in
+  write_file rss_output_path rss_xml;
+  Printf.printf "RSS feed generated at: %s (%d items)\n" rss_output_path
+    (List.length sorted_pages)
 
 (* Generate site *)
 let generate_site () =
@@ -638,10 +718,6 @@ let generate_site () =
     process_dir (Filename.concat config.output_dir "")
   in
 
-  (* Copy static assets *)
-  copy_static_assets ();
-  print_endline "Static assets copied.";
-
   (* Collect and process routes *)
   let routes = collect_routes () in
   Printf.printf "Collected %d routes\n" (List.length routes);
@@ -654,7 +730,7 @@ let generate_site () =
           Printf.printf "Processing modified route: %s -> %s\n" route.file_path
             route.url_path;
           process_route route;
-          update_cache_entry route.file_path acc)
+          update_cache_with_dependencies route.file_path acc)
         else (
           Printf.printf "Skipping unmodified route: %s\n" route.file_path;
           acc))
@@ -667,117 +743,8 @@ let generate_site () =
   (* Save updated cache *)
   save_build_cache final_cache;
 
-  (* Generate RSS feed from blog posts and journal entries *)
-  let generate_rss_feed_file () =
-    let pages = ref [] in
-    let blog_dir = Filename.concat config.content_dir "pages/blog" in
-    let journal_dir = Filename.concat config.content_dir "pages/journal" in
-
-    (* Process blog posts *)
-    (if Sys.file_exists blog_dir && Sys.is_directory blog_dir then
-       let files = Sys.readdir blog_dir in
-       Array.iter
-         (fun file ->
-           let full_path = Filename.concat blog_dir file in
-           if
-             (not (Sys.is_directory full_path))
-             && Filename.extension file = ".md"
-             && file <> "index.md"
-           then
-             let metadata = extract_route_metadata full_path in
-             let content = read_file full_path in
-             let page =
-               {
-                 Memoir_lib.metadata =
-                   {
-                     title =
-                       (match metadata.title with
-                       | Some t -> t
-                       | None -> Filename.remove_extension file);
-                     date = metadata._date;
-                     tags = metadata._tags;
-                     summary = metadata._description;
-                     draft = false;
-                     (* Assume published if it's in the site *)
-                   };
-                 content;
-                 url = "/blog/" ^ Filename.remove_extension file;
-                 source_path = full_path;
-               }
-             in
-             pages := page :: !pages)
-         files);
-
-    (* Process journal entries *)
-    (if Sys.file_exists journal_dir && Sys.is_directory journal_dir then
-       let files = Sys.readdir journal_dir in
-       Array.iter
-         (fun file ->
-           let full_path = Filename.concat journal_dir file in
-           if
-             (not (Sys.is_directory full_path))
-             && Filename.extension file = ".md"
-             && file <> "index.md"
-           then
-             let metadata = extract_route_metadata full_path in
-             let content = read_file full_path in
-             let page =
-               {
-                 Memoir_lib.metadata =
-                   {
-                     title =
-                       (match metadata.title with
-                       | Some t -> t
-                       | None -> Filename.remove_extension file);
-                     date = metadata._date;
-                     tags = metadata._tags;
-                     summary = metadata._description;
-                     draft = false;
-                     (* Assume published if it's in the site *)
-                   };
-                 content;
-                 url = "/journal/" ^ Filename.remove_extension file;
-                 source_path = full_path;
-               }
-             in
-             pages := page :: !pages)
-         files);
-
-    let rss_config =
-      {
-        Memoir_lib.site_title = "Chukwuma Akunyili's Blog";
-        site_description =
-          "Thoughts on software engineering, functional programming, and \
-           technology";
-        author = config.author;
-        base_url = "https://fearful-odds.rocks";
-        output_dir = config.output_dir;
-        content_dir = config.content_dir;
-        template_dir = config.template_dir;
-        static_dir = config.static_dir;
-      }
-    in
-
-    (* Sort pages by date (newest first) for RSS feed *)
-    let sorted_pages =
-      List.sort
-        (fun a b ->
-          match (a.Memoir_lib.metadata.date, b.Memoir_lib.metadata.date) with
-          | Some date_a, Some date_b -> String.compare date_b date_a
-          | Some _, None -> -1
-          | None, Some _ -> 1
-          | None, None -> 0)
-        (List.rev !pages)
-    in
-
-    let rss_xml = Memoir_lib.generate_rss_feed sorted_pages rss_config in
-    let rss_output_path = Filename.concat config.output_dir "feed.xml" in
-    write_file rss_output_path rss_xml;
-    Printf.printf "RSS feed generated at: %s (%d items)\n" rss_output_path
-      (List.length sorted_pages)
-  in
-
-  generate_rss_feed_file ();
+  (* Generate RSS feed *)
+  generate_rss_feed ();
 
   print_endline "Site generation complete!";
   ()
@@ -786,23 +753,23 @@ let generate_site () =
 let () =
   print_endline "Memoir Generation - OCaml Static Site Generator";
   try
-    (* Force a full rebuild by ignoring the cache *)
-    let force_rebuild = true in
-    let generate_with_force () =
+    (* Check for --force flag in command line arguments *)
+    let force_rebuild =
+      Array.length Sys.argv > 1
+      && (Sys.argv.(1) = "--force" || Sys.argv.(1) = "-f")
+    in
+
+    if force_rebuild then (
       print_endline "Forcing full rebuild (ignoring cache)...";
 
       (* Ensure output directory exists *)
       ensure_directory_exists config.output_dir;
 
-      (* Copy static assets *)
-      copy_static_assets ();
-      print_endline "Static assets copied.";
-
       (* Collect routes *)
       let routes = collect_routes () in
       Printf.printf "Collected %d routes\n" (List.length routes);
 
-      (* Process each route regardless of cache *)
+      (* Process all routes *)
       List.iter
         (fun (route : route) ->
           Printf.printf "Processing route: %s -> %s\n" route.file_path
@@ -810,136 +777,27 @@ let () =
           process_route route)
         routes;
 
-      (* Create empty cache *)
+      (* Update cache *)
       let cache =
         {
-          last_modified = [];
+          file_hashes = [];
           cache_file = Filename.concat config.output_dir ".build-cache";
         }
       in
-
-      (* Update cache with all files *)
       let final_cache =
         List.fold_left
           (fun acc (route : route) -> update_cache_entry route.file_path acc)
           cache routes
       in
-
-      (* Save cache *)
       save_build_cache final_cache;
 
-      (* Generate RSS feed from blog posts and journal entries *)
-      let pages = ref [] in
-      let blog_dir = Filename.concat config.content_dir "pages/blog" in
-      let journal_dir = Filename.concat config.content_dir "pages/journal" in
+      (* Generate RSS feed - now just one call! *)
+      generate_rss_feed ();
 
-      (* Process blog posts *)
-      (if Sys.file_exists blog_dir && Sys.is_directory blog_dir then
-         let files = Sys.readdir blog_dir in
-         Array.iter
-           (fun file ->
-             let full_path = Filename.concat blog_dir file in
-             if
-               (not (Sys.is_directory full_path))
-               && Filename.extension file = ".md"
-               && file <> "index.md"
-             then
-               let metadata = extract_route_metadata full_path in
-               let content = read_file full_path in
-               let page =
-                 {
-                   Memoir_lib.metadata =
-                     {
-                       title =
-                         (match metadata.title with
-                         | Some t -> t
-                         | None -> Filename.remove_extension file);
-                       date = metadata._date;
-                       tags = metadata._tags;
-                       summary = metadata._description;
-                       draft = false;
-                       (* Assume published if it's in the site *)
-                     };
-                   content;
-                   url = "/blog/" ^ Filename.remove_extension file;
-                   source_path = full_path;
-                 }
-               in
-               pages := page :: !pages)
-           files);
-
-      (* Process journal entries *)
-      (if Sys.file_exists journal_dir && Sys.is_directory journal_dir then
-         let files = Sys.readdir journal_dir in
-         Array.iter
-           (fun file ->
-             let full_path = Filename.concat journal_dir file in
-             if
-               (not (Sys.is_directory full_path))
-               && Filename.extension file = ".md"
-               && file <> "index.md"
-             then
-               let metadata = extract_route_metadata full_path in
-               let content = read_file full_path in
-               let page =
-                 {
-                   Memoir_lib.metadata =
-                     {
-                       title =
-                         (match metadata.title with
-                         | Some t -> t
-                         | None -> Filename.remove_extension file);
-                       date = metadata._date;
-                       tags = metadata._tags;
-                       summary = metadata._description;
-                       draft = false;
-                       (* Assume published if it's in the site *)
-                     };
-                   content;
-                   url = "/journal/" ^ Filename.remove_extension file;
-                   source_path = full_path;
-                 }
-               in
-               pages := page :: !pages)
-           files);
-
-      let rss_config =
-        {
-          Memoir_lib.site_title = "Chukwuma Akunyili's Blog";
-          site_description =
-            "Thoughts on software engineering, functional programming, and \
-             technology";
-          author = config.author;
-          base_url = "https://fearful-odds.rocks";
-          output_dir = config.output_dir;
-          content_dir = config.content_dir;
-          template_dir = config.template_dir;
-          static_dir = config.static_dir;
-        }
-      in
-
-      (* Sort pages by date (newest first) for RSS feed *)
-      let sorted_pages =
-        List.sort
-          (fun a b ->
-            match (a.Memoir_lib.metadata.date, b.Memoir_lib.metadata.date) with
-            | Some date_a, Some date_b -> String.compare date_b date_a
-            | Some _, None -> -1
-            | None, Some _ -> 1
-            | None, None -> 0)
-          (List.rev !pages)
-      in
-
-      let rss_xml = Memoir_lib.generate_rss_feed sorted_pages rss_config in
-      let rss_output_path = Filename.concat config.output_dir "feed.xml" in
-      write_file rss_output_path rss_xml;
-      Printf.printf "RSS feed generated at: %s (%d items)\n" rss_output_path
-        (List.length sorted_pages);
-
-      print_endline "Forced rebuild complete!"
-    in
-
-    if force_rebuild then generate_with_force () else generate_site ();
+      print_endline "Forced rebuild complete!")
+    else (
+      print_endline "Using incremental build (cache enabled)...";
+      generate_site ());
 
     exit 0
   with e ->
