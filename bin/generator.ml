@@ -142,6 +142,13 @@ and content_type =
   | Journal
   | Asset
 
+(* Separate type for classifying content sections (for index invalidation) *)
+type content_section =
+  | Blog
+  | Journal
+  | Other
+
+(* Metadata type for route extraction *)
 type route_metadata = {
   title : string option;
   (* Keeping these fields for future use *)
@@ -448,6 +455,16 @@ let content_type_of_path path =
   | _ when Filename.extension path = "" -> Asset
   | _ -> Page
 
+let classify_content_path file_path =
+  if Str.string_match (Str.regexp ".*/blog/.*") file_path 0 then Blog
+  else if Str.string_match (Str.regexp ".*/journal/.*") file_path 0 then Journal
+  else Other
+
+let get_index_path_for_section = function
+  | Blog -> Some "content/pages/blog/index.md"
+  | Journal -> Some "content/pages/journal/index.md"
+  | Other -> None
+
 let collect_routes () =
   let routes = ref [] in
   let add_route ~url_path ~file_path ~content_type =
@@ -510,7 +527,10 @@ let hash_file path =
 
 let is_index_page file_path =
   String.ends_with ~suffix:"/index.md" file_path
-  && Str.string_match (Str.regexp ".*\\(blog\\|journal\\).*") file_path 0
+  &&
+  match classify_content_path file_path with
+  | Blog | Journal -> true
+  | Other -> false
 
 let is_file_modified file_path cache =
   try
@@ -538,30 +558,19 @@ let update_cache_entry file_path cache =
 (* When processing journal/blog posts, invalidate their index pages *)
 let update_cache_with_dependencies file_path cache =
   let updated_cache = update_cache_entry file_path cache in
-  (* If this is a journal/blog post, mark the index as needing rebuild *)
-  if
-    Str.string_match (Str.regexp ".*/journal/.*") file_path 0
-    && file_path <> "content/pages/journal/index.md"
-  then
-    (* Remove journal index from cache so it gets rebuilt *)
-    let file_hashes =
-      List.filter
-        (fun (p, _) -> p <> "content/pages/journal/index.md")
-        updated_cache.file_hashes
-    in
-    { updated_cache with file_hashes }
-  else if
-    Str.string_match (Str.regexp ".*/blog/.*") file_path 0
-    && file_path <> "content/pages/blog/index.md"
-  then
-    (* Remove blog index from cache so it gets rebuilt *)
-    let file_hashes =
-      List.filter
-        (fun (p, _) -> p <> "content/pages/blog/index.md")
-        updated_cache.file_hashes
-    in
-    { updated_cache with file_hashes }
-  else updated_cache
+
+  match classify_content_path file_path with
+  | (Blog | Journal) as section -> (
+      match get_index_path_for_section section with
+      | Some index_path when file_path <> index_path ->
+          let file_hashes =
+            List.filter
+              (fun (p, _) -> p <> index_path)
+              updated_cache.file_hashes
+          in
+          { updated_cache with file_hashes }
+      | _ -> updated_cache)
+  | Other -> updated_cache
 
 (* Extract RSS feed generation into a separate function *)
 let generate_rss_feed () =
