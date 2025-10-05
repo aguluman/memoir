@@ -187,54 +187,61 @@ let extract_route_metadata file_path =
     with _ -> { title = None; _date = None; _description = None; _tags = [] }
   else { title = None; _date = None; _description = None; _tags = [] }
 
-(* Helper type for journal entries *)
-type journal_listing_entry = {
+(* Helper type for content entries *)
+type content_entry = {
   title : string;
   date : string option;
   url : string;
+  description : string option;
 }
+
+(* Common function to process markdown files in a directory *)
+let process_content_files dir url_prefix =
+  let entries = ref [] in
+  (if Sys.file_exists dir && Sys.is_directory dir then
+     let files = Sys.readdir dir in
+     Array.iter
+       (fun file ->
+         let full_path = Filename.concat dir file in
+         if
+           (not (Sys.is_directory full_path))
+           && Filename.extension file = ".md"
+           && file <> "index.md"
+         then
+           let metadata = extract_route_metadata full_path in
+           let entry : content_entry =
+             {
+               title =
+                 (match metadata.title with
+                 | Some t -> t
+                 | None -> Filename.remove_extension file);
+               date = metadata._date;
+               description = metadata._description;
+               url = url_prefix ^ Filename.remove_extension file;
+             }
+           in
+           entries := entry :: !entries)
+       files);
+
+  (* Sort entries by date (newest first) *)
+  List.sort
+    (fun a b ->
+      match (a.date, b.date) with
+      | Some date_a, Some date_b -> String.compare date_b date_a
+      | Some _, None -> -1
+      | None, Some _ -> 1
+      | None, None -> String.compare a.title b.title)
+    !entries
 
 (* Generate journal entry listings *)
 let generate_journal_entries_html journal_dir =
-  let entries = ref [] in
-  if Sys.file_exists journal_dir && Sys.is_directory journal_dir then (
-    let files = Sys.readdir journal_dir in
-    Array.iter
-      (fun file ->
-        let full_path = Filename.concat journal_dir file in
-        if
-          (not (Sys.is_directory full_path))
-          && Filename.extension file = ".md"
-          && file <> "index.md"
-        then
-          let metadata = extract_route_metadata full_path in
-          let entry : journal_listing_entry =
-            {
-              title =
-                (match metadata.title with
-                | Some t -> t
-                | None -> Filename.remove_extension file);
-              date = metadata._date;
-              url = "/journal/" ^ Filename.remove_extension file;
-            }
-          in
-          entries := entry :: !entries)
-      files;
-
-    (* Sort entries by date (newest first) *)
-    let sorted_entries =
-      List.sort
-        (fun a b ->
-          match (a.date, b.date) with
-          | Some date_a, Some date_b -> String.compare date_b date_a
-          | Some _, None -> -1
-          | None, Some _ -> 1
-          | None, None -> String.compare a.title b.title)
-        !entries
-    in
-
-    (* Generate HTML *)
-    if List.length sorted_entries > 0 then
+  if not (Sys.file_exists journal_dir && Sys.is_directory journal_dir) then
+    "<p><em>Journal directory not found.</em></p>"
+  else
+    let sorted_entries = process_content_files journal_dir "/journal/" in
+    if List.length sorted_entries = 0 then
+      "<p><em>No journal entries found.</em></p>"
+    else
       let entries_html =
         List.map
           (fun entry ->
@@ -255,59 +262,16 @@ let generate_journal_entries_html journal_dir =
       "<div class=\"journal-entries\">\n"
       ^ String.concat "\n" entries_html
       ^ "\n</div>"
-    else "<p><em>No journal entries found.</em></p>")
-  else "<p><em>Journal directory not found.</em></p>"
-
-(* Helper type for blog entries *)
-type blog_listing_entry = {
-  title : string;
-  date : string option;
-  url : string;
-  description : string option;
-}
 
 (* Generate blog entry listings *)
 let generate_blog_entries_html blog_dir =
-  let entries = ref [] in
-  if Sys.file_exists blog_dir && Sys.is_directory blog_dir then (
-    let files = Sys.readdir blog_dir in
-    Array.iter
-      (fun file ->
-        let full_path = Filename.concat blog_dir file in
-        if
-          (not (Sys.is_directory full_path))
-          && Filename.extension file = ".md"
-          && file <> "index.md"
-        then
-          let metadata = extract_route_metadata full_path in
-          let entry : blog_listing_entry =
-            {
-              title =
-                (match metadata.title with
-                | Some t -> t
-                | None -> Filename.remove_extension file);
-              date = metadata._date;
-              description = metadata._description;
-              url = "/blog/" ^ Filename.remove_extension file;
-            }
-          in
-          entries := entry :: !entries)
-      files;
-
-    (* Sort entries by date (newest first) *)
-    let sorted_entries =
-      List.sort
-        (fun a b ->
-          match (a.date, b.date) with
-          | Some date_a, Some date_b -> String.compare date_b date_a
-          | Some _, None -> -1
-          | None, Some _ -> 1
-          | None, None -> String.compare a.title b.title)
-        !entries
-    in
-
-    (* Generate HTML *)
-    if List.length sorted_entries > 0 then
+  if not (Sys.file_exists blog_dir && Sys.is_directory blog_dir) then
+    "<p><em>Blog directory not found.</em></p>"
+  else
+    let sorted_entries = process_content_files blog_dir "/blog/" in
+    if List.length sorted_entries = 0 then
+      "<p><em>No blog posts found.</em></p>"
+    else
       let entries_html =
         List.map
           (fun entry ->
@@ -336,8 +300,6 @@ let generate_blog_entries_html blog_dir =
       "<div class=\"blog-entries\">\n"
       ^ String.concat "\n" entries_html
       ^ "\n</div>"
-    else "<p><em>No blog posts found.</em></p>")
-  else "<p><em>Blog directory not found.</em></p>"
 
 (* URL path mapping *)
 let clean_url_path path =
@@ -511,10 +473,9 @@ let collect_routes () =
   process_dir config.content_dir;
   List.rev !routes
 
-(* Cache for incremental builds *)
+(* Cache for incremental builds - using content hash for reliability *)
 type build_cache = {
-  last_modified : (string * float * string) list;
-      (* path, mtime, content_hash *)
+  file_hashes : (string * string) list; (* path, content_hash *)
   cache_file : string;
 }
 
@@ -523,23 +484,23 @@ let load_build_cache () =
   try
     let content = read_file cache_file in
     let lines = String.split_on_char '\n' content in
-    let last_modified =
+    let file_hashes =
       List.filter_map
         (fun line ->
           match String.split_on_char '|' line with
-          | [ path; time ] -> Some (path, float_of_string time)
-          | _ -> None)
+          | [ path; hash ] -> Some (path, hash)
+          | _ -> None (* Skip invalid or old format lines *))
         lines
     in
-    { last_modified; cache_file }
-  with _ -> { last_modified = []; cache_file }
+    { file_hashes; cache_file }
+  with _ -> { file_hashes = []; cache_file }
 
 let save_build_cache cache =
   let content =
     String.concat "\n"
       (List.map
-         (fun (path, time) -> Printf.sprintf "%s|%f" path time)
-         cache.last_modified)
+         (fun (path, hash) -> Printf.sprintf "%s|%s" path hash)
+         cache.file_hashes)
   in
   write_file cache.cache_file content
 
@@ -549,31 +510,29 @@ let hash_file path =
 
 let is_index_page file_path =
   String.ends_with ~suffix:"/index.md" file_path
-  && (String.contains file_path "blog" || String.contains file_path "journal")
+  && Str.string_match (Str.regexp ".*\\(blog\\|journal\\).*") file_path 0
 
 let is_file_modified file_path cache =
   try
     (* Always rebuild blog/journal index pages since they aggregate other content *)
     if is_index_page file_path then true
     else
-      let stat = Unix.stat file_path in
       let current_hash = hash_file file_path in
-      match
-        List.find_opt (fun (p, _, _) -> p = file_path) cache.last_modified
-      with
-      | Some (_, last_mtime, last_hash) ->
-          stat.Unix.st_mtime > last_mtime || current_hash <> last_hash
-      | None -> true
+      match List.find_opt (fun (p, _) -> p = file_path) cache.file_hashes with
+      | Some (_, last_hash) when last_hash <> "" ->
+          (* Compare content hashes - immune to timestamp changes from fmt *)
+          current_hash <> last_hash
+      | _ -> true (* No cache entry or empty hash - treat as modified *)
   with _ -> true
 
 let update_cache_entry file_path cache =
   try
-    let stat = Unix.stat file_path in
-    let last_modified =
-      (file_path, stat.Unix.st_mtime, hash_file file_path)
-      :: List.filter (fun (p, _, _) -> p <> file_path) cache.last_modified
+    let current_hash = hash_file file_path in
+    let file_hashes =
+      (file_path, current_hash)
+      :: List.filter (fun (p, _) -> p <> file_path) cache.file_hashes
     in
-    { cache with last_modified }
+    { cache with file_hashes }
   with Unix.Unix_error _ -> cache
 
 (* When processing journal/blog posts, invalidate their index pages *)
@@ -581,28 +540,135 @@ let update_cache_with_dependencies file_path cache =
   let updated_cache = update_cache_entry file_path cache in
   (* If this is a journal/blog post, mark the index as needing rebuild *)
   if
-    String.contains file_path "/journal/"
+    Str.string_match (Str.regexp ".*/journal/.*") file_path 0
     && file_path <> "content/pages/journal/index.md"
   then
     (* Remove journal index from cache so it gets rebuilt *)
-    let last_modified =
+    let file_hashes =
       List.filter
-        (fun (p, _, _) -> p <> "content/pages/journal/index.md")
-        updated_cache.last_modified
+        (fun (p, _) -> p <> "content/pages/journal/index.md")
+        updated_cache.file_hashes
     in
-    { updated_cache with last_modified }
+    { updated_cache with file_hashes }
   else if
-    String.contains file_path "/blog/"
+    Str.string_match (Str.regexp ".*/blog/.*") file_path 0
     && file_path <> "content/pages/blog/index.md"
   then
     (* Remove blog index from cache so it gets rebuilt *)
-    let last_modified =
+    let file_hashes =
       List.filter
-        (fun (p, _, _) -> p <> "content/pages/blog/index.md")
-        updated_cache.last_modified
+        (fun (p, _) -> p <> "content/pages/blog/index.md")
+        updated_cache.file_hashes
     in
-    { updated_cache with last_modified }
+    { updated_cache with file_hashes }
   else updated_cache
+
+(* Extract RSS feed generation into a separate function *)
+let generate_rss_feed () =
+  let pages = ref [] in
+  let blog_dir = Filename.concat config.content_dir "pages/blog" in
+  let journal_dir = Filename.concat config.content_dir "pages/journal" in
+
+  (* Process blog posts *)
+  (if Sys.file_exists blog_dir && Sys.is_directory blog_dir then
+     let files = Sys.readdir blog_dir in
+     Array.iter
+       (fun file ->
+         let full_path = Filename.concat blog_dir file in
+         if
+           (not (Sys.is_directory full_path))
+           && Filename.extension file = ".md"
+           && file <> "index.md"
+         then
+           let metadata = extract_route_metadata full_path in
+           let content = read_file full_path in
+           let page =
+             {
+               Memoir_lib.metadata =
+                 {
+                   title =
+                     (match metadata.title with
+                     | Some t -> t
+                     | None -> Filename.remove_extension file);
+                   date = metadata._date;
+                   tags = metadata._tags;
+                   summary = metadata._description;
+                   draft = false;
+                 };
+               content;
+               url = "/blog/" ^ Filename.remove_extension file;
+               source_path = full_path;
+             }
+           in
+           pages := page :: !pages)
+       files);
+
+  (* Process journal entries *)
+  (if Sys.file_exists journal_dir && Sys.is_directory journal_dir then
+     let files = Sys.readdir journal_dir in
+     Array.iter
+       (fun file ->
+         let full_path = Filename.concat journal_dir file in
+         if
+           (not (Sys.is_directory full_path))
+           && Filename.extension file = ".md"
+           && file <> "index.md"
+         then
+           let metadata = extract_route_metadata full_path in
+           let content = read_file full_path in
+           let page =
+             {
+               Memoir_lib.metadata =
+                 {
+                   title =
+                     (match metadata.title with
+                     | Some t -> t
+                     | None -> Filename.remove_extension file);
+                   date = metadata._date;
+                   tags = metadata._tags;
+                   summary = metadata._description;
+                   draft = false;
+                 };
+               content;
+               url = "/journal/" ^ Filename.remove_extension file;
+               source_path = full_path;
+             }
+           in
+           pages := page :: !pages)
+       files);
+
+  let rss_config =
+    {
+      Memoir_lib.site_title = "Chukwuma Akunyili's Blog";
+      site_description =
+        "Thoughts on software engineering, functional programming, and \
+         technology";
+      author = config.author;
+      base_url = "https://fearful-odds.rocks";
+      output_dir = config.output_dir;
+      content_dir = config.content_dir;
+      template_dir = config.template_dir;
+      static_dir = config.static_dir;
+    }
+  in
+
+  (* Sort pages by date (newest first) for RSS feed *)
+  let sorted_pages =
+    List.sort
+      (fun a b ->
+        match (a.Memoir_lib.metadata.date, b.Memoir_lib.metadata.date) with
+        | Some date_a, Some date_b -> String.compare date_b date_a
+        | Some _, None -> -1
+        | None, Some _ -> 1
+        | None, None -> 0)
+      (List.rev !pages)
+  in
+
+  let rss_xml = Memoir_lib.generate_rss_feed sorted_pages rss_config in
+  let rss_output_path = Filename.concat config.output_dir "feed.xml" in
+  write_file rss_output_path rss_xml;
+  Printf.printf "RSS feed generated at: %s (%d items)\n" rss_output_path
+    (List.length sorted_pages)
 
 (* Generate site *)
 let generate_site () =
@@ -677,117 +743,8 @@ let generate_site () =
   (* Save updated cache *)
   save_build_cache final_cache;
 
-  (* Generate RSS feed from blog posts and journal entries *)
-  let generate_rss_feed_file () =
-    let pages = ref [] in
-    let blog_dir = Filename.concat config.content_dir "pages/blog" in
-    let journal_dir = Filename.concat config.content_dir "pages/journal" in
-
-    (* Process blog posts *)
-    (if Sys.file_exists blog_dir && Sys.is_directory blog_dir then
-       let files = Sys.readdir blog_dir in
-       Array.iter
-         (fun file ->
-           let full_path = Filename.concat blog_dir file in
-           if
-             (not (Sys.is_directory full_path))
-             && Filename.extension file = ".md"
-             && file <> "index.md"
-           then
-             let metadata = extract_route_metadata full_path in
-             let content = read_file full_path in
-             let page =
-               {
-                 Memoir_lib.metadata =
-                   {
-                     title =
-                       (match metadata.title with
-                       | Some t -> t
-                       | None -> Filename.remove_extension file);
-                     date = metadata._date;
-                     tags = metadata._tags;
-                     summary = metadata._description;
-                     draft = false;
-                     (* Assume published if it's in the site *)
-                   };
-                 content;
-                 url = "/blog/" ^ Filename.remove_extension file;
-                 source_path = full_path;
-               }
-             in
-             pages := page :: !pages)
-         files);
-
-    (* Process journal entries *)
-    (if Sys.file_exists journal_dir && Sys.is_directory journal_dir then
-       let files = Sys.readdir journal_dir in
-       Array.iter
-         (fun file ->
-           let full_path = Filename.concat journal_dir file in
-           if
-             (not (Sys.is_directory full_path))
-             && Filename.extension file = ".md"
-             && file <> "index.md"
-           then
-             let metadata = extract_route_metadata full_path in
-             let content = read_file full_path in
-             let page =
-               {
-                 Memoir_lib.metadata =
-                   {
-                     title =
-                       (match metadata.title with
-                       | Some t -> t
-                       | None -> Filename.remove_extension file);
-                     date = metadata._date;
-                     tags = metadata._tags;
-                     summary = metadata._description;
-                     draft = false;
-                     (* Assume published if it's in the site *)
-                   };
-                 content;
-                 url = "/journal/" ^ Filename.remove_extension file;
-                 source_path = full_path;
-               }
-             in
-             pages := page :: !pages)
-         files);
-
-    let rss_config =
-      {
-        Memoir_lib.site_title = "Chukwuma Akunyili's Blog";
-        site_description =
-          "Thoughts on software engineering, functional programming, and \
-           technology";
-        author = config.author;
-        base_url = "https://fearful-odds.rocks";
-        output_dir = config.output_dir;
-        content_dir = config.content_dir;
-        template_dir = config.template_dir;
-        static_dir = config.static_dir;
-      }
-    in
-
-    (* Sort pages by date (newest first) for RSS feed *)
-    let sorted_pages =
-      List.sort
-        (fun a b ->
-          match (a.Memoir_lib.metadata.date, b.Memoir_lib.metadata.date) with
-          | Some date_a, Some date_b -> String.compare date_b date_a
-          | Some _, None -> -1
-          | None, Some _ -> 1
-          | None, None -> 0)
-        (List.rev !pages)
-    in
-
-    let rss_xml = Memoir_lib.generate_rss_feed sorted_pages rss_config in
-    let rss_output_path = Filename.concat config.output_dir "feed.xml" in
-    write_file rss_output_path rss_xml;
-    Printf.printf "RSS feed generated at: %s (%d items)\n" rss_output_path
-      (List.length sorted_pages)
-  in
-
-  generate_rss_feed_file ();
+  (* Generate RSS feed *)
+  generate_rss_feed ();
 
   print_endline "Site generation complete!";
   ()
@@ -812,7 +769,7 @@ let () =
       let routes = collect_routes () in
       Printf.printf "Collected %d routes\n" (List.length routes);
 
-      (* Process each route regardless of cache *)
+      (* Process all routes *)
       List.iter
         (fun (route : route) ->
           Printf.printf "Processing route: %s -> %s\n" route.file_path
@@ -820,129 +777,22 @@ let () =
           process_route route)
         routes;
 
-      (* Create empty cache *)
+      (* Update cache *)
       let cache =
         {
-          last_modified = [];
+          file_hashes = [];
           cache_file = Filename.concat config.output_dir ".build-cache";
         }
       in
-
-      (* Update cache with all files *)
       let final_cache =
         List.fold_left
           (fun acc (route : route) -> update_cache_entry route.file_path acc)
           cache routes
       in
-
-      (* Save cache *)
       save_build_cache final_cache;
 
-      (* Generate RSS feed from blog posts and journal entries *)
-      let pages = ref [] in
-      let blog_dir = Filename.concat config.content_dir "pages/blog" in
-      let journal_dir = Filename.concat config.content_dir "pages/journal" in
-
-      (* Process blog posts *)
-      (if Sys.file_exists blog_dir && Sys.is_directory blog_dir then
-         let files = Sys.readdir blog_dir in
-         Array.iter
-           (fun file ->
-             let full_path = Filename.concat blog_dir file in
-             if
-               (not (Sys.is_directory full_path))
-               && Filename.extension file = ".md"
-               && file <> "index.md"
-             then
-               let metadata = extract_route_metadata full_path in
-               let content = read_file full_path in
-               let page =
-                 {
-                   Memoir_lib.metadata =
-                     {
-                       title =
-                         (match metadata.title with
-                         | Some t -> t
-                         | None -> Filename.remove_extension file);
-                       date = metadata._date;
-                       tags = metadata._tags;
-                       summary = metadata._description;
-                       draft = false;
-                     };
-                   content;
-                   url = "/blog/" ^ Filename.remove_extension file;
-                   source_path = full_path;
-                 }
-               in
-               pages := page :: !pages)
-           files);
-
-      (* Process journal entries *)
-      (if Sys.file_exists journal_dir && Sys.is_directory journal_dir then
-         let files = Sys.readdir journal_dir in
-         Array.iter
-           (fun file ->
-             let full_path = Filename.concat journal_dir file in
-             if
-               (not (Sys.is_directory full_path))
-               && Filename.extension file = ".md"
-               && file <> "index.md"
-             then
-               let metadata = extract_route_metadata full_path in
-               let content = read_file full_path in
-               let page =
-                 {
-                   Memoir_lib.metadata =
-                     {
-                       title =
-                         (match metadata.title with
-                         | Some t -> t
-                         | None -> Filename.remove_extension file);
-                       date = metadata._date;
-                       tags = metadata._tags;
-                       summary = metadata._description;
-                       draft = false;
-                     };
-                   content;
-                   url = "/journal/" ^ Filename.remove_extension file;
-                   source_path = full_path;
-                 }
-               in
-               pages := page :: !pages)
-           files);
-
-      let rss_config =
-        {
-          Memoir_lib.site_title = "Chukwuma Akunyili's Blog";
-          site_description =
-            "Thoughts on software engineering, functional programming, and \
-             technology";
-          author = config.author;
-          base_url = "https://fearful-odds.rocks";
-          output_dir = config.output_dir;
-          content_dir = config.content_dir;
-          template_dir = config.template_dir;
-          static_dir = config.static_dir;
-        }
-      in
-
-      (* Sort pages by date (newest first) for RSS feed *)
-      let sorted_pages =
-        List.sort
-          (fun a b ->
-            match (a.Memoir_lib.metadata.date, b.Memoir_lib.metadata.date) with
-            | Some date_a, Some date_b -> String.compare date_b date_a
-            | Some _, None -> -1
-            | None, Some _ -> 1
-            | None, None -> 0)
-          (List.rev !pages)
-      in
-
-      let rss_xml = Memoir_lib.generate_rss_feed sorted_pages rss_config in
-      let rss_output_path = Filename.concat config.output_dir "feed.xml" in
-      write_file rss_output_path rss_xml;
-      Printf.printf "RSS feed generated at: %s (%d items)\n" rss_output_path
-        (List.length sorted_pages);
+      (* Generate RSS feed - now just one call! *)
+      generate_rss_feed ();
 
       print_endline "Forced rebuild complete!")
     else (
