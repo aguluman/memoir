@@ -1,12 +1,14 @@
 <!doctype html><!doctype html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
-    <title>Getting Started with OCaml</title>
+    <title>
+      Shipping a robust DB migration runner for Chaufr (OCaml + Caqti + Lwt)
+    </title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="A beginner's guide to functional programming with OCaml"
+      content="Implemented a production-minded database migration system for Chaufr: CLI, tracking, checksum validation, rollback, and safe SQL execution."
     />
     <script>
       (function () {
@@ -25,31 +27,37 @@
     <script src="/static/js/main.js" defer="defer"></script>
     <script src="/static/js/theme-toggle.js" defer="defer"></script>
     <script src="/static/js/highlight.min.js" defer="defer"></script>
-    <meta property="og:title" content="Getting Started with OCaml" />
+    <meta
+      property="og:title"
+      content="Shipping a robust DB migration runner for Chaufr (OCaml + Caqti + Lwt)"
+    />
     <meta
       property="og:description"
-      content="A beginner's guide to functional programming with OCaml"
+      content="Implemented a production-minded database migration system for Chaufr: CLI, tracking, checksum validation, rollback, and safe SQL execution."
     />
     <meta
       property="og:url"
-      content="https://fearful-odds.rocks//blog/getting-started-with-ocaml"
+      content="https://fearful-odds.rocks//blog/db-migration-runner-for-chaufr"
     />
     <meta property="og:image" content="/static/images/default-og.jpg" />
     <meta property="og:type" content="article" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@siteauthor" />
-    <meta name="twitter:title" content="Getting Started with OCaml" />
+    <meta
+      name="twitter:title"
+      content="Shipping a robust DB migration runner for Chaufr (OCaml + Caqti + Lwt)"
+    />
     <meta
       name="twitter:description"
-      content="A beginner's guide to functional programming with OCaml"
+      content="Implemented a production-minded database migration system for Chaufr: CLI, tracking, checksum validation, rollback, and safe SQL execution."
     />
     <meta name="twitter:image" content="/static/images/default-og.jpg" />
     <link
       rel="canonical"
-      href="https://fearful-odds.rocks//blog/getting-started-with-ocaml"
+      href="https://fearful-odds.rocks//blog/db-migration-runner-for-chaufr"
     />
     <script data-type="application/ld+json">
-      {&quot;@context&quot;:&quot;https://schema.org&quot;,&quot;@type&quot;:&quot;WebPage&quot;,&quot;name&quot;:&quot;Getting Started with OCaml&quot;,&quot;description&quot;:&quot;A beginner's guide to functional programming with OCaml&quot;,&quot;url&quot;:&quot;https://fearful-odds.rocks//blog/getting-started-with-ocaml&quot;,&quot;image&quot;:&quot;/static/images/default-og.jpg&quot;}
+      {&quot;@context&quot;:&quot;https://schema.org&quot;,&quot;@type&quot;:&quot;WebPage&quot;,&quot;name&quot;:&quot;Shipping a robust DB migration runner for Chaufr (OCaml + Caqti + Lwt)&quot;,&quot;description&quot;:&quot;Implemented a production-minded database migration system for Chaufr: CLI, tracking, checksum validation, rollback, and safe SQL execution.&quot;,&quot;url&quot;:&quot;https://fearful-odds.rocks//blog/db-migration-runner-for-chaufr&quot;,&quot;image&quot;:&quot;/static/images/default-og.jpg&quot;}
     </script>
   </head>
   <body class="page">
@@ -156,103 +164,213 @@
       </div>
     </header>
     <main>
-      <h1 id="getting-started-with-ocaml">Getting Started with OCaml</h1>
+      <h1 id="shipping-a-robust-db-migration-runner-for-chaufr-ocaml-caqti-lwt">
+        Shipping a robust DB migration runner for Chaufr (OCaml + Caqti + Lwt)
+      </h1>
+      <blockquote>
+        <p>
+          Deterministic, auditable database evolution for an OCaml backend using
+          Caqti + Lwt — with checksums, rollback, safe SQL parsing, and a
+          focused CLI.
+        </p>
+      </blockquote>
       <p>
-        OCaml is a powerful functional programming language that combines
-        expressiveness with strong static typing. In this post, I'll share my
-        approach to learning OCaml and setting up a productive environment.
-      </p>
-      <h2 id="why-ocaml">Why OCaml?</h2>
-      <p>
-        OCaml offers a unique combination of features that make it both
-        practical and theoretically interesting:
-      </p>
-      <ul>
-        <li>Strong static typing that catches errors at compile time</li>
-        <li>Type inference that reduces boilerplate</li>
-        <li>Pattern matching for elegant data handling</li>
-        <li>Functional programming with practical imperative features</li>
-        <li>Great performance characteristics</li>
-      </ul>
-      <h2 id="setting-up-your-environment">Setting Up Your Environment</h2>
-      <p>
-        Here's a quick guide to setting up an OCaml development environment:
-      </p>
-      <pre><code class="language-bash"># Install opam (OCaml package manager)
-$ brew install opam  # macOS
-$ apt install opam  # Ubuntu/Debian
-
-# Initialize opam
-$ opam init
-
-# Install a specific OCaml version
-$ opam switch create 4.14.0
-
-# Install dune (build system)
-$ opam install dune
-
-# Install Merlin (for editor integration)
-$ opam install merlin
-</code></pre>
-      <h2 id="your-first-ocaml-program">Your First OCaml Program</h2>
-      <p>Let's write a simple &quot;Hello, World!&quot; program:</p>
-      <pre><code class="language-ocaml">(* hello.ml *)
-let () = 
-  print_endline &quot;Hello, OCaml World!&quot;
-</code></pre>
-      <p>Compile and run with:</p>
-      <pre><code class="language-bash">$ ocamlc -o hello hello.ml
-$ ./hello
-</code></pre>
-      <p>Or with dune:</p>
-      <pre><code class="language-bash">$ echo '(executable (name hello))' &gt; dune
-$ dune build hello.exe
-$ _build/default/hello.exe
-</code></pre>
-      <h2 id="key-concepts-to-learn">Key Concepts to Learn</h2>
-      <p>
-        As you continue your OCaml journey, focus on these fundamental concepts:
-      </p>
-      <ol>
-        <li>
-          <strong>The type system</strong> - Understanding OCaml's expressive
-          type system
-        </li>
-        <li>
-          <strong>Pattern matching</strong> - Learning to use this powerful
-          feature effectively
-        </li>
-        <li>
-          <strong>Modules and functors</strong> - Organizing code for
-          reusability
-        </li>
-        <li>
-          <strong>Error handling</strong> - Working with options and results
-        </li>
-      </ol>
-      <h2 id="recommended-resources">Recommended Resources</h2>
-      <p>Here are some resources I found helpful when learning OCaml:</p>
-      <ul>
-        <li><a href="https://dev.realworldocaml.org/">Real World OCaml</a></li>
-        <li><a href="https://ocaml.org/docs">OCaml.org Documentation</a></li>
-        <li>
-          <a href="https://www.cs.cornell.edu/courses/cs3110/"
-            >Cornell CS3110 - Data Structures and Functional Programming</a
-          >
-        </li>
-      </ul>
-      <h2 id="next-steps">Next Steps</h2>
-      <p>
-        In future posts, we'll dive deeper into specific OCaml patterns and
-        explore how to build real-world applications with the language.
+        Today I shipped a production-minded database migration runner for
+        Chaufr. The goal: a deterministic, auditable, and safe way to apply
+        schema changes that integrates with the existing Caqti + Lwt connection
+        infrastructure.
       </p>
       <hr />
-      <p>
-        <em
-          >Have questions about OCaml or functional programming?
-          <a href="/contact">Reach out</a>!</em
-        >
-      </p>
+      <h2 id="summary">Summary</h2>
+      <ul>
+        <li>
+          Migration framework + runner integrated with the shared connection
+          pool.
+        </li>
+        <li>
+          Lightweight CLI (<code>bin/migrate</code>) + Makefile targets for
+          local + CI workflows.
+        </li>
+        <li>
+          Migration tracking (table + timestamps), checksum validation, rollback
+          support.
+        </li>
+        <li>
+          Safe SQL executor that respects dollar-quoted blocks and string
+          literals.
+        </li>
+      </ul>
+      <hr />
+      <h2 id="components-implemented">Components Implemented</h2>
+      <h3 id="migrations.ml">1. <code>migrations.ml</code></h3>
+      <ul>
+        <li>Typed migration record, error variants, status helpers.</li>
+        <li>
+          Ensures <code>schema_migrations</code> (indexed) exists for audit +
+          observability.
+        </li>
+        <li>
+          Records execution time + <code>applied_at</code>; deletes records on
+          rollback.
+        </li>
+        <li>Computes a checksum from up/down SQL to detect drift.</li>
+        <li>
+          Splits SQL intelligently (avoids breaking PL/pgSQL bodies / dollar
+          quoting).
+        </li>
+        <li>
+          Reuses <code>Connection.with_connection</code> for pooled Caqti
+          execution + error mapping.
+        </li>
+      </ul>
+      <h3 id="initial_migration.ml">2. <code>initial_migration.ml</code></h3>
+      <ul>
+        <li>
+          Loads <code>sql/init.sql</code> (+ optional
+          <code>sql/init_down.sql</code>).
+        </li>
+        <li>
+          Exposes a first-class migration representing the baseline schema.
+        </li>
+      </ul>
+      <h3 id="migrate.ml-cli">3. <code>migrate.ml</code> (CLI)</h3>
+      <ul>
+        <li>
+          Commands: <code>init</code>, <code>status</code>, <code>up</code>,
+          <code>down</code>, <code>reset</code>, <code>version</code>.
+        </li>
+        <li>
+          Guarantees <code>Database.Connection.init()</code> before operating.
+        </li>
+        <li>Operator-focused messaging + readable error translation.</li>
+      </ul>
+      <h3 id="tooling-additions">4. Tooling additions</h3>
+      <ul>
+        <li>
+          <code>dune</code> executable stanza for <code>bin/migrate</code>.
+        </li>
+        <li>
+          Make targets: <code>migrate-init</code>, <code>migrate-status</code>,
+          <code>migrate-up</code>, <code>migrate-down</code>,
+          <code>migrate-reset</code>, <code>migrate-version</code>.
+        </li>
+      </ul>
+      <hr />
+      <h2 id="design-rationale">Design Rationale</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Goal</th>
+            <th>Implementation Choice</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Auditability</td>
+            <td>Checksums + timestamps + persisted records</td>
+          </tr>
+          <tr>
+            <td>Safety</td>
+            <td>SQL splitter preserves literal + dollar-quoted regions</td>
+          </tr>
+          <tr>
+            <td>Operational parity</td>
+            <td>Uses same pool / masking / logging as runtime</td>
+          </tr>
+          <tr>
+            <td>Determinism</td>
+            <td>Explicit up/down SQL + versioned records</td>
+          </tr>
+        </tbody>
+      </table>
+      <hr />
+      <h2 id="quick-usage">Quick Usage</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Action</th>
+            <th>Command</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Initialize system</td>
+            <td><code>make migrate-init</code></td>
+          </tr>
+          <tr>
+            <td>Show status</td>
+            <td><code>make migrate-status</code></td>
+          </tr>
+          <tr>
+            <td>Apply pending</td>
+            <td><code>make migrate-up</code></td>
+          </tr>
+          <tr>
+            <td>Roll back last</td>
+            <td><code>make migrate-down</code></td>
+          </tr>
+          <tr>
+            <td>Roll back all</td>
+            <td><code>make migrate-reset</code></td>
+          </tr>
+          <tr>
+            <td>Current version</td>
+            <td><code>make migrate-version</code></td>
+          </tr>
+        </tbody>
+      </table>
+      <h3 id="example">Example</h3>
+      <pre><code class="language-bash"># Ensure schema_migrations table exists
+dune exec -- ./bin/migrate.exe init
+Migration system initialized successfully
+</code></pre>
+      <hr />
+      <h2 id="internal-behavior-highlights">Internal Behavior Highlights</h2>
+      <ul>
+        <li>Checksums catch accidental edits to already-applied migrations.</li>
+        <li>Execution time + ordering support forensic analysis.</li>
+        <li>Drift detection encourages immutable migration history.</li>
+        <li>Safe splitting prevents subtle corruption of function bodies.</li>
+      </ul>
+      <hr />
+      <h2 id="next-steps">Next Steps</h2>
+      <ul>
+        <li>
+          Tests: SQL splitter edge cases, record + remove behaviors, checksum
+          mismatch flows.
+        </li>
+        <li>Rollback guidance: document destructive vs reversible paths.</li>
+        <li>Telemetry: integrate OpenTelemetry spans + structured logs.</li>
+        <li>
+          Ergonomics: auto-discover versioned filenames (e.g.
+          <code>20250914_001_add_users.sql</code>).
+        </li>
+        <li>Dry-run / plan mode.</li>
+      </ul>
+      <hr />
+      <h2 id="why-it-matters-ocaml-ecosystem">
+        Why It Matters (OCaml Ecosystem)
+      </h2>
+      <ul>
+        <li>
+          Demonstrates a pragmatic, typed migration pipeline integrated with
+          Caqti + Lwt.
+        </li>
+        <li>
+          Encourages explicit Result-based flow over exception-driven control.
+        </li>
+        <li>Provides a replicable template for early-stage OCaml services.</li>
+      </ul>
+      <hr />
+      <h2 id="possible-follow-ups">Possible Follow-ups</h2>
+      <ul>
+        <li>Publish the SQL splitting module as a standalone gist/example.</li>
+        <li>Document recommended naming/versioning conventions.</li>
+        <li>
+          Add Alcotest integration running migrations against a transient test
+          DB.
+        </li>
+      </ul>
 
       <div class="webring-nav">
         <a

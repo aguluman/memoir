@@ -7,7 +7,7 @@ BUILD_DIR = _build
 SITE_DIR = _site
 STATIC_DIR = static
 CONTENT_DIR = content
-PORT = 8080
+PORT = 6060
 HOST = 127.0.0.1
 
 # Colors for output
@@ -27,8 +27,8 @@ help:
 	@echo "$(MAGENTA)=============================$(NC)"
 	@echo ""
 	@echo "$(YELLOW)Primary Development Commands:$(NC)"
-	@echo "  $(GREEN)make generate$(NC)          - Generate the static site"
-	@echo "  $(GREEN)make serve$(NC)             - Start development server on http://$(HOST):$(PORT)"
+	@echo "  $(GREEN)make generate$(NC)         - Generate the static site"
+	@echo "  $(GREEN)make serve$(NC)            - Start development server on http://$(HOST):$(PORT)"
 	@echo ""
 	@echo "$(YELLOW)Build & Test Commands:$(NC)"
 	@echo "  $(GREEN)make build$(NC)            - Build the project"
@@ -39,18 +39,14 @@ help:
 	@echo ""
 	@echo "$(YELLOW)Utility Commands:$(NC)"
 	@echo "  $(GREEN)make fmt$(NC)              - Format OCaml code"
-	@echo "  $(GREEN)make watch$(NC)            - Watch files and rebuild automatically"
 	@echo ""
 	@echo "$(YELLOW)Content Commands:$(NC)"
 	@echo "  $(GREEN)make new-post$(NC)         - Create a new blog post"
 	@echo "  $(GREEN)make new-page$(NC)         - Create a new page"
 	@echo ""
 	@echo "$(YELLOW)Documentation Commands:$(NC)"
-	@echo "  $(GREEN)make docs$(NC)         	- Build documentation and show on the browser"
+	@echo "  $(GREEN)make docs$(NC)             - Build documentation and show on the browser"
 	@echo "  $(GREEN)make docs-build$(NC)       - Build documentation only"
-	@echo ""
-	@echo "$(YELLOW)Debug Commands:$(NC)"
-	@echo "  $(GREEN)make info$(NC)             - Show project information and directory status"
 	@echo ""
 
 # Primary commands - what you asked for
@@ -69,7 +65,7 @@ serve: build
 	@echo "$(BLUE)🌐 Starting development server...$(NC)"
 	@echo "$(YELLOW)📍 Server will be available at: http://$(HOST):$(PORT)$(NC)"
 	@echo "$(MAGENTA)🛑 Press Ctrl+C to stop the server$(NC)"
-	@$(DUNE) exec bin/server.exe
+	@$(DUNE) exec --watch bin/server.exe
 
 # Build commands
 .PHONY: build
@@ -118,19 +114,6 @@ fmt:
 	@echo "$(BLUE)💅 Formatting JavaScript files...$(NC)"
 	@npx prettier --write --log-level=warn "$(SITE_DIR)/static/js/*.js" || true
 	@echo "$(GREEN)✅ JavaScript formatted$(NC)"
-
-.PHONY: dev
-dev: build
-	@echo "$(BLUE)🚀 Starting development mode...$(NC)"
-	@echo "$(YELLOW)📍 Server: http://localhost:3000 | Auto-reload enabled$(NC)"
-	@echo "$(YELLOW)📍 Watching: content/ and static/ for changes$(NC)"
-	@echo "$(MAGENTA)🛑 Press Ctrl+C to stop$(NC)"
-	@(browser-sync start --server "_site" --files "_site/**/*" --port 3000 --no-open --no-notify &) && \
-	npx nodemon --watch content --watch static -e md,css,js --exec "make generate"
-
-.PHONY: watch  
-watch: dev
-
 
 # Content creation helpers
 .PHONY: new-post
@@ -189,26 +172,6 @@ copy-docs: docs-build
 	@chmod -R u+rwX,go+rX $(SITE_DIR)/docs/
 	@echo "$(GREEN)✅ Documentation copied to $(SITE_DIR)/docs/$(NC)"
 
-# Info commands
-.PHONY: info
-info:
-	@echo "$(CYAN)📋 Project Information$(NC)"
-	@echo "Build tool: $(DUNE)"
-	@echo "Build directory: $(BUILD_DIR)"
-	@echo "Site directory: $(SITE_DIR)"
-	@echo "Content directory: $(CONTENT_DIR)"
-	@echo "OCaml server: http://$(HOST):$(PORT)"
-	@echo "BrowserSync dev server: http://localhost:3000"
-	@echo ""
-	@echo "$(BLUE)📊 Site size information:$(NC)"
-	@if [ -d "$(SITE_DIR)" ]; then \
-		echo "Total site size: $$(du -sh $(SITE_DIR) | cut -f1)"; \
-		echo "Breakdown:"; \
-		du -h --max-depth=1 $(SITE_DIR) | sort -hr; \
-	else \
-		echo "$(YELLOW)⚠️ Site directory doesn't exist. Run 'make generate' first.$(NC)"; \
-	fi
-
 
 # Default target
 .DEFAULT_GOAL := help
@@ -221,4 +184,4 @@ $(CONTENT_DIR):
 	@mkdir -p $(CONTENT_DIR)/pages $(CONTENT_DIR)/blog
 
 # Phony targets to avoid conflicts with files
-.PHONY: help generate serve build test test-watch test-verbose clean fmt watch new-post new-page info
+.PHONY: help generate serve build test test-watch test-verbose clean fmt new-post new-page

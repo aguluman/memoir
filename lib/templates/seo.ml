@@ -83,7 +83,7 @@ module Seo = struct
   (** Generate complete SEO metadata for a page *)
   let make_head ~title_text ~description ~url
       ?(image = "/static/images/default-og.jpg") ?(type_ = "website")
-      ?(twitter_handle = "@yourusername") ?(schema_type = "WebPage")
+      ?(twitter_handle = "@agulumans") ?(schema_type = "WebPage")
       ?(additional_fields = []) ?(additional_meta = []) () =
     basic_meta ~title_text ~description
     @ open_graph_meta ~title_text ~description ~url ~image ~type_ ()

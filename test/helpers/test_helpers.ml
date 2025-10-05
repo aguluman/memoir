@@ -1,39 +1,45 @@
-(** Test helpers for the Memoir project *)
+(** Test helpers used by many test files. *)
 
-(** Common test utilities *)
-module Common = struct
-  (** Create a temporary file with the given content *)
-  let with_temp_file content f =
-    let temp_file = Filename.temp_file "memoir_test" ".tmp" in
-    let oc = open_out temp_file in
-    output_string oc content;
-    close_out oc;
-    try
-      let result = f temp_file in
-      Sys.remove temp_file;
-      result
-    with e ->
-      Sys.remove temp_file;
-      raise e
+let contains s sub =
+  try Str.search_forward (Str.regexp_string sub) s 0 >= 0 with _ -> false
 
-  (** Test that an exception is raised *)
-  let expect_exception f =
-    try
-      ignore (f ());
-      false
-    with _ -> true
-end
+let contains_substring = contains
 
-(** QCheck helpers for property-based testing *)
-module Property = struct
-  open QCheck
+let write_file path content =
+  let oc = open_out path in
+  output_string oc content;
+  close_out oc
 
-  (** Common generators *)
-  let string_gen = string
+let read_file path =
+  let ic = open_in path in
+  let len = in_channel_length ic in
+  let s = really_input_string ic len in
+  close_in ic;
+  s
 
-  let small_string_gen = string_of_size Gen.small_nat
-  let alphanum_string_gen = string_of Gen.printable
+let with_temp_dir ?(prefix = "memoir_test") f =
+  let base = Filename.get_temp_dir_name () in
+  let dir =
+    Filename.concat base (Printf.sprintf "%s_%d" prefix (Random.bits ()))
+  in
+  Unix.mkdir dir 0o700;
+  Fun.protect
+    ~finally:(fun () ->
+      let _ = Sys.command (Printf.sprintf "rm -rf %s" dir) in
+      ())
+    (fun () -> f dir)
 
-  (** Run QCheck tests with Alcotest *)
-  let run_tests tests = List.map QCheck_alcotest.to_alcotest tests
-end
+let with_temp_file ?(prefix = "memoir") ?(suffix = "") dir f =
+  let fname =
+    Filename.concat dir
+      (Printf.sprintf "%s_%d%s" prefix (Random.bits ()) suffix)
+  in
+  let oc = open_out fname in
+  close_out oc;
+  Fun.protect
+    ~finally:(fun () -> try Sys.remove fname with _ -> ())
+    (fun () -> f fname)
+
+let assert_file_exists path =
+  if Sys.file_exists path then ()
+  else Alcotest.failf "Expected file %s to exist" path

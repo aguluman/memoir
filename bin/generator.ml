@@ -2,26 +2,20 @@ open Memoir_templates
 
 (* Configuration type *)
 type config_type = {
-  _site_title : string; (* TODO: Remove underscore when used *)
-  _site_description : string; (* TODO: Remove underscore when used *)
   author : string;
-  _base_url : string; (* TODO: Remove underscore when used *)
   output_dir : string;
   content_dir : string;
-  _template_dir : string; (* TODO: Remove underscore when used *)
+  template_dir : string;
   static_dir : string;
 }
 
 (* Configuration *)
 let config =
   {
-    _site_title = "Here Lies My Thoughts and Convictions";
-    _site_description = "A modern portfolio and memoir website built with OCaml";
     author = "Chukwuma Akunyili";
-    _base_url = "https://aguluman.github.io/memoir/";
     output_dir = "_site";
     content_dir = "content";
-    _template_dir = "templates";
+    template_dir = "templates";
     static_dir = "static";
   }
 
@@ -127,7 +121,7 @@ let write_output_file ~content ~path =
   Printf.printf "Written: %s\n" path
 
 (* Process markdown content *)
-let _process_markdown ~file_path ~content =
+let process_markdown ~file_path ~content =
   let open Memoir_content.Markdown_parser in
   let page = parse_markdown_file ~path:file_path ~content in
   match page.html_content with
@@ -163,51 +157,6 @@ let copy_static_assets () =
   let dst = Filename.concat config.output_dir "static" in
   if Sys.file_exists src then copy_dir src dst
   else Printf.printf "Warning: Static directory %s does not exist\n" src
-
-(* Render HTML page *)
-let _render_page ~page_title ~content =
-  let open Tyxml.Html in
-  let doc =
-    html
-      (head
-         (title (txt page_title))
-         [
-           meta ~a:[ a_charset "utf-8" ] ();
-           meta
-             ~a:
-               [
-                 a_name "viewport";
-                 a_content "width=device-width, initial-scale=1";
-               ]
-             ();
-           link ~rel:[ `Stylesheet ] ~href:"/static/css/main.css" ();
-         ])
-      (body
-         [
-           header [ h1 ~a:[ a_class [ "site-title" ] ] [ txt page_title ] ];
-           main
-             ~a:[ a_class [ "main-content" ] ]
-             [
-               div
-                 ~a:[ a_class [ "content-wrapper" ] ]
-                 [ Tyxml.Html.Unsafe.data content ];
-             ];
-           footer
-             ~a:[ a_class [ "site-footer" ] ]
-             [
-               hr ();
-               small
-                 [
-                   txt
-                     ("© "
-                     ^ string_of_int
-                         ((Unix.localtime (Unix.time ())).Unix.tm_year + 1900)
-                     ^ " " ^ config.author);
-                 ];
-             ];
-         ])
-  in
-  Format.asprintf "%a" (pp ()) doc
 
 (* Route and URL mapping types *)
 type route = {
@@ -486,9 +435,7 @@ let process_route route =
         | Some t -> t
         | None -> Filename.remove_extension (Filename.basename route.file_path)
       in
-      let html_content =
-        _process_markdown ~file_path:route.file_path ~content
-      in
+      let html_content = process_markdown ~file_path:route.file_path ~content in
 
       (* Special handling for journal index page *)
       let final_html_content =
@@ -806,7 +753,7 @@ let generate_site () =
         base_url = "https://fearful-odds.rocks";
         output_dir = config.output_dir;
         content_dir = config.content_dir;
-        template_dir = config._template_dir;
+        template_dir = config.template_dir;
         static_dir = config.static_dir;
       }
     in
@@ -966,7 +913,7 @@ let () =
           base_url = "https://fearful-odds.rocks";
           output_dir = config.output_dir;
           content_dir = config.content_dir;
-          template_dir = config._template_dir;
+          template_dir = config.template_dir;
           static_dir = config.static_dir;
         }
       in

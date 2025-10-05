@@ -157,10 +157,6 @@ let parse_markdown content =
     !result
   in
 
-  (*
-   * We don't need to add highlight.js and CSS here as they're already included in template_base.ml.
-   * Using improved regex processing that's safer than the previous version.
-   *)
   html |> process_code_blocks
 
 (** Parse a markdown file with frontmatter into a content_page *)

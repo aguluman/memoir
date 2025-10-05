@@ -114,8 +114,8 @@ module Footer = struct
           a
             ~a:
               [
-                a_href "https://twitter.com/agulumans";
-                a_title "Twitter";
+                a_href "https://x.com/agulumans";
+                a_title "X";
                 a_rel [ `Noopener; `Noreferrer ];
                 a_target "_blank";
                 a_class [ "social-link" ];
@@ -162,7 +162,7 @@ module Footer = struct
     ]
 
   (** Complete footer component *)
-  let make ?(year = 2023) ?(name = "Your Name") () =
+  let make ?(year = 2025) ?(name = "Your Name") () =
     let open Html in
     footer
       ~a:[ a_class [ "site-footer" ] ]

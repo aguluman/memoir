@@ -1,9 +1,0 @@
-(tests
- (names generator_tests)
- (libraries
-  alcotest
-  qcheck
-  qcheck-alcotest
-  memoir_lib
-  test_helpers
-  memoir_bin))

@@ -70,7 +70,7 @@ module Navigation = struct
           [];
       ]
 
-  let twitter_icon =
+  let x_icon =
     let open Html in
     svg
       ~a:
@@ -152,15 +152,15 @@ module Navigation = struct
             a
               ~a:
                 [
-                  a_href "https://twitter.com/agulumans";
-                  a_aria "label" [ "Twitter" ];
-                  a_title "Twitter";
+                  a_href "https://x.com/agulumans";
+                  a_aria "label" [ "X" ];
+                  a_title "X";
                   a_class [ "social-link" ];
                   a_rel [ `Noopener; `Noreferrer ];
                   a_target "_blank";
                 ]
               [
-                twitter_icon;
+                x_icon;
                 span ~a:[ a_class [ "visually-hidden" ] ] [ Html.txt "Twitter" ];
               ];
           ];
