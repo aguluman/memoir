@@ -118,9 +118,6 @@ clean:
 # Development utilities
 .PHONY: fmt
 fmt:
-	@echo "$(BLUE)💅 Formatting OCaml code...$(NC)"
-	@$(DUNE) fmt
-	@echo "$(GREEN)✅ OCaml code formatted$(NC)"
 	@echo "$(BLUE)💅 Formatting CSS files...$(NC)"
 	@npx prettier --write --log-level=warn "$(SITE_DIR)/static/css/*.css" || true
 	@echo "$(GREEN)✅ CSS formatted$(NC)"
@@ -130,6 +127,9 @@ fmt:
 	@echo "$(BLUE)💅 Formatting JavaScript files...$(NC)"
 	@npx prettier --write --log-level=warn "$(SITE_DIR)/static/js/*.js" || true
 	@echo "$(GREEN)✅ JavaScript formatted$(NC)"
+	@echo "$(BLUE)💅 Formatting OCaml code...$(NC)"
+	@$(DUNE) fmt
+	@echo "$(GREEN)✅ OCaml code formatted$(NC)"
 
 .PHONY: analyze-size
 analyze-size:

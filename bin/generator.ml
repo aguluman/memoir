@@ -202,6 +202,18 @@ type content_entry = {
   description : string option;
 }
 
+(* Configuration for rendering different content types *)
+type entry_display_config = {
+  url_prefix : string;
+  entry_element : string; (* "article", "div", etc. *)
+  entry_class : string; (* "blog-entry", "journal-entry", etc. *)
+  container_class : string; (* "blog-entries", "journal-entries", etc. *)
+  date_class : string;
+  show_description : bool;
+  empty_message : string;
+  not_found_message : string;
+}
+
 (* Common function to process markdown files in a directory *)
 let process_content_files dir url_prefix =
   let entries = ref [] in
@@ -240,14 +252,14 @@ let process_content_files dir url_prefix =
       | None, None -> String.compare a.title b.title)
     !entries
 
-(* Generate journal entry listings *)
-let generate_journal_entries_html journal_dir =
-  if not (Sys.file_exists journal_dir && Sys.is_directory journal_dir) then
-    "<p><em>Journal directory not found.</em></p>"
+(* Generic function to generate entry listings *)
+let generate_entries_html dir display_config =
+  if not (Sys.file_exists dir && Sys.is_directory dir) then
+    Printf.sprintf "<p><em>%s</em></p>" display_config.not_found_message
   else
-    let sorted_entries = process_content_files journal_dir "/journal/" in
+    let sorted_entries = process_content_files dir display_config.url_prefix in
     if List.length sorted_entries = 0 then
-      "<p><em>No journal entries found.</em></p>"
+      Printf.sprintf "<p><em>%s</em></p>" display_config.empty_message
     else
       let entries_html =
         List.map
@@ -255,58 +267,64 @@ let generate_journal_entries_html journal_dir =
             let date_str =
               match entry.date with
               | Some d ->
-                  Printf.sprintf "<span class=\"entry-date\">%s</span>" d
-              | None -> ""
-            in
-            Printf.sprintf
-              "<div class=\"journal-entry\">\n\
-              \  <h3><a href=\"%s\">%s</a></h3>\n\
-              \  %s\n\
-               </div>\n"
-              entry.url entry.title date_str)
-          sorted_entries
-      in
-      "<div class=\"journal-entries\">\n"
-      ^ String.concat "\n" entries_html
-      ^ "\n</div>"
-
-(* Generate blog entry listings *)
-let generate_blog_entries_html blog_dir =
-  if not (Sys.file_exists blog_dir && Sys.is_directory blog_dir) then
-    "<p><em>Blog directory not found.</em></p>"
-  else
-    let sorted_entries = process_content_files blog_dir "/blog/" in
-    if List.length sorted_entries = 0 then
-      "<p><em>No blog posts found.</em></p>"
-    else
-      let entries_html =
-        List.map
-          (fun entry ->
-            let date_str =
-              match entry.date with
-              | Some d ->
-                  Printf.sprintf "<span class=\"blog-entry-date\">%s</span>" d
+                  Printf.sprintf "<span class=\"%s\">%s</span>"
+                    display_config.date_class d
               | None -> ""
             in
             let description_str =
-              match entry.description with
-              | Some desc ->
-                  Printf.sprintf "<p class=\"blog-entry-description\">%s</p>"
-                    desc
-              | None -> ""
+              if display_config.show_description then
+                match entry.description with
+                | Some desc ->
+                    Printf.sprintf "<p class=\"%s-description\">%s</p>"
+                      display_config.entry_class desc
+                | None -> ""
+              else ""
             in
             Printf.sprintf
-              "<article class=\"blog-entry\">\n\
+              "<%s class=\"%s\">\n\
               \  <h3><a href=\"%s\">%s</a></h3>\n\
               \  %s\n\
               \  %s\n\
-               </article>\n"
-              entry.url entry.title date_str description_str)
+               </%s>\n"
+              display_config.entry_element display_config.entry_class entry.url
+              entry.title date_str description_str display_config.entry_element)
           sorted_entries
       in
-      "<div class=\"blog-entries\">\n"
-      ^ String.concat "\n" entries_html
-      ^ "\n</div>"
+      Printf.sprintf "<div class=\"%s\">\n%s\n</div>"
+        display_config.container_class
+        (String.concat "\n" entries_html)
+
+(* Generate journal entry listings *)
+let generate_journal_entries_html journal_dir =
+  let config =
+    {
+      url_prefix = "/journal/";
+      entry_element = "div";
+      entry_class = "journal-entry";
+      container_class = "journal-entries";
+      date_class = "entry-date";
+      show_description = false;
+      empty_message = "No journal entries found.";
+      not_found_message = "Journal directory not found.";
+    }
+  in
+  generate_entries_html journal_dir config
+
+(* Generate blog entry listings *)
+let generate_blog_entries_html blog_dir =
+  let config =
+    {
+      url_prefix = "/blog/";
+      entry_element = "article";
+      entry_class = "blog-entry";
+      container_class = "blog-entries";
+      date_class = "blog-entry-date";
+      show_description = true;
+      empty_message = "No blog posts found.";
+      not_found_message = "Blog directory not found.";
+    }
+  in
+  generate_entries_html blog_dir config
 
 (* URL path mapping *)
 let clean_url_path path =
@@ -572,79 +590,52 @@ let update_cache_with_dependencies file_path cache =
       | _ -> updated_cache)
   | Other -> updated_cache
 
+(* Generic function to collect content from a directory for RSS feed *)
+let collect_content_from_dir dir url_prefix =
+  if not (Sys.file_exists dir && Sys.is_directory dir) then []
+  else
+    let files = Sys.readdir dir in
+    Array.fold_left
+      (fun acc file ->
+        let full_path = Filename.concat dir file in
+        if
+          (not (Sys.is_directory full_path))
+          && Filename.extension file = ".md"
+          && file <> "index.md"
+        then
+          let metadata = extract_route_metadata full_path in
+          let content = read_file full_path in
+          let page =
+            {
+              Memoir_lib.metadata =
+                {
+                  title =
+                    (match metadata.title with
+                    | Some t -> t
+                    | None -> Filename.remove_extension file);
+                  date = metadata._date;
+                  tags = metadata._tags;
+                  summary = metadata._description;
+                  draft = false;
+                };
+              content;
+              url = url_prefix ^ Filename.remove_extension file;
+              source_path = full_path;
+            }
+          in
+          page :: acc
+        else acc)
+      [] files
+
 (* Extract RSS feed generation into a separate function *)
 let generate_rss_feed () =
-  let pages = ref [] in
   let blog_dir = Filename.concat config.content_dir "pages/blog" in
   let journal_dir = Filename.concat config.content_dir "pages/journal" in
 
-  (* Process blog posts *)
-  (if Sys.file_exists blog_dir && Sys.is_directory blog_dir then
-     let files = Sys.readdir blog_dir in
-     Array.iter
-       (fun file ->
-         let full_path = Filename.concat blog_dir file in
-         if
-           (not (Sys.is_directory full_path))
-           && Filename.extension file = ".md"
-           && file <> "index.md"
-         then
-           let metadata = extract_route_metadata full_path in
-           let content = read_file full_path in
-           let page =
-             {
-               Memoir_lib.metadata =
-                 {
-                   title =
-                     (match metadata.title with
-                     | Some t -> t
-                     | None -> Filename.remove_extension file);
-                   date = metadata._date;
-                   tags = metadata._tags;
-                   summary = metadata._description;
-                   draft = false;
-                 };
-               content;
-               url = "/blog/" ^ Filename.remove_extension file;
-               source_path = full_path;
-             }
-           in
-           pages := page :: !pages)
-       files);
-
-  (* Process journal entries *)
-  (if Sys.file_exists journal_dir && Sys.is_directory journal_dir then
-     let files = Sys.readdir journal_dir in
-     Array.iter
-       (fun file ->
-         let full_path = Filename.concat journal_dir file in
-         if
-           (not (Sys.is_directory full_path))
-           && Filename.extension file = ".md"
-           && file <> "index.md"
-         then
-           let metadata = extract_route_metadata full_path in
-           let content = read_file full_path in
-           let page =
-             {
-               Memoir_lib.metadata =
-                 {
-                   title =
-                     (match metadata.title with
-                     | Some t -> t
-                     | None -> Filename.remove_extension file);
-                   date = metadata._date;
-                   tags = metadata._tags;
-                   summary = metadata._description;
-                   draft = false;
-                 };
-               content;
-               url = "/journal/" ^ Filename.remove_extension file;
-               source_path = full_path;
-             }
-           in
-           pages := page :: !pages)
-       files);
+  (* Collect content from both directories *)
+  let blog_pages = collect_content_from_dir blog_dir "/blog/" in
+  let journal_pages = collect_content_from_dir journal_dir "/journal/" in
+  let pages = blog_pages @ journal_pages in
 
   let rss_config =
     {
@@ -670,7 +661,7 @@ let generate_rss_feed () =
         | Some _, None -> -1
         | None, Some _ -> 1
         | None, None -> 0)
-      (List.rev !pages)
+      pages
   in
 
   let rss_xml = Memoir_lib.generate_rss_feed sorted_pages rss_config in
