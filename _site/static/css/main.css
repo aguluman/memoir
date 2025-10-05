@@ -25,10 +25,8 @@
 
 /* Base Styles with Light Mode as Default */
 :root {
-  --primary-font:
-    "Primary", "JetBrains Mono Nerd Font", "CaskaydiaCove Nerd Font";
-  --secondary-font:
-    "Secondary", "JetBrains Mono Nerd Font", "CaskaydiaCove Nerd Font";
+  --primary-font: "Primary", "JetBrains Mono Nerd Font", "MonaspaceNF";
+  --secondary-font: "Secondary", "JetBrains Mono Nerd Font", "MonaspaceNF";
 
   /* Light mode colors */
   --text-color: #333;
