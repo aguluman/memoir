@@ -1,6 +1,5 @@
 (* Configuration *)
 let port = 6060
-let host = "127.0.0.1"
 let static_dir = "_site"
 let static_subdir = Stdlib.Filename.concat static_dir "static"
 
@@ -241,9 +240,6 @@ let start_server () =
     try_paths possible_paths
   in
 
-  print_endline (Printf.sprintf "Starting server at http://%s:%d/" host port);
-  print_endline "Press Ctrl+C to stop the server.";
-  print_endline "RSS feed available at: http://127.0.0.1:8080/feed.xml";
   Dream.run ~port @@ Dream.logger
   @@ Dream.router
        [ Dream.get "/feed.xml" rss_handler; Dream.get "/**" static_handler ]
