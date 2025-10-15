@@ -8,7 +8,7 @@ SITE_DIR = _site
 STATIC_DIR = static
 CONTENT_DIR = content
 PORT = 6060
-HOST = 127.0.0.1
+HOST = localhost
 
 # Colors for output
 RED = \033[0;31m
@@ -77,6 +77,7 @@ generate-force: build
 serve: build
 	@echo "$(BLUE)🌐 Starting development server...$(NC)"
 	@echo "$(YELLOW)📍 Server will be available at: http://$(HOST):$(PORT)$(NC)"
+	@echo "$(YELLOW)📡 RSS feed available at: http://$(HOST):$(PORT)/feed.xml$(NC)"
 	@echo "$(MAGENTA)🛑 Press Ctrl+C to stop the server$(NC)"
 	@$(DUNE) exec --watch bin/server.exe
 
