@@ -10,3 +10,9 @@ This project is set up to deploy automatically to GitHub Pages using GitHub Acti
 
 The site is available at [https://fearful-odds.rocks/](https://fearful-odds.rocks/).
 
+## Issues
+If you noticed any issue or bug or a better way to do something, please open an issue or a PR.
+
+## Contributions
+Contributions are welcome!
+Thank you for your interest in this project!
