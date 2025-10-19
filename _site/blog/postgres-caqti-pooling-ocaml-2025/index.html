@@ -1,237 +1,51 @@
-<!doctype html><!doctype html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
-  <head>
-    <title>
-      Modern PostgreSQL Connection Pooling in OCaml (2025): Caqti + Dream + Lwt
-    </title>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="A practical, production-focused walkthrough of building a PostgreSQL connection pool in OCaml using Caqti_lwt_unix, with health checks, graceful shutdown, and Dream integration"
-    />
-    <script>
-      (function () {
-        const theme = localStorage.getItem("theme");
-        if (theme === "dark") {
-          document.documentElement.setAttribute("data-theme", "dark");
-        } else if (theme === "light") {
-          document.documentElement.setAttribute("data-theme", "light");
-        }
-      })();
-    </script>
-    <link rel="stylesheet" href="/static/css/main.css" />
-    <link rel="stylesheet" href="/static/css/github-dark.css" />
-    <link rel="stylesheet" href="/static/css/highlight.css" />
-    <link rel="icon" href="/static/images/favicon.png" type="image/png" />
-    <script src="/static/js/main.js" defer="defer"></script>
-    <script src="/static/js/theme-toggle.js" defer="defer"></script>
-    <script src="/static/js/highlight.min.js" defer="defer"></script>
-    <meta
-      property="og:title"
-      content="Modern PostgreSQL Connection Pooling in OCaml (2025): Caqti + Dream + Lwt"
-    />
-    <meta
-      property="og:description"
-      content="A practical, production-focused walkthrough of building a PostgreSQL connection pool in OCaml using Caqti_lwt_unix, with health checks, graceful shutdown, and Dream integration"
-    />
-    <meta
-      property="og:url"
-      content="https://fearful-odds.rocks//blog/postgres-caqti-pooling-ocaml-2025"
-    />
-    <meta property="og:image" content="/static/images/default-og.jpg" />
-    <meta property="og:type" content="article" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@siteauthor" />
-    <meta
-      name="twitter:title"
-      content="Modern PostgreSQL Connection Pooling in OCaml (2025): Caqti + Dream + Lwt"
-    />
-    <meta
-      name="twitter:description"
-      content="A practical, production-focused walkthrough of building a PostgreSQL connection pool in OCaml using Caqti_lwt_unix, with health checks, graceful shutdown, and Dream integration"
-    />
-    <meta name="twitter:image" content="/static/images/default-og.jpg" />
-    <link
-      rel="canonical"
-      href="https://fearful-odds.rocks//blog/postgres-caqti-pooling-ocaml-2025"
-    />
-    <script data-type="application/ld+json">
-      {&quot;@context&quot;:&quot;https://schema.org&quot;,&quot;@type&quot;:&quot;WebPage&quot;,&quot;name&quot;:&quot;Modern PostgreSQL Connection Pooling in OCaml (2025): Caqti + Dream + Lwt&quot;,&quot;description&quot;:&quot;A practical, production-focused walkthrough of building a PostgreSQL connection pool in OCaml using Caqti_lwt_unix, with health checks, graceful shutdown, and Dream integration&quot;,&quot;url&quot;:&quot;https://fearful-odds.rocks//blog/postgres-caqti-pooling-ocaml-2025&quot;,&quot;image&quot;:&quot;/static/images/default-og.jpg&quot;}
-    </script>
-  </head>
-  <body class="page">
-    <button
-      class="theme-toggle"
-      title="Toggle dark/light mode"
-      data-aria-label="Toggle dark/light mode"
-    >
-      <span class="sun-icon">☀️</span><span class="moon-icon">🌙</span>
-    </button>
-    <header class="site-header">
-      <div>
-        <nav class="site-navigation" aria-label="Main navigation">
-          <button
-            class="mobile-nav-toggle"
-            aria-expanded="false"
-            aria-controls="primary-navigation"
-            aria-label="Toggle navigation menu"
-          >
-            <span class="hamburger"></span><span class="sr-only">Menu</span>
-          </button>
-          <ul class="nav-list" id="primary-navigation" data-visible="false">
-            <li class="nav-item"><a href="/">Home</a></li>
-            <li class="nav-item"><a href="/about">About</a></li>
-            <li class="nav-item"><a href="/projects">Projects</a></li>
-            <li class="nav-item"><a href="/blog">Blog</a></li>
-            <li class="nav-item"><a href="/journal">Journal</a></li>
-            <li class="nav-item"><a href="/contact">Contact</a></li>
-          </ul>
-          <div class="nav-right">
-            <ul class="social-nav">
-              <li>
-                <a
-                  href="https://github.com/aguluman"
-                  aria-label="GitHub"
-                  title="GitHub"
-                  class="social-link"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                  ><svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    xmlns:xlink="http://www.w3.org/1999/xlink"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    class="social-icon"
-                  >
-                    <path
-                      d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"
-                    ></path></svg
-                  ><span class="visually-hidden">GitHub</span></a
-                >
-              </li>
-              <li>
-                <a
-                  href="https://x.com/agulumans"
-                  aria-label="X"
-                  title="X"
-                  class="social-link"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                  ><svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    xmlns:xlink="http://www.w3.org/1999/xlink"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    class="social-icon"
-                  >
-                    <path
-                      d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
-                    ></path></svg
-                  ><span class="visually-hidden">Twitter</span></a
-                >
-              </li>
-              <li>
-                <a
-                  href="https://www.linkedin.com/in/chukwuma-akunyili/"
-                  aria-label="LinkedIn"
-                  title="LinkedIn"
-                  class="social-link"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                  ><svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    xmlns:xlink="http://www.w3.org/1999/xlink"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    class="social-icon"
-                  >
-                    <path
-                      d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"
-                    ></path></svg
-                  ><span class="visually-hidden">LinkedIn</span></a
-                >
-              </li>
-            </ul>
-          </div>
-        </nav>
-      </div>
-    </header>
-    <main>
-      <h1 id="modern-postgresql-connection-pooling-in-ocaml-2025">
-        Modern PostgreSQL Connection Pooling in OCaml (2025)
-      </h1>
-      <blockquote>
-        <p>
-          A hands-on guide to wiring up PostgreSQL in an OCaml web application
-          using <strong>Caqti</strong>, <strong>Lwt</strong>, and the
-          <strong>Dream</strong> web framework — with environment-driven
-          configuration, connection pooling, health diagnostics, and graceful
-          shutdown.
-        </p>
-      </blockquote>
-      <p>
-        This article documents the journey (and the sharp edges) of getting a
-        <strong>clean, inspectable, self-managed connection pool</strong>
-        running for an MVP project (&quot;Chaufr&quot;). It’s intentionally
-        low-level enough to teach the pieces, while staying
-        production-conscious.
-      </p>
-      <h2 id="why-roll-a-light-pool-instead-of-using-caqtis-built-in-pool">
-        Why Roll a Light Pool Instead of Using Caqti’s Built-in Pool?
-      </h2>
-      <p>
-        Caqti offers <code>connect_pool</code>, but building a minimal layer
-        yourself:
-      </p>
-      <ul>
-        <li>Makes lifecycle + observability explicit</li>
-        <li>Lets you inject logging / masking / metrics early</li>
-        <li>
-          Teaches how Caqti’s connection abstraction works (first-class modules)
-        </li>
-        <li>
-          Gives you graceful degrade paths (start server even if DB init fails)
-        </li>
-      </ul>
-      <p>
-        When you outgrow this, you can swap in Caqti’s managed pool with
-        near-zero API disruption.
-      </p>
-      <hr />
-      <h2 id="our-solution-architecture">Our Solution Architecture</h2>
-      <h3 id="high-level-architecture">High-Level Architecture</h3>
-      <pre><code>Environment → Config Parser → URI Builder → Pool (Queue + Mutex) → with_connection → Queries &amp; Health
+<!DOCTYPE html><!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><title>Modern PostgreSQL Connection Pooling in OCaml (2025): Caqti + Dream + Lwt</title><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><meta name="description" content="A practical, production-focused walkthrough of building a PostgreSQL connection pool in OCaml using Caqti_lwt_unix, with health checks, graceful shutdown, and Dream integration"/><script>(function() {
+      const theme = localStorage.getItem('theme');
+      if (theme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else if (theme === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();</script><link rel="stylesheet" href="/static/css/main.css"/><link/><link rel="stylesheet" href="/static/css/highlight.css"/><link rel="icon" href="/static/images/favicon.png" type="image/png"/><script src="/static/js/main.js" defer="defer"></script><script src="/static/js/theme-toggle.js" defer="defer"></script><script src="/static/js/highlight.min.js" defer="defer"></script><meta property="og:title" content="Modern PostgreSQL Connection Pooling in OCaml (2025): Caqti + Dream + Lwt"/><meta property="og:description" content="A practical, production-focused walkthrough of building a PostgreSQL connection pool in OCaml using Caqti_lwt_unix, with health checks, graceful shutdown, and Dream integration"/><meta property="og:url" content="https://fearful-odds.rocks//blog/postgres-caqti-pooling-ocaml-2025"/><meta property="og:image" content="/static/images/default-og.jpg"/><meta property="og:type" content="article"/><meta name="twitter:card" content="summary_large_image"/><meta name="twitter:site" content="@siteauthor"/><meta name="twitter:title" content="Modern PostgreSQL Connection Pooling in OCaml (2025): Caqti + Dream + Lwt"/><meta name="twitter:description" content="A practical, production-focused walkthrough of building a PostgreSQL connection pool in OCaml using Caqti_lwt_unix, with health checks, graceful shutdown, and Dream integration"/><meta name="twitter:image" content="/static/images/default-og.jpg"/><link rel="canonical" href="https://fearful-odds.rocks//blog/postgres-caqti-pooling-ocaml-2025"/><script data-type="application/ld+json">{&quot;@context&quot;:&quot;https://schema.org&quot;,&quot;@type&quot;:&quot;WebPage&quot;,&quot;name&quot;:&quot;Modern PostgreSQL Connection Pooling in OCaml (2025): Caqti + Dream + Lwt&quot;,&quot;description&quot;:&quot;A practical, production-focused walkthrough of building a PostgreSQL connection pool in OCaml using Caqti_lwt_unix, with health checks, graceful shutdown, and Dream integration&quot;,&quot;url&quot;:&quot;https://fearful-odds.rocks//blog/postgres-caqti-pooling-ocaml-2025&quot;,&quot;image&quot;:&quot;/static/images/default-og.jpg&quot;}</script></head><body class="page"><button class="theme-toggle" title="Toggle dark/light mode" data-aria-label="Toggle dark/light mode"><span class="sun-icon">☀️</span><span class="moon-icon">🌙</span></button><header class="site-header"><div><nav class="site-navigation" aria-label="Main navigation"><button class="mobile-nav-toggle" aria-expanded="false" aria-controls="primary-navigation" aria-label="Toggle navigation menu"><span class="hamburger"></span><span class="sr-only">Menu</span></button><ul class="nav-list" id="primary-navigation" data-visible="false"><li class="nav-item"><a href="/">Home</a></li><li class="nav-item"><a href="/about">About</a></li><li class="nav-item"><a href="/projects">Projects</a></li><li class="nav-item"><a href="/blog">Blog</a></li><li class="nav-item"><a href="/journal">Journal</a></li><li class="nav-item"><a href="/contact">Contact</a></li></ul><div class="nav-right"><ul class="social-nav"><li><a href="https://github.com/aguluman" aria-label="GitHub" title="GitHub" class="social-link" rel="noopener noreferrer" target="_blank"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="social-icon"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"></path></svg><span class="visually-hidden">GitHub</span></a></li><li><a href="https://x.com/agulumans" aria-label="X" title="X" class="social-link" rel="noopener noreferrer" target="_blank"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="social-icon"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></svg><span class="visually-hidden">Twitter</span></a></li><li><a href="https://www.linkedin.com/in/chukwuma-akunyili/" aria-label="LinkedIn" title="LinkedIn" class="social-link" rel="noopener noreferrer" target="_blank"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="social-icon"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"></path></svg><span class="visually-hidden">LinkedIn</span></a></li></ul></div></nav></div></header><main><h1 id="modern-postgresql-connection-pooling-in-ocaml-2025">Modern PostgreSQL Connection Pooling in OCaml (2025)</h1>
+<blockquote>
+<p>A hands-on guide to wiring up PostgreSQL in an OCaml web application using <strong>Caqti</strong>, <strong>Lwt</strong>, and the <strong>Dream</strong> web framework — with environment-driven configuration, connection pooling, health diagnostics, and graceful shutdown.</p>
+</blockquote>
+<p>This article documents the journey (and the sharp edges) of getting a <strong>clean, inspectable, self-managed connection pool</strong> running for an MVP project (&quot;Chaufr&quot;). It’s intentionally low-level enough to teach the pieces, while staying production-conscious.</p>
+<h2 id="why-roll-a-light-pool-instead-of-using-caqtis-built-in-pool">Why Roll a Light Pool Instead of Using Caqti’s Built-in Pool?</h2>
+<p>Caqti offers <code>connect_pool</code>, but building a minimal layer yourself:</p>
+<ul>
+<li>Makes lifecycle + observability explicit
+</li>
+<li>Lets you inject logging / masking / metrics early
+</li>
+<li>Teaches how Caqti’s connection abstraction works (first-class modules)
+</li>
+<li>Gives you graceful degrade paths (start server even if DB init fails)
+</li>
+</ul>
+<p>When you outgrow this, you can swap in Caqti’s managed pool with near-zero API disruption.</p>
+<hr />
+<h2 id="our-solution-architecture">Our Solution Architecture</h2>
+<h3 id="high-level-architecture">High-Level Architecture</h3>
+<pre><code>Environment → Config Parser → URI Builder → Pool (Queue + Mutex) → with_connection → Queries &amp; Health
                                                     │
                                             Dream Routes (/health, /health/detailed)
 </code></pre>
-      <h3 id="core-components">Core Components</h3>
-      <p>Core modules / files:</p>
-      <ul>
-        <li>
-          <code>lib/server/database/connection.ml</code> – pooling + config +
-          health logic
-        </li>
-        <li>
-          <code>bin/main.ml</code> – startup flow, health endpoints, graceful
-          shutdown
-        </li>
-        <li>
-          <code>lib/server/database/dune</code> – library dependencies (notably
-          <code>caqti-lwt.unix</code>)
-        </li>
-      </ul>
-      <hr />
-      <h2 id="implementation-guide">Implementation Guide</h2>
-      <h3 id="dependencies-2025-stack">Dependencies (2025 Stack)</h3>
-      <p>Dune library stanza (key parts):</p>
-      <pre><code class="language-lisp">(library
+<h3 id="core-components">Core Components</h3>
+<p>Core modules / files:</p>
+<ul>
+<li><code>lib/server/database/connection.ml</code> – pooling + config + health logic
+</li>
+<li><code>bin/main.ml</code> – startup flow, health endpoints, graceful shutdown
+</li>
+<li><code>lib/server/database/dune</code> – library dependencies (notably <code>caqti-lwt.unix</code>)
+</li>
+</ul>
+<hr />
+<h2 id="implementation-guide">Implementation Guide</h2>
+<h3 id="dependencies-2025-stack">Dependencies (2025 Stack)</h3>
+<p>Dune library stanza (key parts):</p>
+<pre><code class="language-lisp">(library
  (public_name chaufr.server.database)
  (name database)
  (libraries
@@ -244,44 +58,28 @@
   caqti-driver-postgresql
   simple_dotenv))
 </code></pre>
-      <p>
-        Why <code>caqti-lwt.unix</code>? The plain
-        <code>caqti-lwt</code> exposes types, but the <em>actual</em>
-        <code>connect</code> function lives in the platform package (<code
-          >caqti_lwt_unix</code
-        >
-        module). Missing it yields the classic:
-      </p>
-      <pre><code>Error: Unbound value Caqti_lwt.connect
+<p>Why <code>caqti-lwt.unix</code>? The plain <code>caqti-lwt</code> exposes types, but the <em>actual</em> <code>connect</code> function lives in the platform package (<code>caqti_lwt_unix</code> module). Missing it yields the classic:</p>
+<pre><code>Error: Unbound value Caqti_lwt.connect
 </code></pre>
-      <p>
-        Fix: depend on <code>caqti-lwt.unix</code> and call
-        <code>Caqti_lwt_unix.connect</code>.
-      </p>
-      <hr />
-      <h2 id="configuration-strategy">Configuration Strategy</h2>
-      <p>We support two input surfaces:</p>
-      <ol>
-        <li>A unified <code>DATABASE_URL</code> (Local development style)</li>
-        <li>
-          Individual environment variables (Azure / custom provisioning):
-          <ul>
-            <li>
-              <code>POSTGRESQL_ADDON_HOST</code>,
-              <code>POSTGRESQL_ADDON_PORT</code>,
-              <code>POSTGRESQL_ADDON_DB</code>,
-              <code>POSTGRESQL_ADDON_USER</code>,
-              <code>POSTGRESQL_ADDON_PASSWORD</code>,
-              <code>POSTGRESQL_ADDON_CONNECTION_POOL</code>
-            </li>
-          </ul>
-        </li>
-      </ol>
-      <p>Password masking avoids leaking secrets:</p>
-      <pre><code class="language-ocaml">let mask_password config = { config with password = &quot;***&quot; }
+<p>Fix: depend on <code>caqti-lwt.unix</code> and call <code>Caqti_lwt_unix.connect</code>.</p>
+<hr />
+<h2 id="configuration-strategy">Configuration Strategy</h2>
+<p>We support two input surfaces:</p>
+<ol>
+<li>A unified <code>DATABASE_URL</code> (Local development style)
+</li>
+<li>Individual environment variables (Azure / custom provisioning):
+<ul>
+<li><code>POSTGRESQL_ADDON_HOST</code>, <code>POSTGRESQL_ADDON_PORT</code>, <code>POSTGRESQL_ADDON_DB</code>, <code>POSTGRESQL_ADDON_USER</code>, <code>POSTGRESQL_ADDON_PASSWORD</code>, <code>POSTGRESQL_ADDON_CONNECTION_POOL</code>
+</li>
+</ul>
+</li>
+</ol>
+<p>Password masking avoids leaking secrets:</p>
+<pre><code class="language-ocaml">let mask_password config = { config with password = &quot;***&quot; }
 </code></pre>
-      <p>Config record:</p>
-      <pre><code class="language-ocaml">type db_config = {
+<p>Config record:</p>
+<pre><code class="language-ocaml">type db_config = {
   host : string; 
   port : int; 
   database : string;
@@ -291,50 +89,39 @@
   log_level : string;
 }
 </code></pre>
-      <p>Parsing path from <code>DATABASE_URL</code> safely:</p>
-      <pre><code class="language-ocaml">match Uri.path uri with
+<p>Parsing path from <code>DATABASE_URL</code> safely:</p>
+<pre><code class="language-ocaml">match Uri.path uri with
 | &quot;&quot; | &quot;/&quot; -&gt; &quot;postgres&quot;
 | path -&gt; String.sub path 1 (String.length path - 1)
 </code></pre>
-      <h3 id="database-uri-construction">Database URI Construction</h3>
-      <pre><code class="language-ocaml">let build_uri c =
+<h3 id="database-uri-construction">Database URI Construction</h3>
+<pre><code class="language-ocaml">let build_uri c =
   Printf.sprintf &quot;postgresql://%s:%s@%s:%d/%s&quot;
     c.user c.password c.host c.port c.database
 </code></pre>
-      <p>
-        Everything is explicit — no hidden string mutation or global builder.
-      </p>
-      <hr />
-      <h2 id="connection-pool-implementation">
-        Connection Pool Implementation
-      </h2>
-      <h3 id="pool-structure">Pool Structure</h3>
-      <p>
-        Lightweight pool with a mutex + queue of
-        <em>first-class connections</em>:
-      </p>
-      <pre><code class="language-ocaml">type pool = {
+<p>Everything is explicit — no hidden string mutation or global builder.</p>
+<hr />
+<h2 id="connection-pool-implementation">Connection Pool Implementation</h2>
+<h3 id="pool-structure">Pool Structure</h3>
+<p>Lightweight pool with a mutex + queue of <em>first-class connections</em>:</p>
+<pre><code class="language-ocaml">type pool = {
   connections : Caqti_lwt.connection Queue.t;
   mutex : Lwt_mutex.t;
   max_size : int;
   uri : Uri.t;
 }
 </code></pre>
-      <p>
-        We store <strong>modules-as-values</strong> via Caqti’s packed
-        connection (<code>(module Caqti_lwt.CONNECTION)</code> pattern). This
-        stays implementation-agnostic.
-      </p>
-      <h3 id="creating-one-connection">Creating one connection</h3>
-      <pre><code class="language-ocaml">let create_connection (uri: Uri.t) =
+<p>We store <strong>modules-as-values</strong> via Caqti’s packed connection (<code>(module Caqti_lwt.CONNECTION)</code> pattern). This stays implementation-agnostic.</p>
+<h3 id="creating-one-connection">Creating one connection</h3>
+<pre><code class="language-ocaml">let create_connection (uri: Uri.t) =
   let* r = Caqti_lwt_unix.connect uri in
   match r with
   | Ok (module Connection as m) -&gt; Lwt.return (Ok m)
   | Error err -&gt;
       Lwt.return (Error (`Connection_error (Caqti_error.show err)))
 </code></pre>
-      <h3 id="pool-initialization">Pool initialization</h3>
-      <pre><code class="language-ocaml">let create_pool config =
+<h3 id="pool-initialization">Pool initialization</h3>
+<pre><code class="language-ocaml">let create_pool config =
   let uri = Uri.of_string (build_uri config) in
   let pool = { connections = Queue.create (); mutex = Lwt_mutex.create ();
                max_size = config.pool_size; uri } in
@@ -344,8 +131,8 @@
   | Ok conn -&gt; Queue.add conn pool.connections; Lwt.return (Ok pool)
   | Error e -&gt; Lwt.return (Error e)
 </code></pre>
-      <h3 id="checkout-return">Checkout / Return</h3>
-      <pre><code class="language-ocaml">let get_connection pool =
+<h3 id="checkout-return">Checkout / Return</h3>
+<pre><code class="language-ocaml">let get_connection pool =
   let* () = Lwt_mutex.lock pool.mutex in
   let op =
     if Queue.is_empty pool.connections then create_connection pool.uri
@@ -359,8 +146,8 @@ let return_connection pool conn =
     Queue.add conn pool.connections;
   Lwt_mutex.unlock pool.mutex; Lwt.return ()
 </code></pre>
-      <h3 id="scoped-usage">Scoped Usage</h3>
-      <pre><code class="language-ocaml">let with_connection f =
+<h3 id="scoped-usage">Scoped Usage</h3>
+<pre><code class="language-ocaml">let with_connection f =
   match get_pool () with
   | Error e -&gt; Lwt.return (Error e)
   | Ok pool -&gt;
@@ -372,116 +159,97 @@ let return_connection pool conn =
             (fun () -&gt; let* r = f conn in Lwt.return (Ok r))
             (fun () -&gt; return_connection pool conn)
 </code></pre>
-      <p>
-        This ensures connections are returned even on exceptions (thanks to
-        <code>Lwt.finalize</code>).
-      </p>
-      <hr />
-      <h2 id="health-diagnostics">Health &amp; Diagnostics</h2>
-      <h3 id="monitoring-endpoints">Monitoring Endpoints</h3>
-      <p>Exposed via <code>Dream</code>:</p>
-      <ul>
-        <li><code>/health</code> – liveness (fast OK)</li>
-        <li>
-          <code>/health/detailed</code> – pooled connection +
-          <code>SELECT 1</code> + <code>SELECT version()</code>
-        </li>
-        <li><code>/diagnostic</code> – masked environment snapshot</li>
-        <li>
-          <code>/status</code> – runtime metadata (timestamp, OCaml version)
-        </li>
-      </ul>
-      <p>Health assembly:</p>
-      <pre><code class="language-ocaml">let ping_query = (Caqti_type.unit -&gt;! Caqti_type.int) @@ &quot;SELECT 1&quot;
+<p>This ensures connections are returned even on exceptions (thanks to <code>Lwt.finalize</code>).</p>
+<hr />
+<h2 id="health-diagnostics">Health &amp; Diagnostics</h2>
+<h3 id="monitoring-endpoints">Monitoring Endpoints</h3>
+<p>Exposed via <code>Dream</code>:</p>
+<ul>
+<li><code>/health</code> – liveness (fast OK)
+</li>
+<li><code>/health/detailed</code> – pooled connection + <code>SELECT 1</code> + <code>SELECT version()</code>
+</li>
+<li><code>/diagnostic</code> – masked environment snapshot
+</li>
+<li><code>/status</code> – runtime metadata (timestamp, OCaml version)
+</li>
+</ul>
+<p>Health assembly:</p>
+<pre><code class="language-ocaml">let ping_query = (Caqti_type.unit -&gt;! Caqti_type.int) @@ &quot;SELECT 1&quot;
 let version_query = (Caqti_type.unit -&gt;! Caqti_type.string) @@ &quot;SELECT version()&quot;
 </code></pre>
-      <p>Status string on success:</p>
-      <pre><code>Database Health: OK
+<p>Status string on success:</p>
+<pre><code>Database Health: OK
 Ping: Database ping successful
 Version: PostgreSQL 16.x (...)
 </code></pre>
-      <hr />
-      <h2 id="production-concerns">Production Concerns</h2>
-      <h3 id="graceful-startup-fallback">Graceful Startup &amp; Fallback</h3>
-      <p>
-        We separate <strong>DB init</strong> from
-        <strong>HTTP server run</strong>:
-      </p>
-      <pre><code class="language-ocaml">let db_init_result =
+<hr />
+<h2 id="production-concerns">Production Concerns</h2>
+<h3 id="graceful-startup-fallback">Graceful Startup &amp; Fallback</h3>
+<p>We separate <strong>DB init</strong> from <strong>HTTP server run</strong>:</p>
+<pre><code class="language-ocaml">let db_init_result =
   Lwt_main.run (let* r = Connection.init () in Lwt.return r)
 </code></pre>
-      <p>
-        If init fails we still boot the HTTP server (degraded mode) — useful for
-        ops: system returns 503 on <code>/health/detailed</code> but stays
-        reachable.
-      </p>
-      <h3 id="graceful-shutdown-sigterm">Graceful Shutdown (SIGTERM)</h3>
-      <pre><code class="language-ocaml">Sys.set_signal Sys.sigterm
+<p>If init fails we still boot the HTTP server (degraded mode) — useful for ops: system returns 503 on <code>/health/detailed</code> but stays reachable.</p>
+<h3 id="graceful-shutdown-sigterm">Graceful Shutdown (SIGTERM)</h3>
+<pre><code class="language-ocaml">Sys.set_signal Sys.sigterm
   (Signal_handle (fun _ -&gt;
      Printf.printf &quot;Received SIGTERM...&quot;;
      Lwt.async (fun () -&gt; Connection.close ())));
 </code></pre>
-      <p>
-        The pool’s <code>close</code> clears queued connections and resets the
-        global ref.
-      </p>
-      <h3 id="error-taxonomy">Error Taxonomy</h3>
-      <p>Custom variant keeps errors actionable:</p>
-      <pre><code class="language-ocaml">type connection_error =
+<p>The pool’s <code>close</code> clears queued connections and resets the global ref.</p>
+<h3 id="error-taxonomy">Error Taxonomy</h3>
+<p>Custom variant keeps errors actionable:</p>
+<pre><code class="language-ocaml">type connection_error =
   [ `Config_error of string
   | `Connection_error of string
   | `Pool_error of string 
   ]
 </code></pre>
-      <p>Render via:</p>
-      <pre><code class="language-ocaml">let error_to_string = function
+<p>Render via:</p>
+<pre><code class="language-ocaml">let error_to_string = function
  | `Config_error m -&gt; &quot;Configuration Error: &quot; ^ m
  | `Connection_error m -&gt; &quot;Connection Error: &quot; ^ m
  | `Pool_error m -&gt; &quot;Pool Error: &quot; ^ m
 </code></pre>
-      <p>This propagates uniformly through <code>Result</code> + Lwt.</p>
-      <hr />
-      <h2 id="common-pitfalls-and-fixes">Common Pitfalls (and Fixes)</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Symptom</th>
-            <th>Cause</th>
-            <th>Fix</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Unbound value <code>Caqti_lwt.connect</code></td>
-            <td>Missing platform connector</td>
-            <td>
-              Use <code>caqti-lwt.unix</code> +
-              <code>Caqti_lwt_unix.connect</code>
-            </td>
-          </tr>
-          <tr>
-            <td>Unbound module Lwt in editor</td>
-            <td>Language server not seeing dune context</td>
-            <td>Run <code>dune build</code>, restart <code>ocamllsp</code></td>
-          </tr>
-          <tr>
-            <td>Blank health version</td>
-            <td>Pool not initialized</td>
-            <td>
-              Ensure <code>Connection.init()</code> runs before calling endpoint
-            </td>
-          </tr>
-          <tr>
-            <td>Leaked password in logs</td>
-            <td>Printed raw URI</td>
-            <td>Mask &amp; structure logs (use <code>mask_password</code>)</td>
-          </tr>
-        </tbody>
-      </table>
-      <hr />
-      <h2 id="getting-started">Getting Started</h2>
-      <h3 id="minimal-example">Minimal Example</h3>
-      <pre><code class="language-ocaml">(* Acquire &amp; init once at startup *)
+<p>This propagates uniformly through <code>Result</code> + Lwt.</p>
+<hr />
+<h2 id="common-pitfalls-and-fixes">Common Pitfalls (and Fixes)</h2>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Cause</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Unbound value <code>Caqti_lwt.connect</code></td>
+<td>Missing platform connector</td>
+<td>Use <code>caqti-lwt.unix</code> + <code>Caqti_lwt_unix.connect</code></td>
+</tr>
+<tr>
+<td>Unbound module Lwt in editor</td>
+<td>Language server not seeing dune context</td>
+<td>Run <code>dune build</code>, restart <code>ocamllsp</code></td>
+</tr>
+<tr>
+<td>Blank health version</td>
+<td>Pool not initialized</td>
+<td>Ensure <code>Connection.init()</code> runs before calling endpoint</td>
+</tr>
+<tr>
+<td>Leaked password in logs</td>
+<td>Printed raw URI</td>
+<td>Mask &amp; structure logs (use <code>mask_password</code>)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="getting-started">Getting Started</h2>
+<h3 id="minimal-example">Minimal Example</h3>
+<pre><code class="language-ocaml">(* Acquire &amp; init once at startup *)
 match Lwt_main.run (Connection.init ()) with
 | Ok () -&gt; print_endline &quot;Pool ready&quot;
 | Error e -&gt; prerr_endline (Connection.error_to_string e)
@@ -492,191 +260,123 @@ match status with
 | Ok s -&gt; Dream.respond s
 | Error e -&gt; Dream.respond ~status:`Service_Unavailable (Connection.error_to_string e)
 </code></pre>
-      <hr />
-      <h2 id="why-this-matters-in-2025">Why This Matters in 2025</h2>
-      <p>
-        The OCaml ecosystem keeps maturing, but <em>approachable</em>,
-        production-minded examples remain scarce. This implementation shows you
-        can:
-      </p>
-      <ul>
-        <li>Keep types strong without over-abstraction</li>
-        <li>Avoid deadlocks by disciplined mutex usage</li>
-        <li>Defer heavier frameworks until you need them</li>
-        <li>Offer clear operational surfaces (health &amp; diagnostics)</li>
-      </ul>
-      <p>
-        It’s a stepping stone: add metrics, structured logging, OpenTelemetry
-        spans, then swap to Caqti’s pool or another layer when throughput
-        demands.
-      </p>
-      <hr />
-      <h2 id="next-steps">Next Steps</h2>
-      <ul>
-        <li>Add <code>queries.ml</code> with prepared statements + decoders</li>
-        <li>
-          Introduce migrations (<code>migrations.ml</code>) with
-          forward/rollback
-        </li>
-        <li>
-          Attach tracing (OpenTelemetry) around <code>with_connection</code>
-        </li>
-        <li>Implement backpressure (queue wait when pool exhausted)</li>
-        <li>Add JSON health output variant for orchestrators / Kubernetes</li>
-      </ul>
-      <hr />
-      <h2 id="reference">Reference</h2>
-      <h3 id="environment-variables">Environment Variables</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Variable</th>
-            <th>Purpose</th>
-            <th>Fallback</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><code>DATABASE_URL</code></td>
-            <td>Unified connection string</td>
-            <td>Parsed first if present</td>
-          </tr>
-          <tr>
-            <td><code>POSTGRESQL_ADDON_HOST</code></td>
-            <td>Hostname</td>
-            <td><code>DB_HOST</code> / default error</td>
-          </tr>
-          <tr>
-            <td><code>POSTGRESQL_ADDON_PORT</code></td>
-            <td>Port</td>
-            <td><code>5432</code></td>
-          </tr>
-          <tr>
-            <td><code>POSTGRESQL_ADDON_DB</code></td>
-            <td>Database name</td>
-            <td><code>DB_NAME</code></td>
-          </tr>
-          <tr>
-            <td><code>POSTGRESQL_ADDON_USER</code></td>
-            <td>Username</td>
-            <td><code>DB_USER</code></td>
-          </tr>
-          <tr>
-            <td><code>POSTGRESQL_ADDON_PASSWORD</code></td>
-            <td>Password</td>
-            <td><code>DB_PASSWORD</code></td>
-          </tr>
-          <tr>
-            <td><code>POSTGRESQL_ADDON_CONNECTION_POOL</code></td>
-            <td>Pool size</td>
-            <td><code>20</code></td>
-          </tr>
-          <tr>
-            <td><code>LOG_LEVEL</code></td>
-            <td>Verbosity</td>
-            <td><code>info</code></td>
-          </tr>
-        </tbody>
-      </table>
-      <hr />
-      <h2 id="acknowledgements">Acknowledgements</h2>
-      <ul>
-        <li>
-          Environment variable naming &amp; layered config inspiration:
-          <a href="https://github.com/xvw/muhokama">muhōkama</a> its
-          <a href="https://github.com/xvw/muhokama/blob/main/.test_env"
-            ><code>.test_env</code></a
-          >
-          file which demonstrated a clear pattern for POSTGRESQL_ADDON_*
-          variables and encouraged masking + explicit pool sizing.
-        </li>
-        <li>
-          Thanks to the Caqti maintainers for the modular connector design
-          (separation of <code>caqti-lwt</code> and
-          <code>caqti-lwt.unix</code> clarified the platform dependency).
-        </li>
-        <li>
-          This article is a collaborative effort; adapt and improve it for your
-          own stacks—crediting upstream inspirations strengthens the OCaml
-          ecosystem.
-        </li>
-      </ul>
-      <hr />
-      <h2 id="key-takeaways">Key Takeaways</h2>
-      <ul>
-        <li>
-          <strong>Caqti’s packed modules</strong> make dialect / driver changes
-          invisible to callers.
-        </li>
-        <li>
-          <strong>Explicit init + fallback</strong> increases resilience during
-          transient DB outages.
-        </li>
-        <li>
-          <strong>Health layering</strong> (basic vs detailed) aligns with
-          modern platform expectations.
-        </li>
-        <li>
-          <strong>Custom pool</strong> = learning + instrumentation playground
-          before adopting heavier infra.
-        </li>
-      </ul>
-      <p>
-        If this helped you wire PostgreSQL into your OCaml service — pass it
-        forward. The ecosystem grows when we share the gritty paths, not just
-        the polished libraries.
-      </p>
-      <hr />
-      <p>
-        <em
-          >Have questions about OCaml, PostgreSQL, or connection pooling?
-          <a href="/contact">Reach out</a>!</em
-        >
-      </p>
+<hr />
+<h2 id="why-this-matters-in-2025">Why This Matters in 2025</h2>
+<p>The OCaml ecosystem keeps maturing, but <em>approachable</em>, production-minded examples remain scarce. This implementation shows you can:</p>
+<ul>
+<li>Keep types strong without over-abstraction
+</li>
+<li>Avoid deadlocks by disciplined mutex usage
+</li>
+<li>Defer heavier frameworks until you need them
+</li>
+<li>Offer clear operational surfaces (health &amp; diagnostics)
+</li>
+</ul>
+<p>It’s a stepping stone: add metrics, structured logging, OpenTelemetry spans, then swap to Caqti’s pool or another layer when throughput demands.</p>
+<hr />
+<h2 id="next-steps">Next Steps</h2>
+<ul>
+<li>Add <code>queries.ml</code> with prepared statements + decoders
+</li>
+<li>Introduce migrations (<code>migrations.ml</code>) with forward/rollback
+</li>
+<li>Attach tracing (OpenTelemetry) around <code>with_connection</code>
+</li>
+<li>Implement backpressure (queue wait when pool exhausted)
+</li>
+<li>Add JSON health output variant for orchestrators / Kubernetes
+</li>
+</ul>
+<hr />
+<h2 id="reference">Reference</h2>
+<h3 id="environment-variables">Environment Variables</h3>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Purpose</th>
+<th>Fallback</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DATABASE_URL</code></td>
+<td>Unified connection string</td>
+<td>Parsed first if present</td>
+</tr>
+<tr>
+<td><code>POSTGRESQL_ADDON_HOST</code></td>
+<td>Hostname</td>
+<td><code>DB_HOST</code> / default error</td>
+</tr>
+<tr>
+<td><code>POSTGRESQL_ADDON_PORT</code></td>
+<td>Port</td>
+<td><code>5432</code></td>
+</tr>
+<tr>
+<td><code>POSTGRESQL_ADDON_DB</code></td>
+<td>Database name</td>
+<td><code>DB_NAME</code></td>
+</tr>
+<tr>
+<td><code>POSTGRESQL_ADDON_USER</code></td>
+<td>Username</td>
+<td><code>DB_USER</code></td>
+</tr>
+<tr>
+<td><code>POSTGRESQL_ADDON_PASSWORD</code></td>
+<td>Password</td>
+<td><code>DB_PASSWORD</code></td>
+</tr>
+<tr>
+<td><code>POSTGRESQL_ADDON_CONNECTION_POOL</code></td>
+<td>Pool size</td>
+<td><code>20</code></td>
+</tr>
+<tr>
+<td><code>LOG_LEVEL</code></td>
+<td>Verbosity</td>
+<td><code>info</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="acknowledgements">Acknowledgements</h2>
+<ul>
+<li>Environment variable naming &amp; layered config inspiration: <a href="https://github.com/xvw/muhokama">muhōkama</a> its <a href="https://github.com/xvw/muhokama/blob/main/.test_env"><code>.test_env</code></a> file which demonstrated a clear pattern for POSTGRESQL_ADDON_* variables and encouraged masking + explicit pool sizing.
+</li>
+<li>Thanks to the Caqti maintainers for the modular connector design (separation of <code>caqti-lwt</code> and <code>caqti-lwt.unix</code> clarified the platform dependency).
+</li>
+<li>This article is a collaborative effort; adapt and improve it for your own stacks—crediting upstream inspirations strengthens the OCaml ecosystem.
+</li>
+</ul>
+<hr />
+<h2 id="key-takeaways">Key Takeaways</h2>
+<ul>
+<li><strong>Caqti’s packed modules</strong> make dialect / driver changes invisible to callers.
+</li>
+<li><strong>Explicit init + fallback</strong> increases resilience during transient DB outages.
+</li>
+<li><strong>Health layering</strong> (basic vs detailed) aligns with modern platform expectations.
+</li>
+<li><strong>Custom pool</strong> = learning + instrumentation playground before adopting heavier infra.
+</li>
+</ul>
+<p>If this helped you wire PostgreSQL into your OCaml service — pass it forward. The ecosystem grows when we share the gritty paths, not just the polished libraries.</p>
+<hr />
+<p><em>Have questions about OCaml, PostgreSQL, or connection pooling? <a href="/contact">Reach out</a>!</em></p>
 
-      <div class="webring-nav">
-        <a
-          href="https://ring.muhokama.fun/u/aguluman/pred"
-          class="webring-link webring-prev prev"
-          title="Previous site in the webring"
-          >← Pred</a
-        >
-        <p class="webring-description center">
-          Hey, this site is part of
-          <a
-            href="https://ring.muhokama.fun"
-            target="_blank"
-            rel="noopener noreferrer"
-            >ring.muhokama.fun!</a
-          >
-        </p>
-        <a
-          href="https://ring.muhokama.fun/u/aguluman/succ"
-          class="webring-link webring-next next"
-          title="Next site in the webring"
-          >Succ →</a
-        >
-      </div>
-    </main>
-    <footer class="site-footer">
-      <div class="footer-bottom">
-        <p class="copyright">© 2025 Chukwuma Akunyili. All rights reserved.</p>
-      </div>
-    </footer>
-    <script>
-      document.addEventListener('DOMContentLoaded', (event) =&gt; {
-            document.querySelectorAll('pre code').forEach((el) =&gt; {
-              hljs.highlightElement(el);
-            });
-          });
-    </script>
-    <script src="/static/js/highlight.min.js"></script>
-    <script>
-      document.addEventListener("DOMContentLoaded", (event) => {
-        document.querySelectorAll("pre code").forEach((el) => {
-          hljs.highlightElement(el);
-        });
-      });
-    </script>
-  </body>
-</html>
+<div class="webring-nav">
+  <a href="https://ring.muhokama.fun/u/aguluman/pred" class="webring-link webring-prev prev" title="Previous site in the webring">← Pred</a>
+  <p class="webring-description center">
+    Hey, this site is part of 
+    <a href="https://ring.muhokama.fun" target="_blank" rel="noopener noreferrer">ring.muhokama.fun!</a>
+  </p>
+  <a href="https://ring.muhokama.fun/u/aguluman/succ" class="webring-link webring-next next" title="Next site in the webring">Succ →</a>
+</div></main><footer class="site-footer"><div class="footer-bottom"><p class="copyright">© 2025 Chukwuma Akunyili. All rights reserved.</p></div></footer><script>document.addEventListener('DOMContentLoaded', (event) =&gt; { 
+      document.querySelectorAll('pre code').forEach((el) =&gt; { 
+        hljs.highlightElement(el); 
+      }); 
+    });</script><script src="/static/js/highlight.min.js"></script><script>document.addEventListener('DOMContentLoaded', (event) => { document.querySelectorAll('pre code').forEach((el) => { hljs.highlightElement(el); }); });</script></body></html>
