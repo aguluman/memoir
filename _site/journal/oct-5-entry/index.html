@@ -1,272 +1,41 @@
-<!doctype html><!doctype html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
-  <head>
-    <title>Mental Check: Reflecting on the OCaml Journey So Far</title>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="A reflection on my OCaml web development journey so far."
-    />
-    <script>
-      (function () {
-        const theme = localStorage.getItem("theme");
-        if (theme === "dark") {
-          document.documentElement.setAttribute("data-theme", "dark");
-        } else if (theme === "light") {
-          document.documentElement.setAttribute("data-theme", "light");
-        }
-      })();
-    </script>
-    <link rel="stylesheet" href="/static/css/main.css" />
-    <link rel="stylesheet" href="/static/css/highlight.css" />
-    <link rel="icon" href="/static/images/favicon.png" type="image/png" />
-    <script src="/static/js/main.js" defer="defer"></script>
-    <script src="/static/js/theme-toggle.js" defer="defer"></script>
-    <script src="/static/js/highlight.min.js" defer="defer"></script>
-    <meta
-      property="og:title"
-      content="Mental Check: Reflecting on the OCaml Journey So Far"
-    />
-    <meta
-      property="og:description"
-      content="A reflection on my OCaml web development journey so far."
-    />
-    <meta
-      property="og:url"
-      content="https://fearful-odds.rocks//journal/oct-5-entry"
-    />
-    <meta property="og:image" content="/static/images/default-og.jpg" />
-    <meta property="og:type" content="article" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@siteauthor" />
-    <meta
-      name="twitter:title"
-      content="Mental Check: Reflecting on the OCaml Journey So Far"
-    />
-    <meta
-      name="twitter:description"
-      content="A reflection on my OCaml web development journey so far."
-    />
-    <meta name="twitter:image" content="/static/images/default-og.jpg" />
-    <link
-      rel="canonical"
-      href="https://fearful-odds.rocks//journal/oct-5-entry"
-    />
-    <script data-type="application/ld+json">
-      {&quot;@context&quot;:&quot;https://schema.org&quot;,&quot;@type&quot;:&quot;WebPage&quot;,&quot;name&quot;:&quot;Mental Check: Reflecting on the OCaml Journey So Far&quot;,&quot;description&quot;:&quot;A reflection on my OCaml web development journey so far.&quot;,&quot;url&quot;:&quot;https://fearful-odds.rocks//journal/oct-5-entry&quot;,&quot;image&quot;:&quot;/static/images/default-og.jpg&quot;}
-    </script>
-  </head>
-  <body class="page">
-    <button
-      class="theme-toggle"
-      title="Toggle dark/light mode"
-      data-aria-label="Toggle dark/light mode"
-    >
-      <span class="sun-icon">☀️</span><span class="moon-icon">🌙</span>
-    </button>
-    <header class="site-header">
-      <div>
-        <nav class="site-navigation" aria-label="Main navigation">
-          <button
-            class="mobile-nav-toggle"
-            aria-expanded="false"
-            aria-controls="primary-navigation"
-            aria-label="Toggle navigation menu"
-          >
-            <span class="hamburger"></span><span class="sr-only">Menu</span>
-          </button>
-          <ul class="nav-list" id="primary-navigation" data-visible="false">
-            <li class="nav-item"><a href="/">Home</a></li>
-            <li class="nav-item"><a href="/about">About</a></li>
-            <li class="nav-item"><a href="/projects">Projects</a></li>
-            <li class="nav-item"><a href="/blog">Blog</a></li>
-            <li class="nav-item"><a href="/journal">Journal</a></li>
-            <li class="nav-item"><a href="/contact">Contact</a></li>
-          </ul>
-          <div class="nav-right">
-            <ul class="social-nav">
-              <li>
-                <a
-                  href="https://github.com/aguluman"
-                  aria-label="GitHub"
-                  title="GitHub"
-                  class="social-link"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                  ><svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    xmlns:xlink="http://www.w3.org/1999/xlink"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    class="social-icon"
-                  >
-                    <path
-                      d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"
-                    ></path></svg
-                  ><span class="visually-hidden">GitHub</span></a
-                >
-              </li>
-              <li>
-                <a
-                  href="https://x.com/agulumans"
-                  aria-label="X"
-                  title="X"
-                  class="social-link"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                  ><svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    xmlns:xlink="http://www.w3.org/1999/xlink"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    class="social-icon"
-                  >
-                    <path
-                      d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
-                    ></path></svg
-                  ><span class="visually-hidden">Twitter</span></a
-                >
-              </li>
-              <li>
-                <a
-                  href="https://www.linkedin.com/in/chukwuma-akunyili/"
-                  aria-label="LinkedIn"
-                  title="LinkedIn"
-                  class="social-link"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                  ><svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    xmlns:xlink="http://www.w3.org/1999/xlink"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    class="social-icon"
-                  >
-                    <path
-                      d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"
-                    ></path></svg
-                  ><span class="visually-hidden">LinkedIn</span></a
-                >
-              </li>
-            </ul>
-          </div>
-        </nav>
-      </div>
-    </header>
-    <main>
-      <h1 id="looking-back---the-journey-thus-far">
-        Looking Back - The Journey thus far!
-      </h1>
-      <p><strong>Date: October 5, 2025</strong></p>
-      <p>
-        Today I had a headache, maybe I didn't have enough sleep. I tried
-        working on chaufr yesterday. I created the *.ml files relevant to this
-        week's tasks. I finished it, but it did not feel quite right. The tasks
-        were completed alright, but I just felt like a hack, as I am really
-        dependent on GH Copilot for the development of this project. I have to
-        say, it sure helps bridge the knowledge gap for anyone starting out. But
-        I miss out on the human/social connection of geeking out with others
-        about what I'm building.
-      </p>
-      <p>
-        My journey in OCaml web development has been f*** around and find out.
-        It was that process that led to me building a static site generator
-        using the language with just 2648 lines of OCaml code. It was a case of
-        trial and error. But I am proud of the outcome.
-      </p>
-      <p>
-        I would have posted about chaufr this weekend, but I seem to be confused
-        on the project thus far. I have a list of task broken down, which I pick
-        each weekend as you will see from the <a href="/blog">blog</a>
-      </p>
-      <p>
-        I have reached out to some friends I have made on Discord if they can
-        offer me 30 minutes to 1 hour of their time so I can share my project
-        and its design to them, so we can exchange ideas and I can have the
-        necessary feedback to continue the project.
-      </p>
-      <p>
-        I guess I have not gotten used to building alone yet. I will admit I do
-        not have everything figured out in OCaml, I am just an interested
-        learner who likes the type inference ability of the compiler, the lack
-        of excess brackets in the language and its overall aesthetics is very
-        pleasing to me. I do have to say, the superpower of OCaml is its
-        community. Discord was my first contact with them and they have been
-        helpful and supportive.
-      </p>
-      <p>
-        I have added to my calendar the OCaml Compiler office hours that will
-        take place on Friday thanks to <code>gasche</code>. There is also the
-        dream developers meet-up on Friday too on the webdev channel on Discord.
-      </p>
-      <p>
-        I would like to give a huge shout out to <code>Sabine</code>,
-        <code>Shon</code>, <code>Jan</code>, <code>Jay</code>,
-        <code>Ivan</code>, <code>John</code>, <code>Onus</code>,
-        <code>Yawaramin</code>, and <code>Raphael</code>. These are members of
-        the OCaml community that have made my experience with the language
-        remarkable.
-      </p>
-      <p>
-        I'll give an update next week after I have had the one-on-one session
-        about the chaufr project with a fellow OCaml engineer so my assumptions
-        can be validated or refuted. I really look forward to it; a friend on
-        Discord has already indicated interest. I am just waiting to finalize
-        the details regarding the day and time for our session.
-      </p>
-      <hr />
-      <p><em>Have a great weekend and Happy Hacking</em></p>
+<!DOCTYPE html><!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><title>Mental Check: Reflecting on the OCaml Journey So Far</title><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><meta name="description" content="A reflection on my OCaml web development journey so far."/><script>(function() {
+      const theme = localStorage.getItem('theme');
+      if (theme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else if (theme === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();</script><link rel="stylesheet" href="/static/css/main.css"/><link/><link rel="stylesheet" href="/static/css/highlight.css"/><link rel="icon" href="/static/images/favicon.png" type="image/png"/><script src="/static/js/main.js" defer="defer"></script><script src="/static/js/theme-toggle.js" defer="defer"></script><script src="/static/js/highlight.min.js" defer="defer"></script><meta property="og:title" content="Mental Check: Reflecting on the OCaml Journey So Far"/><meta property="og:description" content="A reflection on my OCaml web development journey so far."/><meta property="og:url" content="https://fearful-odds.rocks//journal/oct-5-entry"/><meta property="og:image" content="/static/images/default-og.jpg"/><meta property="og:type" content="article"/><meta name="twitter:card" content="summary_large_image"/><meta name="twitter:site" content="@siteauthor"/><meta name="twitter:title" content="Mental Check: Reflecting on the OCaml Journey So Far"/><meta name="twitter:description" content="A reflection on my OCaml web development journey so far."/><meta name="twitter:image" content="/static/images/default-og.jpg"/><link rel="canonical" href="https://fearful-odds.rocks//journal/oct-5-entry"/><script data-type="application/ld+json">{&quot;@context&quot;:&quot;https://schema.org&quot;,&quot;@type&quot;:&quot;WebPage&quot;,&quot;name&quot;:&quot;Mental Check: Reflecting on the OCaml Journey So Far&quot;,&quot;description&quot;:&quot;A reflection on my OCaml web development journey so far.&quot;,&quot;url&quot;:&quot;https://fearful-odds.rocks//journal/oct-5-entry&quot;,&quot;image&quot;:&quot;/static/images/default-og.jpg&quot;}</script></head><body class="page"><button class="theme-toggle" title="Toggle dark/light mode" data-aria-label="Toggle dark/light mode"><span class="sun-icon">☀️</span><span class="moon-icon">🌙</span></button><header class="site-header"><div><nav class="site-navigation" aria-label="Main navigation"><button class="mobile-nav-toggle" aria-expanded="false" aria-controls="primary-navigation" aria-label="Toggle navigation menu"><span class="hamburger"></span><span class="sr-only">Menu</span></button><ul class="nav-list" id="primary-navigation" data-visible="false"><li class="nav-item"><a href="/">Home</a></li><li class="nav-item"><a href="/about">About</a></li><li class="nav-item"><a href="/projects">Projects</a></li><li class="nav-item"><a href="/blog">Blog</a></li><li class="nav-item"><a href="/journal">Journal</a></li><li class="nav-item"><a href="/contact">Contact</a></li></ul><div class="nav-right"><ul class="social-nav"><li><a href="https://github.com/aguluman" aria-label="GitHub" title="GitHub" class="social-link" rel="noopener noreferrer" target="_blank"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="social-icon"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"></path></svg><span class="visually-hidden">GitHub</span></a></li><li><a href="https://x.com/agulumans" aria-label="X" title="X" class="social-link" rel="noopener noreferrer" target="_blank"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="social-icon"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></svg><span class="visually-hidden">Twitter</span></a></li><li><a href="https://www.linkedin.com/in/chukwuma-akunyili/" aria-label="LinkedIn" title="LinkedIn" class="social-link" rel="noopener noreferrer" target="_blank"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="social-icon"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"></path></svg><span class="visually-hidden">LinkedIn</span></a></li></ul></div></nav></div></header><main><h1 id="looking-back---the-journey-thus-far">Looking Back - The Journey thus far!</h1>
+<p><strong>Date: October 5, 2025</strong></p>
+<p>Today I had a headache, maybe I didn't have enough sleep.
+I tried working on chaufr yesterday. I created the *.ml files relevant to this week's tasks. I finished it, but it did not feel quite right. The tasks were completed alright, but I just felt like a hack, as I am really dependent on GH Copilot for the development of this project. I have to say, it sure helps bridge the knowledge gap for anyone starting out. But I miss out on the human/social connection of geeking out with others about what I'm building.</p>
+<p>My journey in OCaml web development has been f*** around and find out.
+It was that process that led to me building a static site generator using the language with just 2648 lines of OCaml code.
+It was a case of trial and error. But I am proud of the outcome.</p>
+<p>I would have posted about chaufr this weekend, but I seem to be confused on the project thus far.
+I have a list of task broken down, which I pick each weekend as you will see from the <a href="/blog">blog</a></p>
+<p>I have reached out to some friends I have made on Discord if they can offer me 30 minutes to 1 hour of their time so I can share my project and its design to them, so we can exchange ideas and I can have the necessary feedback to continue the project.</p>
+<p>I guess I have not gotten used to building alone yet.
+I will admit I do not have everything figured out in OCaml, I am just an interested learner who likes the type inference ability of the compiler, the lack of excess brackets in the language and its overall aesthetics is very pleasing to me.
+I do have to say, the superpower of OCaml is its community.
+Discord was my first contact with them and they have been helpful and supportive.</p>
+<p>I have added to my calendar the OCaml Compiler office hours that will take place on Friday thanks to <code>gasche</code>. There is also the dream developers meet-up on Friday too on the webdev channel on Discord.</p>
+<p>I would like to give a huge shout out to <code>Sabine</code>, <code>Shon</code>, <code>Jan</code>, <code>Jay</code>, <code>Ivan</code>, <code>John</code>, <code>Onus</code>, <code>Yawaramin</code>, and <code>Raphael</code>.
+These are members of the OCaml community that have made my experience with the language remarkable.</p>
+<p>I'll give an update next week after I have had the one-on-one session about the chaufr project with a fellow OCaml engineer so my assumptions can be validated or refuted. I really look forward to it; a friend on Discord has already indicated interest. I am just waiting to finalize the details regarding the day and time for our session.</p>
+<hr />
+<p><em>Have a great weekend and Happy Hacking</em></p>
 
-      <div class="webring-nav">
-        <a
-          href="https://ring.muhokama.fun/u/aguluman/pred"
-          class="webring-link webring-prev prev"
-          title="Previous site in the webring"
-          >← Pred</a
-        >
-        <p class="webring-description center">
-          Hey, this site is part of
-          <a
-            href="https://ring.muhokama.fun"
-            target="_blank"
-            rel="noopener noreferrer"
-            >ring.muhokama.fun!</a
-          >
-        </p>
-        <a
-          href="https://ring.muhokama.fun/u/aguluman/succ"
-          class="webring-link webring-next next"
-          title="Next site in the webring"
-          >Succ →</a
-        >
-      </div>
-    </main>
-    <footer class="site-footer">
-      <div class="footer-bottom">
-        <p class="copyright">© 2025 Chukwuma Akunyili. All rights reserved.</p>
-      </div>
-    </footer>
-    <script>
-      document.addEventListener('DOMContentLoaded', (event) =&gt; {
-            document.querySelectorAll('pre code').forEach((el) =&gt; {
-              hljs.highlightElement(el);
-            });
-          });
-    </script>
-    <script src="/static/js/highlight.min.js"></script>
-    <script>
-      document.addEventListener("DOMContentLoaded", (event) => {
-        document.querySelectorAll("pre code").forEach((el) => {
-          hljs.highlightElement(el);
-        });
-      });
-    </script>
-  </body>
-</html>
+<div class="webring-nav">
+  <a href="https://ring.muhokama.fun/u/aguluman/pred" class="webring-link webring-prev prev" title="Previous site in the webring">← Pred</a>
+  <p class="webring-description center">
+    Hey, this site is part of 
+    <a href="https://ring.muhokama.fun" target="_blank" rel="noopener noreferrer">ring.muhokama.fun!</a>
+  </p>
+  <a href="https://ring.muhokama.fun/u/aguluman/succ" class="webring-link webring-next next" title="Next site in the webring">Succ →</a>
+</div></main><footer class="site-footer"><div class="footer-bottom"><p class="copyright">© 2025 Chukwuma Akunyili. All rights reserved.</p></div></footer><script>document.addEventListener('DOMContentLoaded', (event) =&gt; { 
+      document.querySelectorAll('pre code').forEach((el) =&gt; { 
+        hljs.highlightElement(el); 
+      }); 
+    });</script><script src="/static/js/highlight.min.js"></script><script>document.addEventListener('DOMContentLoaded', (event) => { document.querySelectorAll('pre code').forEach((el) => { hljs.highlightElement(el); }); });</script></body></html>
