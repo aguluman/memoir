@@ -213,11 +213,11 @@ let generate_rss_feed pages config =
     pages
     |> List.filter (fun page -> not page.metadata.draft)
     |> List.sort (fun a b ->
-           match (a.metadata.date, b.metadata.date) with
-           | Some date_a, Some date_b -> String.compare date_b date_a
-           | Some _, None -> -1
-           | None, Some _ -> 1
-           | None, None -> 0)
+        match (a.metadata.date, b.metadata.date) with
+        | Some date_a, Some date_b -> String.compare date_b date_a
+        | Some _, None -> -1
+        | None, Some _ -> 1
+        | None, None -> 0)
     |> take 20 (* Limit to 20 most recent items *)
   in
 
