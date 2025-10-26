@@ -11,8 +11,8 @@
     </image>
     <atom:link href="https://fearful-odds.rocks/feed.xml" rel="self" type="application/rss+xml" />
     <language>en</language>
-    <lastBuildDate>Sun, 19 Oct 2025 21:02:12 +0000</lastBuildDate>
-    <pubDate>Sun, 19 Oct 2025 21:02:12 +0000</pubDate>
+    <lastBuildDate>Sun, 26 Oct 2025 23:04:13 +0000</lastBuildDate>
+    <pubDate>Sun, 26 Oct 2025 23:04:13 +0000</pubDate>
     <ttl>60</ttl>
     <managingEditor>Chukwuma Akunyili</managingEditor>
     <webMaster>Chukwuma Akunyili</webMaster>
@@ -29,20 +29,20 @@
       <category>retrospective</category>
     </item>
     <item>
-      <title>Setting up Open Telemetry (OTel, Prometheus, Grafana and Jaeger) with OCaml</title>
-      <link>https://fearful-odds.rocks/blog/setting-up-otel-with-ocaml</link>
-      <description><![CDATA[Discovered how I can set up Open Telemetry on my chaufur using Prometheus, Grafana, and Jaeger for monitoring and tracing.]]></description>
+      <title>Setting up Open Telemetry (OTel) with OCaml and Azure Monitor Integration</title>
+      <link>https://fearful-odds.rocks/blog/setting-up-otel-with-ocaml-and-azure-monitor</link>
+      <description><![CDATA[Complete guide to implementing OpenTelemetry in OCaml with Dream Framework, including Azure Monitor integration, environment-specific configuration, and production-ready tracing middleware.]]></description>
       <dc:creator>Chukwuma Akunyili</dc:creator>
-      <pubDate>Sun, 19 Oct 2025 00:00:00 +0000</pubDate>
-      <guid isPermaLink="true">https://fearful-odds.rocks/blog/setting-up-otel-with-ocaml</guid>
+      <pubDate>Sun, 26 Oct 2025 00:00:00 +0000</pubDate>
+      <guid isPermaLink="true">https://fearful-odds.rocks/blog/setting-up-otel-with-ocaml-and-azure-monitor</guid>
       <category>OCaml</category>
       <category>OpenTelemetry</category>
-      <category>Prometheus</category>
-      <category>Grafana</category>
-      <category>Jaeger</category>
+      <category>Azure Monitor</category>
+      <category>Dream Framework</category>
       <category>Observability</category>
       <category>Monitoring</category>
       <category>Operations</category>
+      <category>CI/CD</category>
     </item>
     <item>
       <title>Model Validation &amp; Time Utilities Sprint: From Basic Models to Proper Validation Layer</title>
