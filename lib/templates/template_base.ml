@@ -15,6 +15,17 @@ let meta_tags ~description =
         [ a_name "viewport"; a_content "width=device-width, initial-scale=1.0" ]
       ();
     meta ~a:[ a_name "description"; a_content description ] ();
+    (* Preload critical fonts for faster rendering - only the Regular weight for initial load *)
+    link
+      ~rel:[ `Other "preload" ]
+      ~href:"/static/fonts/JetBrainsMonoNerdFont-Regular.woff2"
+      ~a:
+        [
+          a_user_data "as" "font";
+          a_user_data "type" "font/woff2";
+          a_user_data "crossorigin" "anonymous";
+        ]
+      ();
     (* Ultra-fast theme application - runs before any CSS to prevent flicker *)
     script
       (txt
@@ -26,16 +37,27 @@ let meta_tags ~description =
          \        document.documentElement.setAttribute('data-theme', 'light');\n\
          \      }\n\
          \    })();");
+    (* Main stylesheet *)
     link ~rel:[ `Stylesheet ] ~href:"/static/css/main.css" ();
+    (* Highlight CSS *)
     link ~rel:[ `Stylesheet ] ~href:"/static/css/highlight.css" ();
     (* Favicon *)
     link ~rel:[ `Icon ] ~href:"/static/images/favicon.png"
       ~a:[ a_mime_type "image/png" ]
       ();
-    (* Include any JavaScript *)
+    (* Main JavaScript *)
     script ~a:[ a_src "/static/js/main.js"; a_defer () ] (txt "");
+    (* Theme toggle JavaScript *)
     script ~a:[ a_src "/static/js/theme-toggle.js"; a_defer () ] (txt "");
-    script ~a:[ a_src "/static/js/highlight.min.js"; a_defer () ] (txt "");
+    (* Highlight.js *)
+    script
+      ~a:
+        [
+          a_src "/static/js/highlight.min.js";
+          a_user_data "async" "true";
+          a_user_data "onload" "hljs.highlightAll()";
+        ]
+      (txt "");
   ]
 
 (** Base HTML layout to be used by all pages *)
@@ -44,17 +66,8 @@ let layout ?(lang = "en") ~title_text ~description ~page_class
   let open Html in
   let meta_content = meta_tags ~description @ additional_head in
 
-  (* Highlight.js initialization script *)
-  let highlight_init_script =
-    script
-      (txt
-         "document.addEventListener('DOMContentLoaded', (event) => { \n\
-         \      document.querySelectorAll('pre code').forEach((el) => { \n\
-         \        hljs.highlightElement(el); \n\
-         \      }); \n\
-         \    });")
-  in
-
+  (* Highlight.js initialization is now handled by async onload *)
+  (* No need for separate initialization script *)
   html
     ~a:[ a_lang lang ]
     (head (title (txt title_text)) meta_content)
@@ -76,5 +89,4 @@ let layout ?(lang = "en") ~title_text ~description ~page_class
          header ~a:[ a_class [ "site-header" ] ] header_content;
          main content;
          footer ~a:[ a_class [ "site-footer" ] ] footer_content;
-         highlight_init_script;
        ])

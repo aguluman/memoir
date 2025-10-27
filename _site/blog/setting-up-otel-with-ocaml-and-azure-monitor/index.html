@@ -10,6 +10,13 @@
       name="description"
       content="Complete guide to implementing OpenTelemetry in OCaml with Dream Framework, including Azure Monitor integration, environment-specific configuration, and production-ready tracing middleware."
     />
+    <link
+      rel="preload"
+      href="/static/fonts/JetBrainsMonoNerdFont-Regular.woff2"
+      data-as="font"
+      data-type="font/woff2"
+      data-crossorigin="anonymous"
+    />
     <script>
       (function () {
         const theme = localStorage.getItem("theme");
@@ -26,7 +33,11 @@
     <link rel="icon" href="/static/images/favicon.png" type="image/png" />
     <script src="/static/js/main.js" defer="defer"></script>
     <script src="/static/js/theme-toggle.js" defer="defer"></script>
-    <script src="/static/js/highlight.min.js" defer="defer"></script>
+    <script
+      src="/static/js/highlight.min.js"
+      data-async="true"
+      data-onload="hljs.highlightAll()"
+    ></script>
     <meta
       property="og:title"
       content="Setting up Open Telemetry (OTel) with OCaml and Azure Monitor Integration"
@@ -788,13 +799,6 @@ done &amp;&amp; echo &quot;Generated 260 requests (65 iterations × 4 endpoints)
         <p class="copyright">© 2025 Chukwuma Akunyili. All rights reserved.</p>
       </div>
     </footer>
-    <script>
-      document.addEventListener('DOMContentLoaded', (event) =&gt; {
-            document.querySelectorAll('pre code').forEach((el) =&gt; {
-              hljs.highlightElement(el);
-            });
-          });
-    </script>
     <script src="/static/js/highlight.min.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", (event) => {

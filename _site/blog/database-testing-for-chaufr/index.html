@@ -10,6 +10,13 @@
       name="description"
       content="Building a comprehensive database testing suite for Chaufr: integration tests, transaction verification, migration rollback testing, connection pool stress tests, and performance benchmarks using Alcotest, Lwt, and Caqti"
     />
+    <link
+      rel="preload"
+      href="/static/fonts/JetBrainsMonoNerdFont-Regular.woff2"
+      data-as="font"
+      data-type="font/woff2"
+      data-crossorigin="anonymous"
+    />
     <script>
       (function () {
         const theme = localStorage.getItem("theme");
@@ -26,7 +33,11 @@
     <link rel="icon" href="/static/images/favicon.png" type="image/png" />
     <script src="/static/js/main.js" defer="defer"></script>
     <script src="/static/js/theme-toggle.js" defer="defer"></script>
-    <script src="/static/js/highlight.min.js" defer="defer"></script>
+    <script
+      src="/static/js/highlight.min.js"
+      data-async="true"
+      data-onload="hljs.highlightAll()"
+    ></script>
     <meta
       property="og:title"
       content="Database Testing in OCaml: From CRUD to Connection Pool Stress Testing"
@@ -1114,13 +1125,6 @@ dune exec -- test/test_database.exe
         <p class="copyright">© 2025 Chukwuma Akunyili. All rights reserved.</p>
       </div>
     </footer>
-    <script>
-      document.addEventListener('DOMContentLoaded', (event) =&gt; {
-            document.querySelectorAll('pre code').forEach((el) =&gt; {
-              hljs.highlightElement(el);
-            });
-          });
-    </script>
     <script src="/static/js/highlight.min.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", (event) => {

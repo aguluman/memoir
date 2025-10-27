@@ -210,8 +210,9 @@ let start_server () =
 
           if Sys.file_exists final_path && not (Sys.is_directory final_path)
           then
+            let ext = Filename.extension final_path in
             let content_type =
-              match Filename.extension final_path with
+              match ext with
               | ".html" -> "text/html; charset=utf-8"
               | ".css" -> "text/css"
               | ".js" -> "application/javascript"
@@ -227,11 +228,30 @@ let start_server () =
               | ".ico" -> "image/x-icon"
               | _ -> "application/octet-stream"
             in
+            (* Add cache control headers for static assets *)
+            let cache_control =
+              match ext with
+              (* Fonts: cache for 1 year (immutable) *)
+              | ".woff" | ".woff2" | ".ttf" | ".eot" ->
+                  "public, max-age=31536000, immutable"
+              (* Images: cache for 1 month *)
+              | ".png" | ".jpg" | ".jpeg" | ".gif" | ".svg" | ".ico" ->
+                  "public, max-age=2592000"
+              (* CSS/JS: cache for 1 week (can be updated more frequently) *)
+              | ".css" | ".js" -> "public, max-age=604800"
+              (* HTML: no cache (always fresh) *)
+              | ".html" -> "no-cache, must-revalidate"
+              | _ -> "public, max-age=86400"
+            in
             try
               let content = read_file final_path in
               Lwt.return
                 (Dream.response
-                   ~headers:[ ("Content-Type", content_type) ]
+                   ~headers:
+                     [
+                       ("Content-Type", content_type);
+                       ("Cache-Control", cache_control);
+                     ]
                    content)
             with _ ->
               Lwt.return (Dream.response ~code:500 "Internal Server Error")
