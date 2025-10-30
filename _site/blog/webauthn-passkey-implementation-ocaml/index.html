@@ -1,0 +1,634 @@
+<!doctype html><!doctype html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <title>
+      WebAuthn &amp; Passkeys in OCaml: Implementing Passwordless Authentication
+    </title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Building a complete WebAuthn/Passkeys authentication system in OCaml: from bytea binary storage challenges to Base64 encoding layers, model validation, and repository patterns."
+    />
+    <link
+      rel="preload"
+      href="/static/fonts/JetBrainsMonoNerdFont-Regular.woff2"
+      data-as="font"
+      data-type="font/woff2"
+      data-crossorigin="anonymous"
+    />
+    <script>
+      (function () {
+        const theme = localStorage.getItem("theme");
+        if (theme === "dark") {
+          document.documentElement.setAttribute("data-theme", "dark");
+        } else if (theme === "light") {
+          document.documentElement.setAttribute("data-theme", "light");
+        }
+      })();
+    </script>
+    <link rel="stylesheet" href="/static/css/main.css" />
+    <link />
+    <link rel="stylesheet" href="/static/css/highlight.css" />
+    <link rel="icon" href="/static/images/favicon.png" type="image/png" />
+    <script src="/static/js/main.js" defer="defer"></script>
+    <script src="/static/js/theme-toggle.js" defer="defer"></script>
+    <script
+      src="/static/js/highlight.min.js"
+      data-async="true"
+      data-onload="hljs.highlightAll()"
+    ></script>
+    <meta
+      property="og:title"
+      content="WebAuthn &amp; Passkeys in OCaml: Implementing Passwordless Authentication"
+    />
+    <meta
+      property="og:description"
+      content="Building a complete WebAuthn/Passkeys authentication system in OCaml: from bytea binary storage challenges to Base64 encoding layers, model validation, and repository patterns."
+    />
+    <meta
+      property="og:url"
+      content="https://fearful-odds.rocks//blog/webauthn-passkey-implementation-ocaml"
+    />
+    <meta property="og:image" content="/static/images/default-og.jpg" />
+    <meta property="og:type" content="article" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@siteauthor" />
+    <meta
+      name="twitter:title"
+      content="WebAuthn &amp; Passkeys in OCaml: Implementing Passwordless Authentication"
+    />
+    <meta
+      name="twitter:description"
+      content="Building a complete WebAuthn/Passkeys authentication system in OCaml: from bytea binary storage challenges to Base64 encoding layers, model validation, and repository patterns."
+    />
+    <meta name="twitter:image" content="/static/images/default-og.jpg" />
+    <link
+      rel="canonical"
+      href="https://fearful-odds.rocks//blog/webauthn-passkey-implementation-ocaml"
+    />
+    <script data-type="application/ld+json">
+      {&quot;@context&quot;:&quot;https://schema.org&quot;,&quot;@type&quot;:&quot;WebPage&quot;,&quot;name&quot;:&quot;WebAuthn &amp; Passkeys in OCaml: Implementing Passwordless Authentication&quot;,&quot;description&quot;:&quot;Building a complete WebAuthn/Passkeys authentication system in OCaml: from bytea binary storage challenges to Base64 encoding layers, model validation, and repository patterns.&quot;,&quot;url&quot;:&quot;https://fearful-odds.rocks//blog/webauthn-passkey-implementation-ocaml&quot;,&quot;image&quot;:&quot;/static/images/default-og.jpg&quot;}
+    </script>
+  </head>
+  <body class="page">
+    <button
+      class="theme-toggle"
+      title="Toggle dark/light mode"
+      data-aria-label="Toggle dark/light mode"
+    >
+      <span class="sun-icon">☀️</span><span class="moon-icon">🌙</span>
+    </button>
+    <header class="site-header">
+      <div>
+        <nav class="site-navigation" aria-label="Main navigation">
+          <button
+            class="mobile-nav-toggle"
+            aria-expanded="false"
+            aria-controls="primary-navigation"
+            aria-label="Toggle navigation menu"
+          >
+            <span class="hamburger"></span><span class="sr-only">Menu</span>
+          </button>
+          <ul class="nav-list" id="primary-navigation" data-visible="false">
+            <li class="nav-item"><a href="/">Home</a></li>
+            <li class="nav-item"><a href="/about">About</a></li>
+            <li class="nav-item"><a href="/projects">Projects</a></li>
+            <li class="nav-item"><a href="/blog">Blog</a></li>
+            <li class="nav-item"><a href="/journal">Journal</a></li>
+            <li class="nav-item"><a href="/contact">Contact</a></li>
+          </ul>
+          <div class="nav-right">
+            <ul class="social-nav">
+              <li>
+                <a
+                  href="https://github.com/aguluman"
+                  aria-label="GitHub"
+                  title="GitHub"
+                  class="social-link"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                  ><svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns:xlink="http://www.w3.org/1999/xlink"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    class="social-icon"
+                  >
+                    <path
+                      d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"
+                    ></path></svg
+                  ><span class="visually-hidden">GitHub</span></a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://x.com/agulumans"
+                  aria-label="X"
+                  title="X"
+                  class="social-link"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                  ><svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns:xlink="http://www.w3.org/1999/xlink"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    class="social-icon"
+                  >
+                    <path
+                      d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+                    ></path></svg
+                  ><span class="visually-hidden">Twitter</span></a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://www.linkedin.com/in/chukwuma-akunyili/"
+                  aria-label="LinkedIn"
+                  title="LinkedIn"
+                  class="social-link"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                  ><svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns:xlink="http://www.w3.org/1999/xlink"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    class="social-icon"
+                  >
+                    <path
+                      d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"
+                    ></path></svg
+                  ><span class="visually-hidden">LinkedIn</span></a
+                >
+              </li>
+            </ul>
+          </div>
+        </nav>
+      </div>
+    </header>
+    <main>
+      <h1
+        id="webauthn-passkeys-in-ocaml-implementing-passwordless-authentication"
+      >
+        WebAuthn &amp; Passkeys in OCaml: Implementing Passwordless
+        Authentication
+      </h1>
+      <blockquote>
+        <p>
+          The implementation of modern passwordless authentication using
+          WebAuthn and Passkeys in OCaml, featuring binary data handling
+          challenges, Base64 encoding strategies, and validation infrastructure.
+        </p>
+      </blockquote>
+      <p>
+        <strong>Project:</strong> Chaufr – Personal drivers, on demand, in your
+        own vehicle<br />
+        <strong>Tech Stack:</strong> OCaml 5.3.0, Dream Framework, WebAuthn
+        0.2.0, PostgreSQL, Caqti, Base64
+      </p>
+      <p>
+        I got the inspiration to add WebAuthn from <code>Yawaramin</code> post
+        on
+        <a href="https://x.com/yawaramin/status/1956531278552965234">X</a> and
+        it evolved into a deep exploration of binary data handling in OCaml,
+        proper cryptographic storage patterns, and building a complete
+        passwordless authentication infrastructure. This post shares this
+        project's transformation from basic password authentication to a modern
+        WebAuthn/Passkeys system that supports both users and drivers.
+      </p>
+      <hr />
+      <h2 id="key-accomplishments">Key Accomplishments</h2>
+      <h3 id="webauthn-package-integration">
+        1. 🔐 WebAuthn Package Integration
+      </h3>
+      <p>
+        <strong>Challenge:</strong> The OCaml ecosystem has limited WebAuthn
+        library options, requiring careful package selection and integration.
+      </p>
+      <p>
+        <strong>Solution:</strong> Integrated <code>webauthn</code> v0.2.0
+        package with proper dependency management and API understanding.
+      </p>
+      <h4 id="package-installation-and-configuration">
+        Package Installation and Configuration
+      </h4>
+      <pre><code class="language-ocaml">(* dune-project *)
+(package
+ (name chaufr)
+ (depends
+  ocaml
+  dune
+  (* ... other dependencies ... *)
+  webauthn                        (* New: WebAuthn library *)
+  opentelemetry
+  opentelemetry-client-ocurl))
+</code></pre>
+      <h4 id="webauthn-library-integration">WebAuthn Library Integration</h4>
+      <pre><code class="language-ocaml">let create_webauthn origin =
+  match Webauthn.create origin with
+  | Ok wa -&gt; wa
+  | Error e -&gt; failwith (Printf.sprintf &quot;WebAuthn init failed: %s&quot; e)
+</code></pre>
+      <p><strong>Integration Features:</strong></p>
+      <ul>
+        <li>✅ WebAuthn 0.2.0 library with OCaml 5.3.0 compatibility</li>
+        <li>✅ Automatic CBOR dependency resolution (cbor 0.5)</li>
+        <li>✅ Integration with Dream web framework</li>
+        <li>✅ Handler structure for registration and authentication flows</li>
+      </ul>
+      <p>
+        <strong>Key Insight:</strong> The WebAuthn library provides
+        <code>register</code> and <code>authenticate</code> functions handle
+        challenge generation and return a
+        <code>(challenge, base64_string)</code> tuple.
+      </p>
+      <h3 id="postgresql-binary-data-storage">
+        2. 🗄️ PostgreSQL Binary Data Storage
+      </h3>
+      <p>
+        <strong>Challenge:</strong> WebAuthn credentials (credential_id and
+        public_key) are binary data requiring proper storage as PostgreSQL
+        <code>bytea</code> type, but the application models work with Base64
+        strings.
+      </p>
+      <p>
+        <strong>Solution:</strong> Implemented comprehensive binary data
+        handling with <code>bytea</code> storage and Base64 encoding layer at
+        the service boundary.
+      </p>
+      <h4 id="database-schema-with-binary-storage">
+        Database Schema with Binary Storage
+      </h4>
+      <pre><code class="language-sql">CREATE TABLE IF NOT EXISTS passkeys (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id uuid NOT NULL,        -- references users.id or drivers.id
+  owner_type varchar(20) NOT NULL, -- 'user' or 'driver'
+  credential_id bytea NOT NULL,  -- Binary credential identifier
+  public_key bytea NOT NULL,     -- Binary public key (P256 curve)
+  sign_count bigint NOT NULL DEFAULT 0,
+  transports text,               -- Optional metadata (JSON/text)
+  display_name text,             -- User-friendly name
+  created_at timestamptz DEFAULT now(),
+  last_used timestamptz
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS passkeys_credential_idx 
+  ON passkeys(credential_id);
+CREATE INDEX IF NOT EXISTS passkeys_owner_idx 
+  ON passkeys(owner_id, owner_type);
+</code></pre>
+      <h4 id="caqti-query-types-with-octets">Caqti Query Types with Octets</h4>
+      <pre><code class="language-ocaml">open Database.Queries
+open Caqti_request.Infix
+
+(* Using octets type for bytea columns *)
+let insert_passkey_q =
+  Caqti_type.(
+    t8 uuid uuid string octets octets int32 (option string) (option string)
+    -&gt;! uuid)
+  @@ &quot;INSERT INTO passkeys (id, owner_id, owner_type, credential_id, \
+      public_key, sign_count, transports, display_name) VALUES \
+      ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id&quot;
+
+let select_passkey_by_credential_id_q =
+  Caqti_type.(
+    octets
+    -&gt;! t9 uuid uuid string octets octets int32 (option string) (option string)
+          string)
+  @@ &quot;SELECT id, owner_id, owner_type, credential_id, public_key, sign_count, \
+      transports, display_name, to_char(created_at,'YYYY-MM-DD HH24:MI:SS') \
+      FROM passkeys WHERE credential_id = $1&quot;
+</code></pre>
+      <p><strong>Binary Storage Benefits:</strong></p>
+      <ul>
+        <li>✅ Efficient storage of cryptographic material</li>
+        <li>✅ Direct binary comparison for credential lookup</li>
+        <li>✅ PostgreSQL indexing on binary data</li>
+        <li>✅ Alignment with WebAuthn specification requirements</li>
+      </ul>
+      <p>
+        <strong>Critical Architecture Decision:</strong> Store credentials as
+        <code>bytea</code> in PostgreSQL (correct for WebAuthn binary data) but
+        maintain Base64 string representation in application models for API
+        compatibility.
+      </p>
+      <h3 id="base64-encoding-layer-implementation">
+        3. 📦 Base64 Encoding Layer Implementation
+      </h3>
+      <p>
+        <strong>Challenge:</strong> Bridge the gap between binary database
+        storage (bytea) and string-based application models (Base64) without
+        data corruption.
+      </p>
+      <p>
+        <strong>Solution:</strong> Implemented a comprehensive Base64
+        encoding/decoding infrastructure with proper error handling.
+      </p>
+      <h4 id="base64-helper-functions">Base64 Helper Functions</h4>
+      <pre><code class="language-ocaml">type conversion_error = string list
+
+(* Base64 encoding/decoding helpers for binary data (bytea &lt;-&gt; base64 string) *)
+let base64_decode_binary (encoded : string) : (string, string) result =
+  match Base64.decode ~pad:true encoded with
+  | Ok decoded -&gt; Ok decoded
+  | Error (`Msg msg) -&gt; Error msg
+
+let base64_encode_binary (data : string) : (string, string) result =
+  match Base64.encode ~pad:true data with
+  | Ok encoded -&gt; Ok encoded
+  | Error (`Msg msg) -&gt; Error msg
+</code></pre>
+      <h4 id="model-conversion-with-base64-integration">
+        Model Conversion with Base64 Integration
+      </h4>
+      <pre><code class="language-ocaml">(* Passkey model to database insert parameters *)
+let passkey_model_to_insert_params (p : Passkey.t) :
+    ( Uuidm.t
+      * Uuidm.t
+      * string
+      * string
+      * string
+      * int32
+      * string option
+      * string option,
+      conversion_error )
+    result =
+  match Passkey.validate p with
+  | Ok () -&gt; (
+      let id =
+        match p.id with
+        | Some s -&gt; Option.get (Uuidm.of_string s)
+        | None -&gt; gen_uuid ()
+      in
+      let owner_id = Option.get (Uuidm.of_string p.owner_id) in
+      (* credential_id and public_key are stored as Base64 strings in model,
+         decode to binary for database bytea storage *)
+      match
+        (base64_decode_binary p.credential_id, base64_decode_binary p.public_key)
+      with
+      | Ok cred_bytes, Ok pk_bytes -&gt;
+          Ok
+            ( id,
+              owner_id,
+              p.owner_type,
+              cred_bytes,
+              pk_bytes,
+              p.sign_count,
+              p.transports,
+              p.display_name )
+      | Error msg, _ -&gt; Error [ &quot;Invalid credential_id: &quot; ^ msg ]
+      | _, Error msg -&gt; Error [ &quot;Invalid public_key: &quot; ^ msg ])
+  | Error errs -&gt; Error errs
+</code></pre>
+      <h4 id="service-layer-base64-handling">Service Layer Base64 Handling</h4>
+      <pre><code class="language-ocaml">let create_passkey ~owner_id ~owner_type ~credential_id ~public_key ~sign_count
+    ~transports ~display_name =
+  match Uuidm.of_string owner_id with
+  | None -&gt; Lwt.return (Error (`Query_error &quot;Invalid owner UUID&quot;))
+  | Some owner_uuid -&gt; (
+      (* Decode Base64 strings to binary for DB storage *)
+      match
+        ( Base64.decode ~pad:true credential_id,
+          Base64.decode ~pad:true public_key )
+      with
+      | Error (`Msg msg), _ -&gt;
+          Lwt.return
+            (Error (`Query_error (&quot;Invalid credential_id Base64: &quot; ^ msg)))
+      | _, Error (`Msg msg) -&gt;
+          Lwt.return
+            (Error (`Query_error (&quot;Invalid public_key Base64: &quot; ^ msg)))
+      | Ok cred_bytes, Ok pk_bytes -&gt; (
+          owner_exists ~owner_id ~owner_type &gt;&gt;= fun exists -&gt;
+          if not exists then Lwt.return (Error (`Query_error &quot;Owner not found&quot;))
+          else
+            let id =
+              match v7_monotonic () with
+              | Some u -&gt; u
+              | None -&gt;
+                  Uuidm.v7_non_monotonic_gen ~now_ms:Time.posix_now_ms
+                    rand_state ()
+            in
+            PasskeyQ.create ~id ~owner_id:owner_uuid ~owner_type
+              ~credential_id:cred_bytes ~public_key:pk_bytes ~sign_count
+              ~transports ~display_name
+            &gt;&gt;= function
+            | Ok id -&gt; Lwt.return (Ok (Uuidm.to_string id))
+            | Error e -&gt; Lwt.return (Error e)))
+</code></pre>
+      <p><strong>Base64 Layer Benefits:</strong></p>
+      <ul>
+        <li>
+          ✅ Clean separation between storage and application representations
+        </li>
+        <li>✅ Comprehensive error handling for encoding/decoding failures</li>
+        <li>✅ Automatic conversion at service layer boundaries</li>
+        <li>✅ API-friendly Base64 strings for HTTP/JSON interfaces</li>
+      </ul>
+      <p>
+        <strong>Challenge:</strong> Implement proper counter management to
+        prevent replay attacks per WebAuthn specification.
+      </p>
+      <p>
+        <strong>Solution:</strong> A comprehensive counter update mechanism with
+        timestamp tracking.
+      </p>
+      <h4 id="counter-update-implementation">Counter Update Implementation</h4>
+      <pre><code class="language-ocaml">let update_passkey_counter ~passkey_id ~sign_count =
+  match Uuidm.of_string passkey_id with
+  | None -&gt; Lwt.return (Error (`Query_error &quot;Invalid passkey UUID&quot;))
+  | Some id -&gt; (
+      PasskeyQ.update_counter ~id ~sign_count ~last_used:None &gt;&gt;= function
+      | Ok _ -&gt; Lwt.return (Ok ())
+      | Error e -&gt; Lwt.return (Error e))
+</code></pre>
+      <p><strong>Counter Management Features:</strong></p>
+      <ul>
+        <li>✅ Sign count tracking per credential</li>
+        <li>✅ Last used timestamp updates</li>
+        <li>✅ Replay attack prevention support</li>
+        <li>✅ WebAuthn specification compliance</li>
+        <li>✅ Automatic counter incrementation</li>
+      </ul>
+      <p>
+        <strong>Security Note:</strong> The WebAuthn spec allows counter values
+        of zero-to-zero transitions for certain authenticator types (e.g., Touch
+        ID), requiring flexible validation logic in the authentication handler.
+      </p>
+      <hr />
+      <h2 id="technical-deep-dive">Technical Deep Dive</h2>
+      <h3 id="data-flow-architecture">Data Flow Architecture</h3>
+      <h4 id="complete-webauthn-registration-flow">
+        Complete WebAuthn Registration Flow
+      </h4>
+      <pre><code>1. Client (Browser)
+   ↓ GET /auth/register/challenge
+2. Handler (auth.ml)
+   ↓ Generate challenge
+3. WebAuthn Library
+   ↓ Return (challenge, base64_challenge)
+4. Handler → Client
+   ↓ navigator.credentials.create()
+5. Client → Handler
+   ↓ POST /auth/register/finish
+6. Handler validates attestation
+   ↓ Extract credential_id (Base64) and public_key (Base64)
+7. Service Layer
+   ↓ Decode Base64 to binary
+8. Repository Layer (octets type)
+   ↓ Store as bytea
+9. PostgreSQL
+   ✓ Credential stored
+</code></pre>
+      <h4 id="authentication-flow-with-base64-conversion">
+        Authentication Flow with Base64 Conversion
+      </h4>
+      <pre><code>1. Client → Handler
+   ↓ POST /auth/login (credential_id in Base64)
+2. Service Layer
+   ↓ Decode Base64 credential_id to binary
+3. Repository Query
+   ↓ SELECT WHERE credential_id = $1 (bytea)
+4. PostgreSQL
+   ↓ Return passkey row (bytea fields)
+5. Service Layer
+   ↓ Encode bytea to Base64 for model
+6. Handler
+   ↓ Verify assertion with WebAuthn library
+7. Update Counter
+   ↓ Increment sign_count
+8. Create Session
+   ✓ User authenticated
+</code></pre>
+      <hr />
+      <h3 id="binary-data-type-discovery">1. 🐛 Binary Data Type Discovery</h3>
+      <p><strong>Solution:</strong></p>
+      <pre><code class="language-ocaml">let insert_passkey_q =
+  Caqti_type.(
+    t8 uuid uuid string octets octets int32 (option string) (option string)
+    -&gt;! uuid)
+  (* Using 'octets' for bytea columns - CORRECT! *)
+</code></pre>
+      <p><strong>Lessons Learned:</strong></p>
+      <ul>
+        <li>
+          ✅ Always use <code>Caqti_type.octets</code> for PostgreSQL
+          <code>bytea</code> columns
+        </li>
+        <li>✅ Test binary data round-trip to catch encoding issues early</li>
+        <li>✅ SQL schema must align with Caqti type declarations</li>
+        <li>✅ Base64 layer prevents binary data corruption</li>
+      </ul>
+      <h3 id="base64-encoding-strategy-evolution">
+        2. 🔄 Base64 Encoding Strategy Evolution
+      </h3>
+      <p>
+        <strong>Challenge:</strong> Multiple approaches for handling Base64
+        encoding emerged during implementation.
+      </p>
+      <p><strong>Final Decision: Encode at Service Layer</strong> ✅</p>
+      <pre><code class="language-ocaml">(* Service layer manages boundary *)
+let create_passkey ~credential_id ~public_key =
+  match Base64.decode ~pad:true credential_id with
+  | Ok bytes -&gt; (* Continue with repository *)
+  | Error _ -&gt; (* Handle error *)
+</code></pre>
+      <p>
+        <em>Chosen:</em> Clean separation of concerns, service layer manages the
+        boundaries
+      </p>
+      <p><strong>Lessons Learned:</strong></p>
+      <ul>
+        <li>✅ Service layer is the proper boundary for encoding concerns</li>
+        <li>✅ Keep repository layer focused on data access only</li>
+        <li>✅ Model mappers handle type conversion, not encoding</li>
+        <li>✅ Explicit error handling at each encoding step</li>
+      </ul>
+      <hr />
+      <h2 id="performance-and-security-considerations">
+        Performance and Security Considerations
+      </h2>
+      <h3 id="binary-storage-performance">Binary Storage Performance</h3>
+      <ol>
+        <li>
+          <p><strong>Database Storage Efficiency</strong></p>
+          <ul>
+            <li><code>bytea</code> storage: ~32-64 bytes for credential_id</li>
+            <li>Text storage: ~64-128 bytes (Base64 overhead)</li>
+            <li><strong>Result:</strong> 50% storage savings with bytea</li>
+          </ul>
+        </li>
+        <li>
+          <p><strong>Index Performance</strong></p>
+          <ul>
+            <li>PostgreSQL B-tree index on the bytea credential_id</li>
+            <li>Direct binary comparison (no decoding)</li>
+            <li>
+              <strong>Result:</strong> Fast credential lookup for authentication
+            </li>
+          </ul>
+        </li>
+        <li>
+          <p><strong>Network Transfer</strong></p>
+          <ul>
+            <li>The API transfers Base64 strings (JSON-compatible)</li>
+            <li>The database transfers binary data (efficient)</li>
+            <li><strong>Result:</strong> Optimal for both interfaces</li>
+          </ul>
+        </li>
+      </ol>
+      <h2 id="conclusion">Conclusion</h2>
+      <p>
+        Whether this significant effort was ultimately worth the benefit remains
+        to be seen. It was, however, an enjoyable challenge, particularly in
+        handling binary data and learning the WebAuthn in OCaml ecosystem.
+      </p>
+      <hr />
+      <p><em>What a day!</em></p>
+
+      <div class="webring-nav">
+        <a
+          href="https://ring.muhokama.fun/u/aguluman/pred"
+          class="webring-link webring-prev prev"
+          title="Previous site in the webring"
+          >← Pred</a
+        >
+        <p class="webring-description center">
+          Hey, this site is part of
+          <a
+            href="https://ring.muhokama.fun"
+            target="_blank"
+            rel="noopener noreferrer"
+            >ring.muhokama.fun!</a
+          >
+        </p>
+        <a
+          href="https://ring.muhokama.fun/u/aguluman/succ"
+          class="webring-link webring-next next"
+          title="Next site in the webring"
+          >Succ →</a
+        >
+      </div>
+    </main>
+    <footer class="site-footer">
+      <div class="footer-bottom">
+        <p class="copyright">© 2025 Chukwuma Akunyili. All rights reserved.</p>
+      </div>
+    </footer>
+    <script src="/static/js/highlight.min.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", (event) => {
+        document.querySelectorAll("pre code").forEach((el) => {
+          hljs.highlightElement(el);
+        });
+      });
+    </script>
+  </body>
+</html>

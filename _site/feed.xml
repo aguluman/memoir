@@ -11,8 +11,8 @@
     </image>
     <atom:link href="https://fearful-odds.rocks/feed.xml" rel="self" type="application/rss+xml" />
     <language>en</language>
-    <lastBuildDate>Mon, 27 Oct 2025 22:40:05 +0000</lastBuildDate>
-    <pubDate>Mon, 27 Oct 2025 22:40:05 +0000</pubDate>
+    <lastBuildDate>Thu, 30 Oct 2025 18:37:35 +0000</lastBuildDate>
+    <pubDate>Thu, 30 Oct 2025 18:37:35 +0000</pubDate>
     <ttl>60</ttl>
     <managingEditor>Chukwuma Akunyili</managingEditor>
     <webMaster>Chukwuma Akunyili</webMaster>
@@ -27,6 +27,25 @@
       <category>ocaml</category>
       <category>journey</category>
       <category>retrospective</category>
+    </item>
+    <item>
+      <title>WebAuthn &amp; Passkeys in OCaml: Implementing Passwordless Authentication</title>
+      <link>https://fearful-odds.rocks/blog/webauthn-passkey-implementation-ocaml</link>
+      <description><![CDATA[Building a complete WebAuthn/Passkeys authentication system in OCaml: from bytea binary storage challenges to Base64 encoding layers, model validation, and repository patterns.]]></description>
+      <dc:creator>Chukwuma Akunyili</dc:creator>
+      <pubDate>Thu, 30 Oct 2025 00:00:00 +0000</pubDate>
+      <guid isPermaLink="true">https://fearful-odds.rocks/blog/webauthn-passkey-implementation-ocaml</guid>
+      <category>OCaml</category>
+      <category>WebAuthn</category>
+      <category>Passkeys</category>
+      <category>Authentication</category>
+      <category>Security</category>
+      <category>Binary Data</category>
+      <category>Base64</category>
+      <category>PostgreSQL</category>
+      <category>Caqti</category>
+      <category>Dream Framework</category>
+      <category>Passwordless</category>
     </item>
     <item>
       <title>Setting up Open Telemetry (OTel) with OCaml and Azure Monitor Integration</title>
