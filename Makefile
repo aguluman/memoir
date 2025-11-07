@@ -117,8 +117,8 @@ clean:
 
 
 # Development utilities
-.PHONY: fmt
-fmt:
+fmt: .fmt_done
+.fmt_done: $(shell find . -name "*.ml" -o -name "*.css" -o -name "*.js" -o -name "*.html")
 	@echo "$(BLUE)💅 Formatting CSS files...$(NC)"
 	@npx prettier --write --log-level=warn "$(SITE_DIR)/static/css/*.css" || true
 	@echo "$(GREEN)✅ CSS formatted$(NC)"
@@ -131,6 +131,7 @@ fmt:
 	@echo "$(BLUE)💅 Formatting OCaml code...$(NC)"
 	@$(DUNE) fmt
 	@echo "$(GREEN)✅ OCaml code formatted$(NC)"
+	@touch .fmt_done
 
 .PHONY: analyze-size
 analyze-size:
@@ -204,22 +205,21 @@ new-page: $(CONTENT_DIR)
 	echo "$(GREEN)✅ Created: $$file$(NC)"
 
 # Documentation commands
-.PHONY: docs docs-build copy-docs
-docs:
-	dune build @doc
-	cd _build/default/_doc/_html && python3 -m http.server 9090
+.PHONY:docs-build copy-docs
 
 docs-build:
 	dune build @doc
 	@echo "Documentation built successfully in _build/default/_doc/_html/"
 
-copy-docs: docs-build
+copy-docs: docs-build .odoc_done
+.odoc_done: $(shell find lib -name "*.ml")
 	@echo "$(BLUE)📚 Copying documentation to $(SITE_DIR)/docs/$(NC)"
 	@rm -rf $(SITE_DIR)/docs
 	@mkdir -p $(SITE_DIR)/docs
 	@cp -r --preserve=all _build/default/_doc/_html/* $(SITE_DIR)/docs/
 	@chmod -R u+rwX,go+rX $(SITE_DIR)/docs/
 	@echo "$(GREEN)✅ Documentation copied to $(SITE_DIR)/docs/$(NC)"
+	@touch .odoc_done
 
 # Default target
 .DEFAULT_GOAL := help

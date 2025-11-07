@@ -13,3 +13,7 @@ content/*
 
 # Static site build-cache
 _site/.build-cache
+
+# Build cache sentinel files
+.fmt_done
+.odoc_done
