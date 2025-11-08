@@ -117,8 +117,7 @@ clean:
 
 
 # Development utilities
-fmt: .fmt_done
-.fmt_done: $(shell find . -name "*.ml" -o -name "*.css" -o -name "*.js" -o -name "*.html")
+fmt:
 	@echo "$(BLUE)💅 Formatting CSS files...$(NC)"
 	@npx prettier --write --log-level=warn "$(SITE_DIR)/static/css/*.css" || true
 	@echo "$(GREEN)✅ CSS formatted$(NC)"
@@ -131,7 +130,7 @@ fmt: .fmt_done
 	@echo "$(BLUE)💅 Formatting OCaml code...$(NC)"
 	@$(DUNE) fmt
 	@echo "$(GREEN)✅ OCaml code formatted$(NC)"
-	@touch .fmt_done
+
 
 .PHONY: analyze-size
 analyze-size:

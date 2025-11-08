@@ -11,11 +11,27 @@
     </image>
     <atom:link href="https://fearful-odds.rocks/feed.xml" rel="self" type="application/rss+xml" />
     <language>en</language>
-    <lastBuildDate>Fri, 07 Nov 2025 11:38:02 +0000</lastBuildDate>
-    <pubDate>Fri, 07 Nov 2025 11:38:02 +0000</pubDate>
+    <lastBuildDate>Sat, 08 Nov 2025 14:23:00 +0000</lastBuildDate>
+    <pubDate>Sat, 08 Nov 2025 14:23:00 +0000</pubDate>
     <ttl>60</ttl>
     <managingEditor>Chukwuma Akunyili</managingEditor>
     <webMaster>Chukwuma Akunyili</webMaster>
+    <item>
+      <title>Session Management &amp; WebAuthn : Secure Sessions and Better Auth</title>
+      <link>https://fearful-odds.rocks/blog/session-management-and-webauthn-sprint</link>
+      <description><![CDATA[Implementing secure session utilities, upgrading WebAuthn flows with better logging.]]></description>
+      <dc:creator>Chukwuma Akunyili</dc:creator>
+      <pubDate>Fri, 07 Nov 2025 00:00:00 +0000</pubDate>
+      <guid isPermaLink="true">https://fearful-odds.rocks/blog/session-management-and-webauthn-sprint</guid>
+      <category>OCaml</category>
+      <category>Dream</category>
+      <category>WebAuthn</category>
+      <category>Sessions</category>
+      <category>Security</category>
+      <category>Lwt</category>
+      <category>Telemetry</category>
+      <category>Azure</category>
+    </item>
     <item>
       <title>Mental Check: Reflecting on the OCaml Journey So Far</title>
       <link>https://fearful-odds.rocks/journal/oct-5-entry</link>
