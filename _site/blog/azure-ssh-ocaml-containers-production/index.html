@@ -1,0 +1,1006 @@
+<!doctype html><!doctype html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <title>
+      Enabling SSH in Azure App Service for OCaml Containers: A Production
+      Journey
+    </title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Complete guide to deploying OCaml containers to Azure App Service with SSH access, database migrations, and PostgreSQL extension management. From Docker multi-stage builds to production user creation."
+    />
+    <link
+      rel="preload"
+      href="/static/fonts/JetBrainsMonoNerdFont-Regular.woff2"
+      data-as="font"
+      data-type="font/woff2"
+      data-crossorigin="anonymous"
+    />
+    <script>
+      (function () {
+        const theme = localStorage.getItem("theme");
+        if (theme === "dark") {
+          document.documentElement.setAttribute("data-theme", "dark");
+        } else if (theme === "light") {
+          document.documentElement.setAttribute("data-theme", "light");
+        }
+      })();
+    </script>
+    <link rel="stylesheet" href="/static/css/main.css" />
+    <link />
+    <link rel="stylesheet" href="/static/css/highlight.css" />
+    <link rel="icon" href="/static/images/favicon.png" type="image/png" />
+    <script src="/static/js/main.js" defer="defer"></script>
+    <script src="/static/js/theme-toggle.js" defer="defer"></script>
+    <script
+      src="/static/js/highlight.min.js"
+      data-async="true"
+      data-onload="hljs.highlightAll()"
+    ></script>
+    <meta
+      property="og:title"
+      content="Enabling SSH in Azure App Service for OCaml Containers: A Production Journey"
+    />
+    <meta
+      property="og:description"
+      content="Complete guide to deploying OCaml containers to Azure App Service with SSH access, database migrations, and PostgreSQL extension management. From Docker multi-stage builds to production user creation."
+    />
+    <meta
+      property="og:url"
+      content="https://fearful-odds.rocks//blog/azure-ssh-ocaml-containers-production"
+    />
+    <meta property="og:image" content="/static/images/default-og.jpg" />
+    <meta property="og:type" content="article" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@siteauthor" />
+    <meta
+      name="twitter:title"
+      content="Enabling SSH in Azure App Service for OCaml Containers: A Production Journey"
+    />
+    <meta
+      name="twitter:description"
+      content="Complete guide to deploying OCaml containers to Azure App Service with SSH access, database migrations, and PostgreSQL extension management. From Docker multi-stage builds to production user creation."
+    />
+    <meta name="twitter:image" content="/static/images/default-og.jpg" />
+    <link
+      rel="canonical"
+      href="https://fearful-odds.rocks//blog/azure-ssh-ocaml-containers-production"
+    />
+    <script data-type="application/ld+json">
+      {&quot;@context&quot;:&quot;https://schema.org&quot;,&quot;@type&quot;:&quot;WebPage&quot;,&quot;name&quot;:&quot;Enabling SSH in Azure App Service for OCaml Containers: A Production Journey&quot;,&quot;description&quot;:&quot;Complete guide to deploying OCaml containers to Azure App Service with SSH access, database migrations, and PostgreSQL extension management. From Docker multi-stage builds to production user creation.&quot;,&quot;url&quot;:&quot;https://fearful-odds.rocks//blog/azure-ssh-ocaml-containers-production&quot;,&quot;image&quot;:&quot;/static/images/default-og.jpg&quot;}
+    </script>
+  </head>
+  <body class="page">
+    <button
+      class="theme-toggle"
+      title="Toggle dark/light mode"
+      data-aria-label="Toggle dark/light mode"
+    >
+      <span class="sun-icon">☀️</span><span class="moon-icon">🌙</span>
+    </button>
+    <header class="site-header">
+      <div>
+        <nav class="site-navigation" aria-label="Main navigation">
+          <button
+            class="mobile-nav-toggle"
+            aria-expanded="false"
+            aria-controls="primary-navigation"
+            aria-label="Toggle navigation menu"
+          >
+            <span class="hamburger"></span><span class="sr-only">Menu</span>
+          </button>
+          <ul class="nav-list" id="primary-navigation" data-visible="false">
+            <li class="nav-item"><a href="/">Home</a></li>
+            <li class="nav-item"><a href="/about">About</a></li>
+            <li class="nav-item"><a href="/projects">Projects</a></li>
+            <li class="nav-item"><a href="/blog">Blog</a></li>
+            <li class="nav-item"><a href="/journal">Journal</a></li>
+            <li class="nav-item"><a href="/contact">Contact</a></li>
+          </ul>
+          <div class="nav-right">
+            <ul class="social-nav">
+              <li>
+                <a
+                  href="https://github.com/aguluman"
+                  aria-label="GitHub"
+                  title="GitHub"
+                  class="social-link"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                  ><svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns:xlink="http://www.w3.org/1999/xlink"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    class="social-icon"
+                  >
+                    <path
+                      d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"
+                    ></path></svg
+                  ><span class="visually-hidden">GitHub</span></a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://x.com/agulumans"
+                  aria-label="X"
+                  title="X"
+                  class="social-link"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                  ><svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns:xlink="http://www.w3.org/1999/xlink"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    class="social-icon"
+                  >
+                    <path
+                      d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+                    ></path></svg
+                  ><span class="visually-hidden">Twitter</span></a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://www.linkedin.com/in/chukwuma-akunyili/"
+                  aria-label="LinkedIn"
+                  title="LinkedIn"
+                  class="social-link"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                  ><svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns:xlink="http://www.w3.org/1999/xlink"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    class="social-icon"
+                  >
+                    <path
+                      d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"
+                    ></path></svg
+                  ><span class="visually-hidden">LinkedIn</span></a
+                >
+              </li>
+            </ul>
+          </div>
+        </nav>
+      </div>
+    </header>
+    <main>
+      <h1
+        id="enabling-ssh-in-azure-app-service-for-ocaml-containers-a-production-journey"
+      >
+        Enabling SSH in Azure App Service for OCaml Containers: A Production
+        Journey
+      </h1>
+      <blockquote>
+        <p>
+          From local development to production deployment: implementing SSH
+          access, managing database migrations, and navigating Azure PostgreSQL
+          restrictions in an OCaml web application.
+        </p>
+      </blockquote>
+      <p>
+        <strong>Project:</strong> Chaufr – Personal drivers, on demand, in your
+        own vehicle<br />
+        <strong>Tech Stack:</strong> OCaml 5.3.0, Dream Framework, Azure App
+        Service (Linux), PostgreSQL Flexible Server, Docker<br />
+        <strong>Status:</strong> ✅ Production - First Driver Created
+        Successfully
+      </p>
+      <p>
+        This post chronicles the complete journey of deploying an OCaml custom
+        container to Azure App Service, implementing SSH access for operational
+        control, managing database migrations in production, and resolving
+        Azure-specific PostgreSQL challenges. If you're deploying OCaml (or any
+        custom container) to Azure and need SSH access for migrations or
+        debugging, this guide will save you hours of trial and error.
+      </p>
+      <hr />
+      <h2 id="the-challenge-production-operations-without-ssh">
+        The Challenge: Production Operations Without SSH
+      </h2>
+      <p>
+        When deploying custom containers to Azure App Service, you lose the
+        comfort of SSH access by default. This becomes critical when you need
+        to:
+      </p>
+      <ul>
+        <li><strong>Run database migrations</strong> manually in production</li>
+        <li><strong>Debug container issues</strong> in real-time</li>
+        <li><strong>Inspect running processes</strong> and file systems</li>
+        <li><strong>Execute one-off commands</strong> without redeployment</li>
+        <li>
+          <strong>Verify environment variables</strong> in the runtime
+          environment
+        </li>
+      </ul>
+      <p>
+        Unlike Azure's &quot;blessed&quot; built-in images (Node.js, Python,
+        etc.) that include SSH by default, custom Docker images require explicit
+        SSH configuration following Azure's specific requirements.
+      </p>
+      <hr />
+      <h2 id="architecture-overview">Architecture Overview</h2>
+      <p>Here's how SSH access flows through the Azure deployment:</p>
+      <pre><code>GitHub Actions (CI/CD)
+        ↓
+Azure Container Registry (ACR)
+        ↓
+Azure App Service (Linux)
+        ↓
+Custom OCaml Container
+  ├─ OpenSSH Server (Port 2222)
+  ├─ Environment Variable Export
+  ├─ Migration Binary (migrate.exe)
+  └─ Web Application (chaufr)
+        ↓
+Azure PostgreSQL Flexible Server
+</code></pre>
+      <hr />
+      <h2 id="key-accomplishments">Key Accomplishments</h2>
+      <h3 id="multi-stage-docker-build-with-ssh-support">
+        1. 🐋 Multi-Stage Docker Build with SSH Support
+      </h3>
+      <p>
+        <strong>Challenge:</strong> Build an OCaml container that supports both
+        the application and SSH access while keeping the final image small.
+      </p>
+      <p>
+        <strong>Solution:</strong> Implemented a multi-stage Dockerfile with SSH
+        integration and proper file ownership.
+      </p>
+      <h4 id="complete-dockerfile-structure">Complete Dockerfile Structure</h4>
+      <pre><code class="language-dockerfile"># --- Build stage ---
+FROM ocaml/opam:debian-12-ocaml-5.3 AS builder
+WORKDIR /app
+
+# System dependencies - Build tools for Azure Container Registry
+RUN sudo apt-get update &amp;&amp; sudo apt-get install -y --no-install-recommends \
+    libpq-dev \
+    pkg-config \
+    ca-certificates \
+    git \
+    libcurl4-openssl-dev \
+    libffi-dev \
+    libgmp-dev \
+    libev-dev &amp;&amp; \
+    sudo rm -rf /var/lib/apt/lists/*
+
+# Copy opam metadata early for caching
+COPY dune-project chaufr.opam ./
+
+# Install OCaml dependencies
+RUN eval $(opam env) &amp;&amp; \
+    opam update &amp;&amp; \
+    opam pin add -y simple_dotenv.1.0.0 git+https://github.com/Lomig/simple_dotenv.git#05ef4a35eff29784abc3f454ee36163f3ae48747
+
+RUN eval $(opam env) &amp;&amp; opam install -y curl ocurl.transition
+
+RUN sudo apt-get update &amp;&amp; \
+    sudo apt-get install -y --no-install-recommends libargon2-dev &amp;&amp; \
+    sudo rm -rf /var/lib/apt/lists/* &amp;&amp; \
+    eval $(opam env) &amp;&amp; opam install -y --deps-only .
+
+# Copy source and build
+COPY . .
+RUN eval $(opam env) &amp;&amp; dune build --profile=release ./bin/main.exe ./bin/migrate.exe
+
+
+# --- Runtime stage ---
+FROM debian:bookworm-slim
+
+# Runtime dependencies - Includes OpenSSH for Azure Portal SSH
+RUN apt-get update &amp;&amp; apt-get install -y --no-install-recommends \
+    libpq5 \
+    ca-certificates \
+    libcurl4 \
+    libgmp10 \
+    libev4 \
+    libargon2-1 \
+    openssh-server \
+    dialog \
+    binutils &amp;&amp; \
+    rm -rf /var/lib/apt/lists/*
+
+# Create SSH directory and set root password for Azure Portal SSH
+# Password must be exactly &quot;Docker!&quot; per Azure requirements
+RUN mkdir -p /run/sshd &amp;&amp; \
+    echo &quot;root:Docker!&quot; | chpasswd
+
+# Create profile.d directory for environment variable scripts
+RUN mkdir -p /etc/profile.d &amp;&amp; chmod 755 /etc/profile.d
+
+# Non-root user for security
+RUN useradd -m -d /home/appuser appuser
+WORKDIR /home/appuser
+
+# Copy binaries from builder stage with proper ownership
+COPY --from=builder --chown=appuser:appuser /app/_build/default/bin/main.exe ./chaufr
+COPY --from=builder --chown=appuser:appuser /app/_build/default/bin/migrate.exe ./migrate
+
+# Strip debug symbols and set executable permissions
+RUN strip ./chaufr ./migrate &amp;&amp; \
+    chmod +x ./chaufr ./migrate
+
+# Copy SSH configuration and entrypoint script
+COPY sshd_config /etc/ssh/
+COPY --chown=appuser:appuser entrypoint.sh ./
+RUN chmod +x ./entrypoint.sh
+
+# Azure App Service configuration
+ENV PORT=8080
+EXPOSE 8080 2222
+
+# Use entrypoint script to start SSH and application
+ENTRYPOINT [&quot;./entrypoint.sh&quot;]
+</code></pre>
+      <p><strong>Key Design Decisions:</strong></p>
+      <ol>
+        <li>
+          <strong>Multi-stage build</strong> - Separates build tools (~800MB)
+          from runtime (~150MB)
+        </li>
+        <li>
+          <strong>Proper ownership</strong> -
+          <code>--chown=appuser:appuser</code> ensures files are accessible
+        </li>
+        <li>
+          <strong>Strip in runtime stage</strong> - Reduces binary size by
+          30-50% where we have permissions
+        </li>
+        <li>
+          <strong>Both binaries</strong> - <code>chaufr</code> (web app) and
+          <code>migrate</code> (database migrations)
+        </li>
+        <li>
+          <strong>SSH requirements</strong> - Port 2222, specific password,
+          OpenSSH server
+        </li>
+      </ol>
+      <h3 id="azure-compliant-ssh-configuration">
+        2. 🔐 Azure-Compliant SSH Configuration
+      </h3>
+      <p>
+        <strong>Challenge:</strong> Azure App Service requires specific SSH
+        configuration that differs from standard OpenSSH setups.
+      </p>
+      <p>
+        <strong>Solution:</strong> Created <code>sshd_config</code> following
+        Azure's strict requirements.
+      </p>
+      <h4 id="ssh-configuration-file">SSH Configuration File</h4>
+      <pre><code>Port                   2222
+ListenAddress          0.0.0.0
+LoginGraceTime                 180
+X11Forwarding          yes
+Ciphers aes128-cbc,3des-cbc,aes256-cbc,aes128-ctr,aes192-ctr,aes256-ctr
+MACs hmac-sha1,hmac-sha1-96
+StrictModes            yes
+SyslogFacility                 DAEMON
+PasswordAuthentication         yes
+PermitEmptyPasswords   no
+PermitRootLogin        yes
+Subsystem sftp internal-sftp
+</code></pre>
+      <p><strong>Azure Requirements:</strong></p>
+      <ul>
+        <li>✅ Port must be <code>2222</code> (not standard 22)</li>
+        <li>
+          ✅ Ciphers must include at least one: <code>aes128-cbc</code>,
+          <code>3des-cbc</code>, or <code>aes256-cbc</code>
+        </li>
+        <li>
+          ✅ MACs must include at least one: <code>hmac-sha1</code> or
+          <code>hmac-sha1-96</code>
+        </li>
+        <li>✅ Root login must be permitted</li>
+        <li>✅ Password authentication must be enabled</li>
+      </ul>
+      <p>
+        <strong>Security Note:</strong> The password <code>Docker!</code> is
+        only accessible within Azure's private virtual network. External
+        attackers cannot reach port 2222.
+      </p>
+      <h3 id="entrypoint-script-with-environment-variable-export">
+        3. Entrypoint Script with Environment Variable Export
+      </h3>
+      <p>
+        <strong>Challenge:</strong> Azure App Service environment variables are
+        available to the main process but not to SSH sessions, breaking manual
+        migration commands.
+      </p>
+      <p>
+        <strong>Solution:</strong> Created an entrypoint script that exports
+        environment variables system-wide.
+      </p>
+      <h4 id="entrypoint-script-entrypoint.sh">
+        Entrypoint Script (<code>entrypoint.sh</code>)
+      </h4>
+      <pre><code class="language-bash">#!/bin/sh
+set -e
+
+# Export Azure App Service environment variables to make them available in SSH sessions
+# This creates a system-wide profile script that loads env vars for all shells
+echo &quot;Exporting environment variables for SSH access...&quot;
+printenv | sed -n &quot;s/^\([^=]\+\)=\(.*\)$/export \1=\2/p&quot; | sed 's/&quot;/\\\&quot;/g' | sed '/=/s//=&quot;/' | sed 's/$/&quot;/' &gt; /etc/profile.d/azure-env.sh
+chmod +x /etc/profile.d/azure-env.sh
+
+# Also export to /etc/profile for login shells (backward compatibility)
+eval $(cat /etc/profile.d/azure-env.sh)
+
+echo &quot;Starting SSH ...&quot;
+service ssh start
+
+# Run migrations if MIGRATE_ON_STARTUP is set
+if [ &quot;$MIGRATE_ON_STARTUP&quot; = &quot;true&quot; ]; then
+    echo &quot;Running database migrations...&quot;
+    ./migrate up || echo &quot;Migration failed, continuing anyway...&quot;
+fi
+
+# Start the OCaml web application
+echo &quot;Starting Chaufr application...&quot;
+exec ./chaufr
+</code></pre>
+      <p><strong>Environment Variable Export Strategy:</strong></p>
+      <ol>
+        <li>
+          <strong>System-wide availability</strong> - Export to
+          <code>/etc/profile.d/azure-env.sh</code>
+        </li>
+        <li>
+          <strong>SSH session access</strong> - All shells automatically source
+          this file
+        </li>
+        <li>
+          <strong>Main process access</strong> - Eval'd into current shell for
+          app startup
+        </li>
+        <li>
+          <strong>Optional auto-migrations</strong> - Set
+          <code>MIGRATE_ON_STARTUP=true</code> in Azure if desired
+        </li>
+      </ol>
+      <p>
+        <strong>Why This Matters:</strong> Without this,
+        <code>DATABASE_URL</code> and other Azure environment variables are
+        invisible in SSH sessions, causing migration commands to fail.
+      </p>
+      <hr />
+      <h2 id="technical-deep-dive">Technical Deep Dive</h2>
+      <h3 id="data-flow-from-build-to-production-user">
+        Data Flow: From Build to Production User
+      </h3>
+      <pre><code>1. GitHub Push
+   ↓ Triggers GitHub Actions
+2. Docker Build (Multi-stage)
+   ↓ Builder: Compile OCaml → migrate.exe, chaufr
+   ↓ Runtime: Install SSH, copy binaries, configure
+3. Azure Container Registry
+   ↓ Image stored: chaufr:latest
+4. Azure App Service
+   ↓ Pull image, start container
+5. Container Startup (entrypoint.sh)
+   ↓ Export env vars → Start SSH → Start app
+6. SSH Session (Azure Portal)
+   ↓ Source /etc/profile.d/azure-env.sh
+   ↓ Run: /home/appuser/migrate up
+7. Database Migrations
+   ↓ Connect to Azure PostgreSQL
+   ↓ Apply schema changes
+8. Production User Creation
+   ✓ Driver signup successful
+</code></pre>
+      <h3 id="file-ownership-architecture">File Ownership Architecture</h3>
+      <p>
+        <strong>Challenge Encountered:</strong> Initial attempts showed
+        <code>ls</code> returning nothing despite <code>find</code> locating the
+        binaries.
+      </p>
+      <p>
+        <strong>Root Cause:</strong> Files copied from builder stage had
+        incorrect ownership, making them invisible to <code>ls</code> for the
+        current user.
+      </p>
+      <p><strong>Solution:</strong></p>
+      <pre><code class="language-dockerfile"># Before (files invisible to appuser):
+COPY --from=builder /app/_build/default/bin/main.exe ./chaufr
+
+# After (proper ownership):
+COPY --from=builder --chown=appuser:appuser /app/_build/default/bin/main.exe ./chaufr
+</code></pre>
+      <p>
+        <strong>Lesson Learned:</strong> Always use <code>--chown</code> flags
+        when copying files to containers with non-root users.
+      </p>
+      <hr />
+      <h2 id="azure-postgresql-extension-challenges">
+        Azure PostgreSQL Extension Challenges
+      </h2>
+      <h3 id="the-pgcrypto-extension-blocker">
+        The pgcrypto Extension Blocker
+      </h3>
+      <p><strong>Error Encountered:</strong></p>
+      <pre><code>ERROR: extension &quot;pgcrypto&quot; is not allow-listed for users in Azure Database for PostgreSQL
+HINT: to learn how to allow an extension or see the list of allowed extensions
+</code></pre>
+      <p>
+        <strong>Root Cause:</strong> Azure PostgreSQL Flexible Server requires:
+      </p>
+      <ol>
+        <li>Extensions to be allow-listed at the server level</li>
+        <li>Admin privileges to create extensions in a database</li>
+      </ol>
+      <p><strong>Solution (Two-Step Process):</strong></p>
+      <h4 id="step-1-allow-list-the-extension">
+        Step 1: Allow-list the Extension
+      </h4>
+      <pre><code class="language-bash"># Enable pgcrypto in Azure PostgreSQL server parameters
+az postgres flexible-server parameter set \
+  --resource-group ocaml-chaufr \
+  --server-name chaufr-pg \
+  --name azure.extensions \
+  --value pgcrypto,uuid-ossp
+</code></pre>
+      <p><strong>Output:</strong></p>
+      <pre><code class="language-json">{
+  &quot;value&quot;: &quot;pgcrypto,uuid-ossp&quot;,
+  &quot;source&quot;: &quot;user-override&quot;,
+  &quot;allowedValues&quot;: &quot;...,pgcrypto,...,uuid-ossp,...&quot;,
+  &quot;isConfigPendingRestart&quot;: false
+}
+</code></pre>
+      <h4 id="step-2-create-extension-as-admin">
+        Step 2: Create Extension as Admin
+      </h4>
+      <pre><code class="language-bash"># Connect to database as admin
+az postgres flexible-server connect \
+  --name chaufr-pg \
+  --admin-user postgres \
+  --database-name chaufr \
+  --interactive
+
+# Inside psql session (run ONE command at a time):
+CREATE EXTENSION IF NOT EXISTS &quot;pgcrypto&quot;;
+CREATE EXTENSION IF NOT EXISTS &quot;uuid-ossp&quot;;
+\dx  # List installed extensions
+\q   # Quit
+</code></pre>
+      <p><strong>Verification:</strong></p>
+      <pre><code class="language-sql">                                  List of installed extensions
+    Name    | Version |   Schema   |                         Description
+------------+---------+------------+--------------------------------------------------------------
+ pgcrypto   | 1.3     | public     | cryptographic functions
+ uuid-ossp  | 1.1     | public     | generate universally unique identifiers (UUIDs)
+</code></pre>
+      <h3 id="why-this-restriction-exists">Why This Restriction Exists</h3>
+      <p>
+        Azure PostgreSQL implements extension restrictions for security and
+        stability:
+      </p>
+      <ul>
+        <li>
+          Prevents malicious or unstable extensions from affecting the database
+        </li>
+        <li>Ensures only vetted extensions run in shared infrastructure</li>
+        <li>
+          Requires explicit admin approval for security-sensitive extensions
+          like <code>pgcrypto</code>
+        </li>
+      </ul>
+      <hr />
+      <h2 id="running-migrations-in-production">
+        Running Migrations in Production
+      </h2>
+      <h3 id="ssh-access-via-azure-portal">SSH Access via Azure Portal</h3>
+      <p><strong>Step 1: Navigate to SSH</strong></p>
+      <pre><code>Azure Portal → Your App Service → Development Tools → SSH → Click &quot;Go&quot;
+</code></pre>
+      <p><strong>Step 2: Load Environment Variables</strong></p>
+      <pre><code class="language-bash"># Source Azure environment variables (if not auto-loaded)
+source /etc/profile.d/azure-env.sh
+
+# Verify DATABASE_URL is available
+echo $DATABASE_URL
+# Output: postgresql://postgres:***@chaufr-pg.postgres.database.azure.com:5432/chaufr
+</code></pre>
+      <p><strong>Step 3: Initialize Migration System</strong></p>
+      <pre><code class="language-bash">/home/appuser/migrate init
+</code></pre>
+      <p><strong>Output:</strong></p>
+      <pre><code>No .env file to parse
+Migration system initialized successfully
+</code></pre>
+      <p><strong>Step 4: Check Migration Status</strong></p>
+      <pre><code class="language-bash">/home/appuser/migrate status
+</code></pre>
+      <p><strong>Output:</strong></p>
+      <pre><code>No .env file to parse
+Database Version: None
+Applied Migrations: 0
+Pending Migrations: 4
+</code></pre>
+      <p><strong>Step 5: Apply Migrations</strong></p>
+      <pre><code class="language-bash">/home/appuser/migrate up
+</code></pre>
+      <p><strong>Success Output:</strong></p>
+      <pre><code>No .env file to parse
+All migrations completed successfully
+</code></pre>
+      <p><strong>Step 6: Verify Current Version</strong></p>
+      <pre><code class="language-bash">/home/appuser/migrate version
+</code></pre>
+      <p><strong>Output:</strong></p>
+      <pre><code>No .env file to parse
+Current database version: 4_add_missing_columns
+</code></pre>
+      <h3 id="migration-schema-applied">Migration Schema Applied</h3>
+      <p>The successful migration created these tables:</p>
+      <ol>
+        <li><strong>users</strong> - User accounts (car owners)</li>
+        <li><strong>drivers</strong> - Driver accounts</li>
+        <li><strong>rides</strong> - Ride booking records</li>
+        <li><strong>passwords</strong> - Password authentication (Argon2)</li>
+        <li><strong>passkeys</strong> - WebAuthn/Passkey credentials</li>
+        <li><strong>schema_migrations</strong> - Migration tracking</li>
+      </ol>
+      <hr />
+      <h2 id="production-validation-first-user-created">
+        Production Validation: First User Created
+      </h2>
+      <p><strong>The Moment of Truth:</strong></p>
+      <p>
+        After completing the migration setup, I tested user creation via the
+        production API:
+      </p>
+      <pre><code class="language-bash"># Driver signup request to production Azure endpoint
+POST https://chaufr-app.azurewebsites.net/auth/signup
+{
+  &quot;name&quot;: &quot;Test Driver&quot;,
+  &quot;email&quot;: &quot;driver@example.com&quot;,
+  &quot;password&quot;: &quot;securePassword123&quot;,
+  &quot;role&quot;: &quot;driver&quot;
+}
+</code></pre>
+      <p><strong>Response:</strong></p>
+      <pre><code class="language-json">{
+  &quot;success&quot;: true,
+  &quot;message&quot;: &quot;User created and logged in&quot;,
+  &quot;user_id&quot;: &quot;aea6ec28-24dd-42bd-809d-a5ca213ad9de&quot;
+}
+</code></pre>
+      <p><strong>Validation Confirmed:</strong></p>
+      <ul>
+        <li>✅ Database schema fully operational</li>
+        <li>✅ UUID generation working (UUIDv7 with pgcrypto)</li>
+        <li>✅ Password hashing functional (Argon2)</li>
+        <li>✅ Session creation successful</li>
+        <li>✅ Authentication flow complete</li>
+      </ul>
+      <p><strong>Database Verification:</strong></p>
+      <pre><code class="language-sql">SELECT id, name, email, created_at FROM users 
+WHERE id = 'aea6ec28-24dd-42bd-809d-a5ca213ad9de';
+
+-- Result:
+--   id: aea6ec28-24dd-42bd-809d-a5ca213ad9de
+--   name: Test Driver
+--   email: driver@example.com
+--   created_at: 2025-11-21 22:15:43
+</code></pre>
+      <p><strong>Houston, We Have Liftoff! 🚀</strong></p>
+      <hr />
+      <h2 id="troubleshooting-guide">Troubleshooting Guide</h2>
+      <h3 id="issue-1-binaries-not-visible-in-ssh">
+        Issue 1: Binaries Not Visible in SSH
+      </h3>
+      <p><strong>Symptom:</strong></p>
+      <pre><code class="language-bash">root@container:/home/appuser# ls
+# (empty output)
+
+root@container:/home/appuser# ./migrate status
+-bash: ./migrate: No such file or directory
+</code></pre>
+      <p><strong>But:</strong></p>
+      <pre><code class="language-bash">root@container:/home/appuser# find / -name migrate 2&gt;/dev/null
+/home/appuser/migrate
+</code></pre>
+      <p>
+        <strong>Diagnosis:</strong> File ownership mismatch - files owned by
+        wrong user or have restrictive permissions.
+      </p>
+      <p><strong>Solution:</strong></p>
+      <pre><code class="language-dockerfile"># Add --chown flags in Dockerfile
+COPY --from=builder --chown=appuser:appuser /app/_build/default/bin/migrate.exe ./migrate
+</code></pre>
+      <p><strong>Verification:</strong></p>
+      <pre><code class="language-bash">ls -la /home/appuser/
+# Should show:
+# -rwxr-xr-x 1 appuser appuser 4927960 Nov 20 21:57 migrate
+</code></pre>
+      <h3 id="issue-2-environment-variables-not-available-in-ssh">
+        Issue 2: Environment Variables Not Available in SSH
+      </h3>
+      <p><strong>Symptom:</strong></p>
+      <pre><code class="language-bash">/home/appuser/migrate status
+# Error: Request to &lt;postgresql://postgres:_@...&gt; failed
+# (password masked/empty)
+</code></pre>
+      <p>
+        <strong>Diagnosis:</strong> <code>DATABASE_URL</code> not accessible in
+        SSH session.
+      </p>
+      <p><strong>Solution:</strong></p>
+      <pre><code class="language-bash"># Source the environment variables
+source /etc/profile.d/azure-env.sh
+
+# Verify
+echo $DATABASE_URL
+# Should show full connection string
+
+# Try migration again
+/home/appuser/migrate status
+</code></pre>
+      <p>
+        <strong>Permanent Fix:</strong> Ensure
+        <code>entrypoint.sh</code> exports to
+        <code>/etc/profile.d/azure-env.sh</code> as shown earlier.
+      </p>
+      <h3 id="issue-3-pgcrypto-extension-error">
+        Issue 3: pgcrypto Extension Error
+      </h3>
+      <p><strong>Symptom:</strong></p>
+      <pre><code>ERROR: extension &quot;pgcrypto&quot; is not allow-listed for users
+</code></pre>
+      <p>
+        <strong>Solution:</strong> Follow the two-step process in &quot;Azure
+        PostgreSQL Extension Challenges&quot; section above.
+      </p>
+      <h3 id="issue-4-psql-meta-command-syntax-error">
+        Issue 4: psql Meta-Command Syntax Error
+      </h3>
+      <p><strong>Symptom:</strong></p>
+      <pre><code class="language-sql">postgres@chaufr-pg:chaufr&gt; \dx
+syntax error at or near &quot;\&quot;
+</code></pre>
+      <p>
+        <strong>Diagnosis:</strong> Running psql meta-commands in a multi-line
+        SQL block.
+      </p>
+      <p><strong>Solution:</strong> Run each command separately:</p>
+      <pre><code class="language-sql">-- Run this:
+CREATE EXTENSION IF NOT EXISTS &quot;pgcrypto&quot;;
+-- Press Enter, wait for confirmation
+
+-- Then run this:
+\dx
+-- Press Enter to see extension list
+</code></pre>
+      <hr />
+      <h2 id="key-lessons-learned">Key Lessons Learned</h2>
+      <h3 id="file-ownership-matters-in-multi-stage-builds">
+        1. <strong>File Ownership Matters in Multi-Stage Builds</strong>
+      </h3>
+      <p>
+        When copying files between Docker stages, always use
+        <code>--chown</code> flags:
+      </p>
+      <pre><code class="language-dockerfile"># ❌ Wrong (permission issues)
+COPY --from=builder /app/binary ./binary
+
+# ✅ Right (proper ownership)
+COPY --from=builder --chown=appuser:appuser /app/binary ./binary
+</code></pre>
+      <h3 id="azure-ssh-requirements-are-non-negotiable">
+        2. <strong>Azure SSH Requirements Are Non-Negotiable</strong>
+      </h3>
+      <p>
+        Azure App Service SSH has specific requirements that must be followed
+        exactly:
+      </p>
+      <ul>
+        <li>Port <code>2222</code> (not 22)</li>
+        <li>Password <code>Docker!</code> (not configurable)</li>
+        <li>Specific cipher and MAC lists</li>
+        <li><code>PermitRootLogin yes</code></li>
+      </ul>
+      <p>Deviation from these breaks SSH access.</p>
+      <h3 id="environment-variables-need-explicit-export">
+        3. <strong>Environment Variables Need Explicit Export</strong>
+      </h3>
+      <p>
+        Azure environment variables are available to the main process but NOT to
+        SSH sessions unless explicitly exported to <code>/etc/profile.d/</code>.
+      </p>
+      <h3 id="azure-postgresql-extension-management">
+        4. <strong>Azure PostgreSQL Extension Management</strong>
+      </h3>
+      <p>Extensions like <code>pgcrypto</code> require:</p>
+      <ol>
+        <li>Server-level allow-listing</li>
+        <li>Admin-level creation</li>
+        <li>One-time setup per database</li>
+      </ol>
+      <p>Plan for this in your deployment documentation.</p>
+      <h3 id="multi-stage-builds-save-space">
+        5. <strong>Multi-Stage Builds Save Space</strong>
+      </h3>
+      <p>Final image size comparison:</p>
+      <ul>
+        <li>Without multi-stage: ~800MB (includes compiler, build tools)</li>
+        <li>With multi-stage: ~150MB (runtime only)</li>
+        <li><strong>Result:</strong> 81% size reduction</li>
+      </ul>
+      <h3 id="stripping-binaries-in-runtime-stage">
+        6. <strong>Stripping Binaries in Runtime Stage</strong>
+      </h3>
+      <p>
+        OCaml's opam user in builder stage lacks write permissions to
+        <code>_build/</code>:
+      </p>
+      <ul>
+        <li>❌ Strip in builder stage → Permission denied</li>
+        <li>✅ Strip in runtime stage → Works perfectly</li>
+      </ul>
+      <h3 id="manual-migrations-are-fine-for-mvp">
+        7. <strong>Manual Migrations Are Fine for MVP</strong>
+      </h3>
+      <p>For early-stage products:</p>
+      <ul>
+        <li>Manual migrations via SSH are acceptable</li>
+        <li>Provides full control and visibility</li>
+        <li>Easy to verify before proceeding</li>
+        <li>Automate when deployment frequency increases</li>
+      </ul>
+      <hr />
+      <h2 id="performance-considerations">Performance Considerations</h2>
+      <h3 id="docker-image-optimization">Docker Image Optimization</h3>
+      <p><strong>Before Optimization:</strong></p>
+      <ul>
+        <li>Single-stage build: 800MB</li>
+        <li>Debug symbols included</li>
+        <li>All build tools present</li>
+      </ul>
+      <p><strong>After Optimization:</strong></p>
+      <ul>
+        <li>Multi-stage build: 150MB</li>
+        <li>Debug symbols stripped (30% smaller binaries)</li>
+        <li>Only runtime dependencies</li>
+      </ul>
+      <p><strong>Impact:</strong></p>
+      <ul>
+        <li>Faster deployments to Azure</li>
+        <li>Lower Azure Container Registry storage costs</li>
+        <li>Quicker container startup times</li>
+      </ul>
+      <h3 id="ssh-performance">SSH Performance</h3>
+      <p><strong>Overhead:</strong></p>
+      <ul>
+        <li>SSH daemon: ~2MB memory</li>
+        <li>Port 2222 listener: negligible CPU</li>
+        <li>Environment export: one-time startup cost</li>
+      </ul>
+      <p><strong>Benefit:</strong></p>
+      <ul>
+        <li>Zero downtime debugging</li>
+        <li>Manual migration control</li>
+        <li>Production incident response capability</li>
+      </ul>
+      <hr />
+      <h2 id="conclusion">Conclusion</h2>
+      <p>
+        Deploying OCaml containers to Azure App Service with SSH access requires
+        careful attention to Azure's specific requirements, but the result is a
+        production-ready system with full operational control. The ability to
+        SSH into running containers, manage database migrations manually, and
+        debug issues in real-time provides invaluable flexibility for
+        early-stage products.
+      </p>
+      <p><strong>Key Takeaways:</strong></p>
+      <ol>
+        <li>
+          <strong>Multi-stage Docker builds</strong> keep production images lean
+          while maintaining full build capability
+        </li>
+        <li>
+          <strong>Azure SSH requirements</strong> are strict but
+          well-documented; follow them exactly
+        </li>
+        <li>
+          <strong>Environment variable export</strong> to
+          <code>/etc/profile.d/</code> enables SSH session access
+        </li>
+        <li>
+          <strong>Azure PostgreSQL extensions</strong> require server-level
+          allow-listing and admin creation
+        </li>
+        <li>
+          <strong>Manual migrations via SSH</strong> are perfectly acceptable
+          for MVP stages
+        </li>
+        <li>
+          <strong>File ownership</strong> in Docker is critical for proper
+          operation
+        </li>
+      </ol>
+      <p>
+        The journey from local development to production deployment involved
+        multiple hurdles—file ownership issues, environment variable visibility,
+        Azure extension restrictions—but each challenge reinforced the
+        importance of understanding the platform you're deploying to.
+      </p>
+      <p>
+        <strong>Current Status:</strong> Chaufr is live on Azure App Service,
+        accepting driver signups, and ready for the next phase of development.
+      </p>
+      <hr />
+      <h2 id="resources">Resources</h2>
+      <ul>
+        <li>
+          <a
+            href="https://learn.microsoft.com/en-us/azure/app-service/configure-custom-container?pivots=container-linux#enable-ssh"
+            >Azure App Service SSH Documentation</a
+          >
+        </li>
+        <li>
+          <a
+            href="https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/concepts-extensions"
+            >Azure PostgreSQL Extensions</a
+          >
+        </li>
+        <li>
+          <a href="https://docs.docker.com/build/building/multi-stage/"
+            >Docker Multi-Stage Builds</a
+          >
+        </li>
+      </ul>
+      <p><strong>Happy deploying! 🚀</strong></p>
+      <p><em>Shipped code beats perfect code, every time.</em></p>
+
+      <div class="webring-nav">
+        <a
+          href="https://ring.muhokama.fun/u/aguluman/pred"
+          class="webring-link webring-prev prev"
+          title="Previous site in the webring"
+          >← Pred</a
+        >
+        <p class="webring-description center">
+          Hey, this site is part of
+          <a
+            href="https://ring.muhokama.fun"
+            target="_blank"
+            rel="noopener noreferrer"
+            >ring.muhokama.fun!</a
+          >
+        </p>
+        <a
+          href="https://ring.muhokama.fun/u/aguluman/succ"
+          class="webring-link webring-next next"
+          title="Next site in the webring"
+          >Succ →</a
+        >
+      </div>
+    </main>
+    <footer class="site-footer">
+      <div class="footer-bottom">
+        <p class="copyright">© 2025 Chukwuma Akunyili. All rights reserved.</p>
+      </div>
+    </footer>
+    <script src="/static/js/highlight.min.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", (event) => {
+        document.querySelectorAll("pre code").forEach((el) => {
+          hljs.highlightElement(el);
+        });
+      });
+    </script>
+  </body>
+</html>

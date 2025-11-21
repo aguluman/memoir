@@ -207,18 +207,16 @@ new-page: $(CONTENT_DIR)
 .PHONY:docs-build copy-docs
 
 docs-build:
-	dune build @doc
+	@dune build @doc
 	@echo "Documentation built successfully in _build/default/_doc/_html/"
 
-copy-docs: docs-build .odoc_done
-.odoc_done: $(shell find lib -name "*.ml")
+copy-docs: docs-build
 	@echo "$(BLUE)📚 Copying documentation to $(SITE_DIR)/docs/$(NC)"
 	@rm -rf $(SITE_DIR)/docs
 	@mkdir -p $(SITE_DIR)/docs
 	@cp -r --preserve=all _build/default/_doc/_html/* $(SITE_DIR)/docs/
 	@chmod -R u+rwX,go+rX $(SITE_DIR)/docs/
 	@echo "$(GREEN)✅ Documentation copied to $(SITE_DIR)/docs/$(NC)"
-	@touch .odoc_done
 
 # Default target
 .DEFAULT_GOAL := help
