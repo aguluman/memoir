@@ -42,8 +42,8 @@ let meta_tags ~description =
     (* Highlight CSS *)
     link ~rel:[ `Stylesheet ] ~href:"/static/css/highlight.css" ();
     (* Favicon *)
-    link ~rel:[ `Icon ] ~href:"/static/images/favicon.png"
-      ~a:[ a_mime_type "image/png" ]
+    link ~rel:[ `Icon ] ~href:"/static/images/favicon.svg"
+      ~a:[ a_mime_type "image/svg+xml" ]
       ();
     (* Main JavaScript *)
     script ~a:[ a_src "/static/js/main.js"; a_defer () ] (txt "");
