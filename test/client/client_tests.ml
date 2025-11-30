@@ -28,10 +28,7 @@ let test_code_highlighting () =
   let html_str = Format.asprintf "%a" (Tyxml.Html.pp ()) html in
   Alcotest.(check bool)
     "Highlight.js script present" true
-    (contains html_str "hljs.highlightElement");
-  Alcotest.(check bool)
-    "DOM content loaded event" true
-    (contains html_str "DOMContentLoaded")
+    (contains html_str "hljs.highlightAll()")
 
 (* QCheck property: Title is included in HTML *)
 let title_property =

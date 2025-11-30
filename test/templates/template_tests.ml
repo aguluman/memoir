@@ -35,7 +35,7 @@ module Template_tests = struct
     Alcotest.check Alcotest.bool "Theme toggle class present" true
       (contains html_string "theme-toggle");
     Alcotest.check Alcotest.bool "Highlight init script present" true
-      (contains html_string "hljs.highlightElement")
+      (contains html_string "hljs.highlightAll()")
 
   let test_header () =
     let header_content = [ Html.div [ Html.txt "Header" ] ] in
