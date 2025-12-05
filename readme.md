@@ -14,7 +14,7 @@ The site is available at [https://fearful-odds.rocks/](https://fearful-odds.rock
 To get started with this project for the first time, run `make help` to see the list available commands and their descriptions.
 
 You would see this,
-```
+```markdown
 Memoir Static Site Generator 
 ============================= 
 
@@ -44,7 +44,36 @@ Documentation Commands:
   make docs-build        - Build documentation only
 ```
 
-## Issues
+## Using Nix
+To build and run the project using Nix, ensure you have Nix installed.
+- [Nix Installation Guide](https://nixos.org/download.html)
+- Add to `/etc/nix/nix.conf`: `experimental-features = nix-command flakes`
+
+Run the following command to enter a Nix shell with all dependencies:
+```bash
+nix develop
+```
+Then to update the flake.lock file, run:
+```bash
+nix flake update
+```
+
+## Using Docker
+To build and run the project using Docker, ensure you have Docker and Docker Compose installed.
+- [Docker](https://docs.docker.com/get-docker/)
+- [Docker Compose](https://docs.docker.com/compose/install/)
+
+Run the following command to build the image and start the container:
+
+```bash
+docker-compose up --build
+```
+
+The application will be available at `http://localhost:8080`.
+
+This will generate the static site and start the development server inside the container.
+
+## Reporting Issues
 If you noticed any issue or bug or a better way to do something, please open an issue or a PR.
 
 ## Contributions
