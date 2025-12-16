@@ -11,11 +11,26 @@
     </image>
     <atom:link href="https://fearful-odds.rocks/feed.xml" rel="self" type="application/rss+xml" />
     <language>en</language>
-    <lastBuildDate>Sun, 23 Nov 2025 22:16:07 +0000</lastBuildDate>
-    <pubDate>Sun, 23 Nov 2025 22:16:07 +0000</pubDate>
+    <lastBuildDate>Tue, 16 Dec 2025 09:39:12 +0000</lastBuildDate>
+    <pubDate>Tue, 16 Dec 2025 09:39:12 +0000</pubDate>
     <ttl>60</ttl>
     <managingEditor>Chukwuma Akunyili</managingEditor>
     <webMaster>Chukwuma Akunyili</webMaster>
+    <item>
+      <title>Securing the Monolith: CSRF, Redis, and the Driver Lifecycle</title>
+      <link>https://fearful-odds.rocks/blog/securing-the-monolith:csrf-and-the-driver-lifecycle</link>
+      <description><![CDATA[From fixing critical security holes to architecting the driver signup flow. A deep dive into CSRF in Dream, Azure Redis, and the importance of building a mental model.]]></description>
+      <dc:creator>Chukwuma Akunyili</dc:creator>
+      <pubDate>Tue, 16 Dec 2025 00:00:00 +0000</pubDate>
+      <guid isPermaLink="true">https://fearful-odds.rocks/blog/securing-the-monolith:csrf-and-the-driver-lifecycle</guid>
+      <category>OCaml</category>
+      <category>Dream</category>
+      <category>Security</category>
+      <category>Azure</category>
+      <category>Redis</category>
+      <category>Architecture</category>
+      <category>DevOps</category>
+    </item>
     <item>
       <title>Enabling SSH in Azure App Service for OCaml Containers: A Production Journey</title>
       <link>https://fearful-odds.rocks/blog/azure-ssh-ocaml-containers-production</link>
