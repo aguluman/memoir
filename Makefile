@@ -121,9 +121,6 @@ fmt:
 	@echo "$(BLUE)💅 Formatting CSS files...$(NC)"
 	@npx prettier --write --log-level=warn "$(SITE_DIR)/static/css/*.css" || true
 	@echo "$(GREEN)✅ CSS formatted$(NC)"
-	@echo "$(BLUE)💅 Formatting HTML files...$(NC)"
-	@npx prettier --write --log-level=warn "$(SITE_DIR)/**/*.html" || true
-	@echo "$(GREEN)✅ HTML formatted$(NC)"
 	@echo "$(BLUE)💅 Formatting JavaScript files...$(NC)"
 	@npx prettier --write --log-level=warn "$(SITE_DIR)/static/js/*.js" || true
 	@echo "$(GREEN)✅ JavaScript formatted$(NC)"
