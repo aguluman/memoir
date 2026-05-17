@@ -60,8 +60,7 @@ generate: build
 	@echo "$(GREEN)✅ Site generated successfully in $(SITE_DIR)/$(NC)"
 	@echo "$(BLUE)🔍 Copying documentation to site...$(NC)"
 	@$(MAKE) copy-docs
-	@echo "$(BLUE)🔍 Running formatter on generated files...$(NC)"
-	@$(MAKE) fmt
+
 
 .PHONY: generate-force
 generate-force: build
@@ -70,8 +69,7 @@ generate-force: build
 	@echo "$(GREEN)✅ Site generated successfully in $(SITE_DIR)/$(NC)"
 	@echo "$(BLUE)🔍 Copying documentation to site...$(NC)"
 	@$(MAKE) copy-docs
-	@echo "$(BLUE)🔍 Running formatter on generated files...$(NC)"
-	@$(MAKE) fmt
+	
 
 .PHONY: serve
 serve: build

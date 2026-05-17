@@ -61,9 +61,7 @@ let parse_yaml_frontmatter yaml_str =
 
 (** Parse markdown content into HTML with syntax highlighting support *)
 let parse_markdown content =
-  (* Pre-process content to fix common markdown issues *)
   let preprocessed_content =
-    (* Fix issue with triple backticks without proper spacing *)
     let fix_backtick_spacing content =
       let backtick_regex = Str.regexp "```\\([^`\n]\\)" in
       let result = ref content in
@@ -116,7 +114,6 @@ let parse_markdown content =
   let html = Omd.to_html ~auto_identifiers:true md in
 
   (* Process code blocks to add language classes for highlight.js *)
-  (* Using a more robust regex approach than AST transformation due to Omd API complexity *)
   let process_code_blocks html =
     let code_block_regex =
       Str.regexp "<pre><code\\([^>]*\\)>\\([\\s\\S]*?\\)</code></pre>"

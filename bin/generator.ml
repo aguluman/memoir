@@ -438,7 +438,7 @@ let process_route route =
         | Some d -> d
         | None -> "A page from Chukwuma Akunyili's memoir"
       in
-      let year = 2025 in
+      let year = Unix.(localtime (time ())).tm_year + 1900 in
       let author = "Chukwuma Akunyili" in
 
       (* Add webring navigation to content *)
@@ -459,7 +459,7 @@ let process_route route =
         Templates.create_page ~current_path:url_path ~year ~author
           ~title_text:title ~description
           ~content:[ Tyxml.Html.Unsafe.data final_html_with_webring ]
-          ~url:("https://fearful-odds.rocks" ^ url_path)
+          ~url:(Memoir_lib.site_domain ^ url_path)
           ()
       in
       write_output_file ~content:page_string ~path:output_path
@@ -644,7 +644,7 @@ let generate_rss_feed () =
         "Thoughts on software engineering, functional programming, and \
          technology";
       author = config.author;
-      base_url = "https://fearful-odds.rocks";
+      base_url = Memoir_lib.site_domain;
       output_dir = config.output_dir;
       content_dir = config.content_dir;
       template_dir = config.template_dir;

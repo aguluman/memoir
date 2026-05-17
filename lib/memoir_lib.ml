@@ -27,6 +27,8 @@ type page = {
   source_path : string;
 }
 
+let site_domain = "https://fearful-odds.rocks"
+
 (* Default empty metadata *)
 let empty_metadata =
   { title = "Untitled"; date = None; tags = []; summary = None; draft = false }

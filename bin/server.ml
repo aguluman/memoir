@@ -10,7 +10,7 @@ let rss_config =
     site_description =
       "Thoughts on software engineering, functional programming, and technology";
     author = "Chukwuma Akunyili";
-    base_url = "https://fearful-odds.rocks";
+    base_url = Memoir_lib.site_domain;
     output_dir = "_site";
     content_dir = "content";
     template_dir = "templates";

@@ -1,233 +1,36 @@
-<!doctype html><!doctype html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
-  <head>
-    <title>
-      Setting up Open Telemetry (OTel) with OCaml and Azure Monitor Integration
-    </title>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="Complete guide to implementing OpenTelemetry in OCaml with Dream Framework, including Azure Monitor integration, environment-specific configuration, and production-ready tracing middleware."
-    />
-    <link
-      rel="preload"
-      href="/static/fonts/JetBrainsMonoNerdFont-Regular.woff2"
-      data-as="font"
-      data-type="font/woff2"
-      data-crossorigin="anonymous"
-    />
-    <script>
-      (function () {
-        const theme = localStorage.getItem("theme");
-        if (theme === "dark") {
-          document.documentElement.setAttribute("data-theme", "dark");
-        } else if (theme === "light") {
-          document.documentElement.setAttribute("data-theme", "light");
-        }
-      })();
-    </script>
-    <link rel="stylesheet" href="/static/css/main.css" />
-    <link />
-    <link rel="stylesheet" href="/static/css/highlight.css" />
-    <link rel="icon" href="/static/images/favicon.svg" type="image/svg+xml" />
-    <script src="/static/js/main.js" defer="defer"></script>
-    <script src="/static/js/theme-toggle.js" defer="defer"></script>
-    <script
-      src="/static/js/highlight.min.js"
-      data-async="true"
-      data-onload="hljs.highlightAll()"
-    ></script>
-    <meta
-      property="og:title"
-      content="Setting up Open Telemetry (OTel) with OCaml and Azure Monitor Integration"
-    />
-    <meta
-      property="og:description"
-      content="Complete guide to implementing OpenTelemetry in OCaml with Dream Framework, including Azure Monitor integration, environment-specific configuration, and production-ready tracing middleware."
-    />
-    <meta
-      property="og:url"
-      content="https://fearful-odds.rocks//blog/setting-up-otel-with-ocaml-and-azure-monitor"
-    />
-    <meta property="og:image" content="/static/images/default-og.jpg" />
-    <meta property="og:type" content="article" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@siteauthor" />
-    <meta
-      name="twitter:title"
-      content="Setting up Open Telemetry (OTel) with OCaml and Azure Monitor Integration"
-    />
-    <meta
-      name="twitter:description"
-      content="Complete guide to implementing OpenTelemetry in OCaml with Dream Framework, including Azure Monitor integration, environment-specific configuration, and production-ready tracing middleware."
-    />
-    <meta name="twitter:image" content="/static/images/default-og.jpg" />
-    <link
-      rel="canonical"
-      href="https://fearful-odds.rocks//blog/setting-up-otel-with-ocaml-and-azure-monitor"
-    />
-    <script data-type="application/ld+json">
-      {&quot;@context&quot;:&quot;https://schema.org&quot;,&quot;@type&quot;:&quot;WebPage&quot;,&quot;name&quot;:&quot;Setting up Open Telemetry (OTel) with OCaml and Azure Monitor Integration&quot;,&quot;description&quot;:&quot;Complete guide to implementing OpenTelemetry in OCaml with Dream Framework, including Azure Monitor integration, environment-specific configuration, and production-ready tracing middleware.&quot;,&quot;url&quot;:&quot;https://fearful-odds.rocks//blog/setting-up-otel-with-ocaml-and-azure-monitor&quot;,&quot;image&quot;:&quot;/static/images/default-og.jpg&quot;}
-    </script>
-  </head>
-  <body class="page">
-    <button
-      class="theme-toggle"
-      title="Toggle dark/light mode"
-      data-aria-label="Toggle dark/light mode"
-    >
-      <span class="sun-icon">☀️</span><span class="moon-icon">🌙</span>
-    </button>
-    <header class="site-header">
-      <div>
-        <nav class="site-navigation" aria-label="Main navigation">
-          <button
-            class="mobile-nav-toggle"
-            aria-expanded="false"
-            aria-controls="primary-navigation"
-            aria-label="Toggle navigation menu"
-          >
-            <span class="hamburger"></span><span class="sr-only">Menu</span>
-          </button>
-          <ul class="nav-list" id="primary-navigation" data-visible="false">
-            <li class="nav-item"><a href="/">Home</a></li>
-            <li class="nav-item"><a href="/about">About</a></li>
-            <li class="nav-item"><a href="/projects">Projects</a></li>
-            <li class="nav-item"><a href="/blog">Blog</a></li>
-            <li class="nav-item"><a href="/journal">Journal</a></li>
-            <li class="nav-item"><a href="/contact">Contact</a></li>
-          </ul>
-          <div class="nav-right">
-            <ul class="social-nav">
-              <li>
-                <a
-                  href="https://github.com/aguluman"
-                  aria-label="GitHub"
-                  title="GitHub"
-                  class="social-link"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                  ><svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    xmlns:xlink="http://www.w3.org/1999/xlink"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    class="social-icon"
-                  >
-                    <path
-                      d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"
-                    ></path></svg
-                  ><span class="visually-hidden">GitHub</span></a
-                >
-              </li>
-              <li>
-                <a
-                  href="https://x.com/agulumans"
-                  aria-label="X"
-                  title="X"
-                  class="social-link"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                  ><svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    xmlns:xlink="http://www.w3.org/1999/xlink"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    class="social-icon"
-                  >
-                    <path
-                      d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
-                    ></path></svg
-                  ><span class="visually-hidden">Twitter</span></a
-                >
-              </li>
-              <li>
-                <a
-                  href="https://www.linkedin.com/in/chukwuma-akunyili/"
-                  aria-label="LinkedIn"
-                  title="LinkedIn"
-                  class="social-link"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                  ><svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    xmlns:xlink="http://www.w3.org/1999/xlink"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    class="social-icon"
-                  >
-                    <path
-                      d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"
-                    ></path></svg
-                  ><span class="visually-hidden">LinkedIn</span></a
-                >
-              </li>
-            </ul>
-          </div>
-        </nav>
-      </div>
-    </header>
-    <main>
-      <h1
-        id="setting-up-open-telemetry-otel-with-ocaml-and-azure-monitor-integration"
-      >
-        Setting up Open Telemetry (OTel) with OCaml and Azure Monitor
-        Integration
-      </h1>
-      <blockquote>
-        <p>
-          After weeks of iteration, testing, and debugging through GitHub
-          Actions CI/CD pipelines, I've successfully implemented a
-          production-ready OpenTelemetry integration for Chaufr. This post
-          documents the complete journey from initial setup through deployment,
-          design decisions, and architectural patterns that made this possible.
-        </p>
-      </blockquote>
-      <p>
-        <strong>Project:</strong> Chaufr – Personal drivers, on demand, in your
-        own vehicle<br />
-        <strong>Tech Stack:</strong> OCaml, Dream Framework, OpenTelemetry,
-        Azure Monitor, Docker, GitHub Actions<br />
-        <strong>Status:</strong> ✅ GitHub Actions Green (Production Ready)
-      </p>
-      <hr />
-      <h2 id="the-challenge-observability-at-scale">
-        The Challenge: Observability at Scale
-      </h2>
-      <p>
-        When deploying an OCaml application to production on Azure App Service,
-        traditional logging and debugging approaches fall short. You need:
-      </p>
-      <ul>
-        <li>
-          <strong>Distributed tracing</strong> to understand request flow across
-          components
-        </li>
-        <li><strong>Real-time metrics</strong> for performance monitoring</li>
-        <li><strong>Structured logging</strong> with context propagation</li>
-        <li>
-          <strong>Seamless Azure integration</strong> without platform-specific
-          code
-        </li>
-      </ul>
-      <p>
-        This is where OpenTelemetry comes in—a vendor-neutral, open-source
-        standard for collecting telemetry data.
-      </p>
-      <hr />
-      <h2 id="architecture-overview">Architecture Overview</h2>
-      <p>
-        Here's the high-level architecture of how telemetry flows through
-        Chaufr:
-      </p>
-      <pre><code>OCaml Application (Chaufr)
+<!DOCTYPE html><!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><title>Setting up Open Telemetry (OTel) with OCaml and Azure Monitor Integration</title><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><meta name="description" content="Complete guide to implementing OpenTelemetry in OCaml with Dream Framework, including Azure Monitor integration, environment-specific configuration, and production-ready tracing middleware."/><link rel="preload" href="/static/fonts/JetBrainsMono-Regular.woff2" data-as="font" data-type="font/woff2" data-crossorigin="anonymous"/><script>(function() {
+      const theme = localStorage.getItem('theme');
+      if (theme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else if (theme === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();</script><link rel="stylesheet" href="/static/css/main.css"/><link rel="stylesheet" href="/static/css/highlight.css"/><link rel="icon" href="/static/images/favicon.svg" type="image/svg+xml"/><script src="/static/js/main.js" defer="defer"></script><script src="/static/js/theme-toggle.js" defer="defer"></script><script src="/static/js/highlight.min.js" data-async="true" data-onload="hljs.highlightAll()"></script><meta property="og:title" content="Setting up Open Telemetry (OTel) with OCaml and Azure Monitor Integration"/><meta property="og:description" content="Complete guide to implementing OpenTelemetry in OCaml with Dream Framework, including Azure Monitor integration, environment-specific configuration, and production-ready tracing middleware."/><meta property="og:url" content="https://fearful-odds.rocks//blog/setting-up-otel-with-ocaml-and-azure-monitor"/><meta property="og:image" content="/static/images/default-og.jpg"/><meta property="og:type" content="article"/></head><body class="page"><button class="theme-toggle" title="Toggle dark/light mode" data-aria-label="Toggle dark/light mode"><span class="sun-icon">☀️</span><span class="moon-icon">🌙</span></button><header class="site-header"><div><nav class="site-navigation" aria-label="Main navigation"><button class="mobile-nav-toggle" aria-expanded="false" aria-controls="primary-navigation" aria-label="Toggle navigation menu"><span class="hamburger"></span><span class="sr-only">Menu</span></button><ul class="nav-list" id="primary-navigation" data-visible="false"><li class="nav-item"><a href="/">Home</a></li><li class="nav-item"><a href="/about">About</a></li><li class="nav-item"><a href="/projects">Projects</a></li><li class="nav-item"><a href="/blog">Blog</a></li><li class="nav-item"><a href="/journal">Journal</a></li><li class="nav-item"><a href="/contact">Contact</a></li></ul></nav></div></header><main><h1 id="setting-up-open-telemetry-otel-with-ocaml-and-azure-monitor-integration">Setting up Open Telemetry (OTel) with OCaml and Azure Monitor Integration</h1>
+<blockquote>
+<p>After weeks of iteration, testing, and debugging through GitHub Actions CI/CD pipelines, I've successfully implemented a production-ready OpenTelemetry integration for Chaufr. This post documents the complete journey from initial setup through deployment, design decisions, and architectural patterns that made this possible.</p>
+</blockquote>
+<p><strong>Project:</strong> Chaufr – Personal drivers, on demand, in your own vehicle<br />
+<strong>Tech Stack:</strong> OCaml, Dream Framework, OpenTelemetry, Azure Monitor, Docker, GitHub Actions<br />
+<strong>Status:</strong> ✅ GitHub Actions Green (Production Ready)</p>
+<hr />
+<h2 id="the-challenge-observability-at-scale">The Challenge: Observability at Scale</h2>
+<p>When deploying an OCaml application to production on Azure App Service, traditional logging and debugging approaches fall short. You need:</p>
+<ul>
+<li><strong>Distributed tracing</strong> to understand request flow across components
+</li>
+<li><strong>Real-time metrics</strong> for performance monitoring
+</li>
+<li><strong>Structured logging</strong> with context propagation
+</li>
+<li><strong>Seamless Azure integration</strong> without platform-specific code
+</li>
+</ul>
+<p>This is where OpenTelemetry comes in—a vendor-neutral, open-source standard for collecting telemetry data.</p>
+<hr />
+<h2 id="architecture-overview">Architecture Overview</h2>
+<p>Here's the high-level architecture of how telemetry flows through Chaufr:</p>
+<pre><code>OCaml Application (Chaufr)
         ↓
 Telemetry Middleware (Dream)
         ↓
@@ -238,30 +41,26 @@ Environment Decision:
   ├─ Development → Local OpenTelemetry Collector (Port 4318)
   └─ Fallback → Console Logging Only
 </code></pre>
-      <hr />
-      <h2 id="prerequisites">Prerequisites</h2>
-      <p>
-        You need to have the following libraries installed in your OCaml
-        project:
-      </p>
-      <ul>
-        <li>opentelemetry</li>
-        <li>opentelemetry-client-ocurl</li>
-        <li>opentelemetry-lwt</li>
-        <li>opentelemetry.trace</li>
-        <li>opentelemetry-cohttp-lwt</li>
-      </ul>
-      <hr />
-      <h2 id="step-1-core-configuration-module-telemetry.ml">
-        Step 1: Core Configuration Module (<code>telemetry.ml</code>)
-      </h2>
-      <p>
-        The foundation of our observability system is the
-        <code>telemetry.ml</code> module, which handles all configuration and
-        initialization.
-      </p>
-      <h3 id="configuration-type-system">Configuration Type System</h3>
-      <pre><code class="language-ocaml">type config = {
+<hr />
+<h2 id="prerequisites">Prerequisites</h2>
+<p>You need to have the following libraries installed in your OCaml project:</p>
+<ul>
+<li>opentelemetry
+</li>
+<li>opentelemetry-client-ocurl
+</li>
+<li>opentelemetry-lwt
+</li>
+<li>opentelemetry.trace
+</li>
+<li>opentelemetry-cohttp-lwt
+</li>
+</ul>
+<hr />
+<h2 id="step-1-core-configuration-module-telemetry.ml">Step 1: Core Configuration Module (<code>telemetry.ml</code>)</h2>
+<p>The foundation of our observability system is the <code>telemetry.ml</code> module, which handles all configuration and initialization.</p>
+<h3 id="configuration-type-system">Configuration Type System</h3>
+<pre><code class="language-ocaml">type config = {
   service_name : string;
   service_version : string;
   environment : string;
@@ -271,18 +70,10 @@ Environment Decision:
   sample_rate : float;
 }
 </code></pre>
-      <p>
-        This type captures all necessary telemetry configuration parameters,
-        allowing for flexibility across different deployment environments.
-      </p>
-      <h3 id="environment-aware-initialization">
-        Environment-Aware Initialization
-      </h3>
-      <p>
-        One of the key design decisions was
-        <strong>automatic environment detection</strong>:
-      </p>
-      <pre><code class="language-ocaml">let environment =
+<p>This type captures all necessary telemetry configuration parameters, allowing for flexibility across different deployment environments.</p>
+<h3 id="environment-aware-initialization">Environment-Aware Initialization</h3>
+<p>One of the key design decisions was <strong>automatic environment detection</strong>:</p>
+<pre><code class="language-ocaml">let environment =
   match Sys.getenv_opt &quot;ENVIRONMENT&quot; with
   | Some env -&gt; env
   | None -&gt; (
@@ -290,28 +81,18 @@ Environment Decision:
       | Some _ -&gt; &quot;production&quot;  (* Running on Azure App Service *)
       | None -&gt; &quot;development&quot;)  (* Local development *)
 </code></pre>
-      <p>This clever detection means:</p>
-      <ul>
-        <li>
-          When running locally, environment defaults to
-          <code>&quot;development&quot;</code>
-        </li>
-        <li>
-          When deployed to Azure App Service, the
-          <code>WEBSITE_SITE_NAME</code> environment variable is automatically
-          set by Azure, allowing automatic production detection
-        </li>
-        <li>
-          You can still override with explicit <code>ENVIRONMENT</code> variable
-          if needed
-        </li>
-      </ul>
-      <h3 id="smart-endpoint-routing">Smart Endpoint Routing</h3>
-      <p>
-        The initialization logic routes to the appropriate telemetry backend
-        based on environment:
-      </p>
-      <pre><code class="language-ocaml">let export_endpoint =
+<p>This clever detection means:</p>
+<ul>
+<li>When running locally, environment defaults to <code>&quot;development&quot;</code>
+</li>
+<li>When deployed to Azure App Service, the <code>WEBSITE_SITE_NAME</code> environment variable is automatically set by Azure, allowing automatic production detection
+</li>
+<li>You can still override with explicit <code>ENVIRONMENT</code> variable if needed
+</li>
+</ul>
+<h3 id="smart-endpoint-routing">Smart Endpoint Routing</h3>
+<p>The initialization logic routes to the appropriate telemetry backend based on environment:</p>
+<pre><code class="language-ocaml">let export_endpoint =
   match cfg.environment with
   | &quot;production&quot; | &quot;staging&quot; -&gt; (
       (* Production/Staging: Use Azure Monitor direct OTLP endpoint *)
@@ -331,27 +112,19 @@ Environment Decision:
       | Some endpoint -&gt; Some endpoint
       | None -&gt; Some &quot;http://localhost:4318/v1/traces&quot;)
 </code></pre>
-      <p><strong>Key Design Decisions:</strong></p>
-      <ol>
-        <li>
-          <strong>Production uses Azure Monitor directly</strong> - No
-          intermediary collector needed
-        </li>
-        <li>
-          <strong>Graceful fallbacks</strong> - If configuration is missing,
-          fall back to local collector
-        </li>
-        <li>
-          <strong>Configurable collector URL</strong> - Via
-          <code>OTEL_EXPORTER_OTLP_ENDPOINT</code> for flexibility
-        </li>
-      </ol>
-      <h3 id="span-creation-with-automatic-timing">
-        Span Creation with Automatic Timing
-      </h3>
-      <p>Two complementary functions handle span creation:</p>
-      <p><strong>Async version (for Lwt code):</strong></p>
-      <pre><code class="language-ocaml">let with_span ~name ?(attrs = []) f =
+<p><strong>Key Design Decisions:</strong></p>
+<ol>
+<li><strong>Production uses Azure Monitor directly</strong> - No intermediary collector needed
+</li>
+<li><strong>Graceful fallbacks</strong> - If configuration is missing, fall back to local collector
+</li>
+<li><strong>Configurable collector URL</strong> - Via <code>OTEL_EXPORTER_OTLP_ENDPOINT</code> for flexibility
+</li>
+</ol>
+<h3 id="span-creation-with-automatic-timing">Span Creation with Automatic Timing</h3>
+<p>Two complementary functions handle span creation:</p>
+<p><strong>Async version (for Lwt code):</strong></p>
+<pre><code class="language-ocaml">let with_span ~name ?(attrs = []) f =
   if not !telemetry_enabled then f ()
   else
     let cfg = !service_config in
@@ -371,8 +144,8 @@ Environment Decision:
             Opentelemetry.Scope.add_event scope event_fn;
             Lwt.fail exn))
 </code></pre>
-      <p><strong>Sync version (for blocking code):</strong></p>
-      <pre><code class="language-ocaml">let with_span_sync ~name ?(attrs = []) f =
+<p><strong>Sync version (for blocking code):</strong></p>
+<pre><code class="language-ocaml">let with_span_sync ~name ?(attrs = []) f =
   if not !telemetry_enabled then f ()
   else
     let cfg = !service_config in
@@ -389,23 +162,12 @@ Environment Decision:
       (* ... log exception with duration ... *)
       raise exn
 </code></pre>
-      <p>
-        Both functions automatically track execution time and exception
-        handling, reducing boilerplate throughout the codebase.
-      </p>
-      <hr />
-      <h2 id="step-2-dream-framework-integration-telemetry_middleware.ml">
-        Step 2: Dream Framework Integration
-        (<code>telemetry_middleware.ml</code>)
-      </h2>
-      <p>
-        The middleware layer integrates OpenTelemetry seamlessly with the Dream
-        web framework.
-      </p>
-      <h3 id="requestresponse-attribute-extraction">
-        Request/Response Attribute Extraction
-      </h3>
-      <pre><code class="language-ocaml">let extract_request_attrs request =
+<p>Both functions automatically track execution time and exception handling, reducing boilerplate throughout the codebase.</p>
+<hr />
+<h2 id="step-2-dream-framework-integration-telemetry_middleware.ml">Step 2: Dream Framework Integration (<code>telemetry_middleware.ml</code>)</h2>
+<p>The middleware layer integrates OpenTelemetry seamlessly with the Dream web framework.</p>
+<h3 id="requestresponse-attribute-extraction">Request/Response Attribute Extraction</h3>
+<pre><code class="language-ocaml">let extract_request_attrs request =
   let method_str = Dream.method_to_string (Dream.method_ request) in
   let path = Dream.target request in
   let client_ip = Dream.client request in
@@ -421,45 +183,30 @@ Environment Decision:
     (&quot;http.scheme&quot;, `String &quot;http&quot;);
   ]
 </code></pre>
-      <p>
-        This captures all relevant HTTP context for later analysis in Azure
-        Monitor or other visualization tools.
-      </p>
-      <h3 id="dual-middleware-pattern">Dual-Middleware Pattern</h3>
-      <p>
-        The implementation uses
-        <strong>two complementary middleware layers</strong>:
-      </p>
-      <ol>
-        <li>
-          <strong>Trace Middleware</strong> - Creates spans for each HTTP
-          request with timing and error handling
-        </li>
-        <li>
-          <strong>Logger Middleware</strong> - Logs request lifecycle events
-        </li>
-      </ol>
-      <pre><code class="language-ocaml">let telemetry_middleware handler =
+<p>This captures all relevant HTTP context for later analysis in Azure Monitor or other visualization tools.</p>
+<h3 id="dual-middleware-pattern">Dual-Middleware Pattern</h3>
+<p>The implementation uses <strong>two complementary middleware layers</strong>:</p>
+<ol>
+<li><strong>Trace Middleware</strong> - Creates spans for each HTTP request with timing and error handling
+</li>
+<li><strong>Logger Middleware</strong> - Logs request lifecycle events
+</li>
+</ol>
+<pre><code class="language-ocaml">let telemetry_middleware handler =
   handler |&gt; trace_middleware |&gt; logger_middleware
 </code></pre>
-      <p><strong>Why dual middleware?</strong></p>
-      <ul>
-        <li>
-          <strong>Separation of concerns</strong> - Tracing and logging are
-          independent
-        </li>
-        <li>
-          <strong>Flexibility</strong> - Either middleware can be disabled
-          independently
-        </li>
-        <li>
-          <strong>Performance</strong> - Logger middleware doesn't require span
-          overhead
-        </li>
-      </ul>
-      <h3 id="error-handling-with-context">Error Handling with Context</h3>
-      <p>The middleware captures exceptions with rich context:</p>
-      <pre><code class="language-ocaml">Lwt.catch
+<p><strong>Why dual middleware?</strong></p>
+<ul>
+<li><strong>Separation of concerns</strong> - Tracing and logging are independent
+</li>
+<li><strong>Flexibility</strong> - Either middleware can be disabled independently
+</li>
+<li><strong>Performance</strong> - Logger middleware doesn't require span overhead
+</li>
+</ul>
+<h3 id="error-handling-with-context">Error Handling with Context</h3>
+<p>The middleware captures exceptions with rich context:</p>
+<pre><code class="language-ocaml">Lwt.catch
   (fun () -&gt; inner_handler request)
   (fun exn -&gt;
     let error_attrs = [
@@ -470,20 +217,12 @@ Environment Decision:
     Telemetry.log_event ~name:&quot;http.server.error&quot; ~attrs:error_attrs ();
     Lwt.fail exn)
 </code></pre>
-      <p>
-        This ensures every error is captured and available in Azure Monitor
-        before the exception propagates.
-      </p>
-      <hr />
-      <h2 id="step-3-opentelemetry-collector-configuration">
-        Step 3: OpenTelemetry Collector Configuration
-      </h2>
-      <p>
-        For local development, the OpenTelemetry Collector (Docker container)
-        acts as a central aggregation point:
-      </p>
-      <h3 id="receiver-configuration">Receiver Configuration</h3>
-      <pre><code class="language-yaml">receivers:
+<p>This ensures every error is captured and available in Azure Monitor before the exception propagates.</p>
+<hr />
+<h2 id="step-3-opentelemetry-collector-configuration">Step 3: OpenTelemetry Collector Configuration</h2>
+<p>For local development, the OpenTelemetry Collector (Docker container) acts as a central aggregation point:</p>
+<h3 id="receiver-configuration">Receiver Configuration</h3>
+<pre><code class="language-yaml">receivers:
   otlp:
     protocols:
       grpc:
@@ -491,12 +230,9 @@ Environment Decision:
       http:
         endpoint: 0.0.0.0:4318
 </code></pre>
-      <p>
-        Both gRPC and HTTP protocols are enabled for maximum compatibility. The
-        HTTP endpoint (4318) is used by our OCaml client.
-      </p>
-      <h3 id="processor-pipeline">Processor Pipeline</h3>
-      <pre><code class="language-yaml">processors:
+<p>Both gRPC and HTTP protocols are enabled for maximum compatibility. The HTTP endpoint (4318) is used by our OCaml client.</p>
+<h3 id="processor-pipeline">Processor Pipeline</h3>
+<pre><code class="language-yaml">processors:
   batch:
     timeout: 10s
     send_batch_size: 1024
@@ -514,25 +250,17 @@ Environment Decision:
         from_attribute: ENVIRONMENT
         action: insert
 </code></pre>
-      <p><strong>Why these processors?</strong></p>
-      <ol>
-        <li>
-          <strong>Batch processor</strong> - Groups telemetry data for efficient
-          transmission
-        </li>
-        <li>
-          <strong>Memory limiter</strong> - Prevents the collector from
-          consuming excessive resources
-        </li>
-        <li>
-          <strong>Resource processor</strong> - Enriches all telemetry with
-          service context
-        </li>
-      </ol>
-      <h3 id="multi-pipeline-export-strategy">
-        Multi-Pipeline Export Strategy
-      </h3>
-      <pre><code class="language-yaml">service:
+<p><strong>Why these processors?</strong></p>
+<ol>
+<li><strong>Batch processor</strong> - Groups telemetry data for efficient transmission
+</li>
+<li><strong>Memory limiter</strong> - Prevents the collector from consuming excessive resources
+</li>
+<li><strong>Resource processor</strong> - Enriches all telemetry with service context
+</li>
+</ol>
+<h3 id="multi-pipeline-export-strategy">Multi-Pipeline Export Strategy</h3>
+<pre><code class="language-yaml">service:
   pipelines:
     traces:
       receivers: [otlp]
@@ -549,20 +277,12 @@ Environment Decision:
       processors: [memory_limiter, batch, resource]
       exporters: [azuremonitor, debug]
 </code></pre>
-      <p>
-        Each signal type (traces, metrics, logs) has its own pipeline, allowing
-        independent configuration and export strategies.
-      </p>
-      <hr />
-      <h2 id="step-4-application-integration-main.ml">
-        Step 4: Application Integration (<code>main.ml</code>)
-      </h2>
-      <p>
-        The main entry point integrates telemetry initialization with the
-        application lifecycle:
-      </p>
-      <h3 id="initialization-strategy">Initialization Strategy</h3>
-      <pre><code class="language-ocaml">let init_result =
+<p>Each signal type (traces, metrics, logs) has its own pipeline, allowing independent configuration and export strategies.</p>
+<hr />
+<h2 id="step-4-application-integration-main.ml">Step 4: Application Integration (<code>main.ml</code>)</h2>
+<p>The main entry point integrates telemetry initialization with the application lifecycle:</p>
+<h3 id="initialization-strategy">Initialization Strategy</h3>
+<pre><code class="language-ocaml">let init_result =
   Lwt_main.run
     (let* telemetry_result = Telemetry.initialize () in
      match telemetry_result with
@@ -573,18 +293,19 @@ Environment Decision:
          Printf.printf &quot;Telemetry initialized successfully\n&quot;;
          Connection.init ())
 </code></pre>
-      <p><strong>Key Design:</strong></p>
-      <ul>
-        <li>Telemetry initialization is non-blocking</li>
-        <li>If telemetry fails, application continues without it</li>
-        <li>Database initialization proceeds regardless of telemetry status</li>
-        <li>
-          This is important for resilience—observability should never prevent
-          the app from starting
-        </li>
-      </ul>
-      <h3 id="graceful-shutdown">Graceful Shutdown</h3>
-      <pre><code class="language-ocaml">Sys.set_signal sigterm
+<p><strong>Key Design:</strong></p>
+<ul>
+<li>Telemetry initialization is non-blocking
+</li>
+<li>If telemetry fails, application continues without it
+</li>
+<li>Database initialization proceeds regardless of telemetry status
+</li>
+<li>This is important for resilience—observability should never prevent the app from starting
+</li>
+</ul>
+<h3 id="graceful-shutdown">Graceful Shutdown</h3>
+<pre><code class="language-ocaml">Sys.set_signal sigterm
   (Signal_handle
      (fun _ -&gt;
        Printf.printf &quot;Received SIGTERM, shutting down gracefully...\n&quot;;
@@ -592,13 +313,10 @@ Environment Decision:
            let* () = Telemetry.shutdown () in
            Connection.close ())))
 </code></pre>
-      <p>
-        On shutdown signals (like during Azure deployment), telemetry data is
-        flushed to ensure no traces are lost.
-      </p>
-      <h3 id="health-check-endpoints">Health Check Endpoints</h3>
-      <p>The application provides multiple observability endpoints:</p>
-      <pre><code class="language-ocaml">let health_routes = [
+<p>On shutdown signals (like during Azure deployment), telemetry data is flushed to ensure no traces are lost.</p>
+<h3 id="health-check-endpoints">Health Check Endpoints</h3>
+<p>The application provides multiple observability endpoints:</p>
+<pre><code class="language-ocaml">let health_routes = [
   Dream.get &quot;/health&quot; (fun _ -&gt; Dream.respond ~status:`OK &quot;ok&quot;);
   Dream.get &quot;/health/detailed&quot; (fun _request -&gt;
       let* health_result = Connection.get_health_status () in
@@ -614,19 +332,12 @@ Environment Decision:
       Dream.html (&quot;&lt;pre&gt;&quot; ^ status_info ^ &quot;&lt;/pre&gt;&quot;));
 ]
 </code></pre>
-      <p>
-        These endpoints are automatically instrumented with telemetry through
-        the middleware layer.
-      </p>
-      <hr />
-      <h2 id="deployment-configuration">Deployment Configuration</h2>
-      <h3 id="environment-variables-for-production">
-        Environment Variables for Production
-      </h3>
-      <p>
-        When deploying to Azure App Service, set these environment variables:
-      </p>
-      <pre><code class="language-bash"># Required for Azure Monitor integration
+<p>These endpoints are automatically instrumented with telemetry through the middleware layer.</p>
+<hr />
+<h2 id="deployment-configuration">Deployment Configuration</h2>
+<h3 id="environment-variables-for-production">Environment Variables for Production</h3>
+<p>When deploying to Azure App Service, set these environment variables:</p>
+<pre><code class="language-bash"># Required for Azure Monitor integration
 APPLICATIONINSIGHTS_CONNECTION_STRING=InstrumentationKey=&lt;key&gt;;IngestionEndpoint=&lt;endpoint&gt;
 
 # Optional: override environment detection
@@ -637,175 +348,83 @@ OTEL_SERVICE_NAME=chaufr
 OTEL_SERVICE_VERSION=1.0.0
 OTEL_SAMPLE_RATE=1.0
 </code></pre>
-      <h3 id="local-development-setup">Local Development Setup</h3>
-      <p>For local development, run the OpenTelemetry Collector:</p>
-      <pre><code class="language-bash">docker-compose up -d otel-collector
+<h3 id="local-development-setup">Local Development Setup</h3>
+<p>For local development, run the OpenTelemetry Collector:</p>
+<pre><code class="language-bash">docker-compose up -d otel-collector
 export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
 dune exec bin/main.exe
 </code></pre>
-      <hr />
-      <h2 id="key-design-decisions-explained">
-        Key Design Decisions Explained
-      </h2>
-      <h3 id="automatic-environment-detection">
-        1. <strong>Automatic Environment Detection</strong>
-      </h3>
-      <p>
-        Rather than requiring explicit configuration, the code detects
-        <code>WEBSITE_SITE_NAME</code> (Azure's automatic environment variable)
-        to automatically enable production mode. This reduces configuration
-        errors.
-      </p>
-      <h3 id="two-middleware-functions">
-        2. <strong>Two Middleware Functions</strong>
-      </h3>
-      <p>
-        Separating trace and logging middleware allows each to evolve
-        independently and provides better debugging when one fails.
-      </p>
-      <h3 id="graceful-degradation">
-        3. <strong>Graceful Degradation</strong>
-      </h3>
-      <p>If telemetry initialization fails:</p>
-      <ul>
-        <li>Application continues running</li>
-        <li>Console-only logging takes over</li>
-        <li>Observability isn't a single point of failure</li>
-      </ul>
-      <h3 id="both-sync-and-async-spans">
-        4. <strong>Both Sync and Async Spans</strong>
-      </h3>
-      <p>
-        OCaml codebases often mix Lwt async code with synchronous utilities.
-        Providing both <code>with_span</code> and
-        <code>with_span_sync</code> ensures comprehensive coverage.
-      </p>
-      <h3 id="direct-azure-monitor-export">
-        5. <strong>Direct Azure Monitor Export</strong>
-      </h3>
-      <p>
-        In production, we export directly to Azure Monitor's OTLP endpoint
-        rather than routing through a local collector. This reduces latency and
-        operational complexity.
-      </p>
-      <hr />
-      <h2 id="testing-and-validation">Testing and Validation</h2>
-      <p>
-        To verify the telemetry is working in production, send a burst of
-        requests to any health endpoint:
-      </p>
-      <pre><code class="language-bash">for i in {1..65}; do \
+<hr />
+<h2 id="key-design-decisions-explained">Key Design Decisions Explained</h2>
+<h3 id="automatic-environment-detection">1. <strong>Automatic Environment Detection</strong></h3>
+<p>Rather than requiring explicit configuration, the code detects <code>WEBSITE_SITE_NAME</code> (Azure's automatic environment variable) to automatically enable production mode. This reduces configuration errors.</p>
+<h3 id="two-middleware-functions">2. <strong>Two Middleware Functions</strong></h3>
+<p>Separating trace and logging middleware allows each to evolve independently and provides better debugging when one fails.</p>
+<h3 id="graceful-degradation">3. <strong>Graceful Degradation</strong></h3>
+<p>If telemetry initialization fails:</p>
+<ul>
+<li>Application continues running
+</li>
+<li>Console-only logging takes over
+</li>
+<li>Observability isn't a single point of failure
+</li>
+</ul>
+<h3 id="both-sync-and-async-spans">4. <strong>Both Sync and Async Spans</strong></h3>
+<p>OCaml codebases often mix Lwt async code with synchronous utilities. Providing both <code>with_span</code> and <code>with_span_sync</code> ensures comprehensive coverage.</p>
+<h3 id="direct-azure-monitor-export">5. <strong>Direct Azure Monitor Export</strong></h3>
+<p>In production, we export directly to Azure Monitor's OTLP endpoint rather than routing through a local collector. This reduces latency and operational complexity.</p>
+<hr />
+<h2 id="testing-and-validation">Testing and Validation</h2>
+<p>To verify the telemetry is working in production, send a burst of requests to any health endpoint:</p>
+<pre><code class="language-bash">for i in {1..65}; do \
   curl -s http://localhost:8080/health &gt; /dev/null; \
   curl -s http://localhost:8080/health/detailed &gt; /dev/null; \
   curl -s http://localhost:8080/status &gt; /dev/null; \
   curl -s http://localhost:8080/diagnostic &gt; /dev/null; \
 done &amp;&amp; echo &quot;Generated 260 requests (65 iterations × 4 endpoints)&quot;
 </code></pre>
-      <p>
-        Then check OpenTelemetry Collector to see the traces appear in
-        real-time.
-      </p>
-      <hr />
-      <h2 id="lessons-learned">Lessons Learned</h2>
-      <h3 id="environment-detection-is-powerful">
-        1. <strong>Environment Detection is Powerful</strong>
-      </h3>
-      <p>
-        Automatic environment detection via
-        <code>WEBSITE_SITE_NAME</code> eliminated entire classes of
-        configuration errors.
-      </p>
-      <h3 id="middleware-composition-matters">
-        2. <strong>Middleware Composition Matters</strong>
-      </h3>
-      <p>
-        Dream's middleware pattern enabled clean separation between telemetry
-        concerns without tangling code.
-      </p>
-      <h3 id="graceful-degradation-builds-confidence">
-        3. <strong>Graceful Degradation Builds Confidence</strong>
-      </h3>
-      <p>
-        Knowing that telemetry failures won't crash the app gave confidence to
-        deploy observability to production first.
-      </p>
-      <h3 id="otlp-standardization-is-worth-it">
-        4. <strong>OTLP Standardization is Worth It</strong>
-      </h3>
-      <p>
-        Using the OpenTelemetry Protocol standard means we could easily swap
-        backends (local collector → Azure Monitor) without code changes.
-      </p>
-      <hr />
-      <h2 id="resources-next-steps">Resources &amp; Next Steps</h2>
-      <h3 id="for-local-development">For Local Development</h3>
-      <ul>
-        <li>
-          Start with the Docker Compose setup for the OpenTelemetry Collector
-        </li>
-        <li>Use Jaeger UI (port 16686) to visualize traces locally</li>
-        <li>Use Prometheus (port 9090) to view metrics</li>
-      </ul>
-      <h3 id="for-production">For Production</h3>
-      <ul>
-        <li>
-          Azure Monitor Application Insights dashboard shows all traces,
-          metrics, and logs
-        </li>
-        <li>
-          Set up alerts based on error rates, latency percentiles, and custom
-          metrics
-        </li>
-        <li>Use the Application Map to understand service dependencies</li>
-      </ul>
-      <h2 id="conclusion">Conclusion</h2>
-      <p>
-        Setting up OpenTelemetry in OCaml isn't just about adding
-        monitoring—it's about building observability into the application
-        architecture from day one. The patterns we've established in Chaufr
-        provide a foundation for understanding application behavior at scale,
-        debugging production issues quickly, and making data-driven performance
-        improvements.
-      </p>
-      <hr />
-      <p><strong>Happy tracing! 🚀</strong></p>
+<p>Then check OpenTelemetry Collector to see the traces appear in real-time.</p>
+<hr />
+<h2 id="lessons-learned">Lessons Learned</h2>
+<h3 id="environment-detection-is-powerful">1. <strong>Environment Detection is Powerful</strong></h3>
+<p>Automatic environment detection via <code>WEBSITE_SITE_NAME</code> eliminated entire classes of configuration errors.</p>
+<h3 id="middleware-composition-matters">2. <strong>Middleware Composition Matters</strong></h3>
+<p>Dream's middleware pattern enabled clean separation between telemetry concerns without tangling code.</p>
+<h3 id="graceful-degradation-builds-confidence">3. <strong>Graceful Degradation Builds Confidence</strong></h3>
+<p>Knowing that telemetry failures won't crash the app gave confidence to deploy observability to production first.</p>
+<h3 id="otlp-standardization-is-worth-it">4. <strong>OTLP Standardization is Worth It</strong></h3>
+<p>Using the OpenTelemetry Protocol standard means we could easily swap backends (local collector → Azure Monitor) without code changes.</p>
+<hr />
+<h2 id="resources-next-steps">Resources &amp; Next Steps</h2>
+<h3 id="for-local-development">For Local Development</h3>
+<ul>
+<li>Start with the Docker Compose setup for the OpenTelemetry Collector
+</li>
+<li>Use Jaeger UI (port 16686) to visualize traces locally
+</li>
+<li>Use Prometheus (port 9090) to view metrics
+</li>
+</ul>
+<h3 id="for-production">For Production</h3>
+<ul>
+<li>Azure Monitor Application Insights dashboard shows all traces, metrics, and logs
+</li>
+<li>Set up alerts based on error rates, latency percentiles, and custom metrics
+</li>
+<li>Use the Application Map to understand service dependencies
+</li>
+</ul>
+<h2 id="conclusion">Conclusion</h2>
+<p>Setting up OpenTelemetry in OCaml isn't just about adding monitoring—it's about building observability into the application architecture from day one. The patterns we've established in Chaufr provide a foundation for understanding application behavior at scale, debugging production issues quickly, and making data-driven performance improvements.</p>
+<hr />
+<p><strong>Happy tracing! 🚀</strong></p>
 
-      <div class="webring-nav">
-        <a
-          href="https://ring.muhokama.fun/u/aguluman/pred"
-          class="webring-link webring-prev prev"
-          title="Previous site in the webring"
-          >← Pred</a
-        >
-        <p class="webring-description center">
-          Hey, this site is part of
-          <a
-            href="https://ring.muhokama.fun"
-            target="_blank"
-            rel="noopener noreferrer"
-            >ring.muhokama.fun!</a
-          >
-        </p>
-        <a
-          href="https://ring.muhokama.fun/u/aguluman/succ"
-          class="webring-link webring-next next"
-          title="Next site in the webring"
-          >Succ →</a
-        >
-      </div>
-    </main>
-    <footer class="site-footer">
-      <div class="footer-bottom">
-        <p class="copyright">© 2025 Chukwuma Akunyili. All rights reserved.</p>
-      </div>
-    </footer>
-    <script src="/static/js/highlight.min.js"></script>
-    <script>
-      document.addEventListener("DOMContentLoaded", (event) => {
-        document.querySelectorAll("pre code").forEach((el) => {
-          hljs.highlightElement(el);
-        });
-      });
-    </script>
-  </body>
-</html>
+<div class="webring-nav">
+  <a href="https://ring.muhokama.fun/u/aguluman/pred" class="webring-link webring-prev prev" title="Previous site in the webring">← Pred</a>
+  <p class="webring-description center">
+    Hey, this site is part of 
+    <a href="https://ring.muhokama.fun" target="_blank" rel="noopener noreferrer">ring.muhokama.fun!</a>
+  </p>
+  <a href="https://ring.muhokama.fun/u/aguluman/succ" class="webring-link webring-next next" title="Next site in the webring">Succ →</a>
+</div></main><footer class="site-footer"><div class="footer-bottom"><p class="copyright">© 2026 Chukwuma Akunyili. All rights reserved.</p></div></footer></body></html>

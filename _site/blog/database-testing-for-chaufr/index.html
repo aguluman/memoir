@@ -1,284 +1,57 @@
-<!doctype html><!doctype html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
-  <head>
-    <title>
-      Database Testing in OCaml: From CRUD to Connection Pool Stress Testing
-    </title>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="Building a comprehensive database testing suite for Chaufr: integration tests, transaction verification, migration rollback testing, connection pool stress tests, and performance benchmarks using Alcotest, Lwt, and Caqti"
-    />
-    <link
-      rel="preload"
-      href="/static/fonts/JetBrainsMonoNerdFont-Regular.woff2"
-      data-as="font"
-      data-type="font/woff2"
-      data-crossorigin="anonymous"
-    />
-    <script>
-      (function () {
-        const theme = localStorage.getItem("theme");
-        if (theme === "dark") {
-          document.documentElement.setAttribute("data-theme", "dark");
-        } else if (theme === "light") {
-          document.documentElement.setAttribute("data-theme", "light");
-        }
-      })();
-    </script>
-    <link rel="stylesheet" href="/static/css/main.css" />
-    <link />
-    <link rel="stylesheet" href="/static/css/highlight.css" />
-    <link rel="icon" href="/static/images/favicon.svg" type="image/svg+xml" />
-    <script src="/static/js/main.js" defer="defer"></script>
-    <script src="/static/js/theme-toggle.js" defer="defer"></script>
-    <script
-      src="/static/js/highlight.min.js"
-      data-async="true"
-      data-onload="hljs.highlightAll()"
-    ></script>
-    <meta
-      property="og:title"
-      content="Database Testing in OCaml: From CRUD to Connection Pool Stress Testing"
-    />
-    <meta
-      property="og:description"
-      content="Building a comprehensive database testing suite for Chaufr: integration tests, transaction verification, migration rollback testing, connection pool stress tests, and performance benchmarks using Alcotest, Lwt, and Caqti"
-    />
-    <meta
-      property="og:url"
-      content="https://fearful-odds.rocks//blog/database-testing-for-chaufr"
-    />
-    <meta property="og:image" content="/static/images/default-og.jpg" />
-    <meta property="og:type" content="article" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@siteauthor" />
-    <meta
-      name="twitter:title"
-      content="Database Testing in OCaml: From CRUD to Connection Pool Stress Testing"
-    />
-    <meta
-      name="twitter:description"
-      content="Building a comprehensive database testing suite for Chaufr: integration tests, transaction verification, migration rollback testing, connection pool stress tests, and performance benchmarks using Alcotest, Lwt, and Caqti"
-    />
-    <meta name="twitter:image" content="/static/images/default-og.jpg" />
-    <link
-      rel="canonical"
-      href="https://fearful-odds.rocks//blog/database-testing-for-chaufr"
-    />
-    <script data-type="application/ld+json">
-      {&quot;@context&quot;:&quot;https://schema.org&quot;,&quot;@type&quot;:&quot;WebPage&quot;,&quot;name&quot;:&quot;Database Testing in OCaml: From CRUD to Connection Pool Stress Testing&quot;,&quot;description&quot;:&quot;Building a comprehensive database testing suite for Chaufr: integration tests, transaction verification, migration rollback testing, connection pool stress tests, and performance benchmarks using Alcotest, Lwt, and Caqti&quot;,&quot;url&quot;:&quot;https://fearful-odds.rocks//blog/database-testing-for-chaufr&quot;,&quot;image&quot;:&quot;/static/images/default-og.jpg&quot;}
-    </script>
-  </head>
-  <body class="page">
-    <button
-      class="theme-toggle"
-      title="Toggle dark/light mode"
-      data-aria-label="Toggle dark/light mode"
-    >
-      <span class="sun-icon">☀️</span><span class="moon-icon">🌙</span>
-    </button>
-    <header class="site-header">
-      <div>
-        <nav class="site-navigation" aria-label="Main navigation">
-          <button
-            class="mobile-nav-toggle"
-            aria-expanded="false"
-            aria-controls="primary-navigation"
-            aria-label="Toggle navigation menu"
-          >
-            <span class="hamburger"></span><span class="sr-only">Menu</span>
-          </button>
-          <ul class="nav-list" id="primary-navigation" data-visible="false">
-            <li class="nav-item"><a href="/">Home</a></li>
-            <li class="nav-item"><a href="/about">About</a></li>
-            <li class="nav-item"><a href="/projects">Projects</a></li>
-            <li class="nav-item"><a href="/blog">Blog</a></li>
-            <li class="nav-item"><a href="/journal">Journal</a></li>
-            <li class="nav-item"><a href="/contact">Contact</a></li>
-          </ul>
-          <div class="nav-right">
-            <ul class="social-nav">
-              <li>
-                <a
-                  href="https://github.com/aguluman"
-                  aria-label="GitHub"
-                  title="GitHub"
-                  class="social-link"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                  ><svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    xmlns:xlink="http://www.w3.org/1999/xlink"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    class="social-icon"
-                  >
-                    <path
-                      d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"
-                    ></path></svg
-                  ><span class="visually-hidden">GitHub</span></a
-                >
-              </li>
-              <li>
-                <a
-                  href="https://x.com/agulumans"
-                  aria-label="X"
-                  title="X"
-                  class="social-link"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                  ><svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    xmlns:xlink="http://www.w3.org/1999/xlink"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    class="social-icon"
-                  >
-                    <path
-                      d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
-                    ></path></svg
-                  ><span class="visually-hidden">Twitter</span></a
-                >
-              </li>
-              <li>
-                <a
-                  href="https://www.linkedin.com/in/chukwuma-akunyili/"
-                  aria-label="LinkedIn"
-                  title="LinkedIn"
-                  class="social-link"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                  ><svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    xmlns:xlink="http://www.w3.org/1999/xlink"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    class="social-icon"
-                  >
-                    <path
-                      d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"
-                    ></path></svg
-                  ><span class="visually-hidden">LinkedIn</span></a
-                >
-              </li>
-            </ul>
-          </div>
-        </nav>
-      </div>
-    </header>
-    <main>
-      <h1
-        id="database-testing-in-ocaml-from-crud-to-connection-pool-stress-testing"
-      >
-        Database Testing in OCaml: From CRUD to Connection Pool Stress Testing
-      </h1>
-      <blockquote>
-        <p>
-          A comprehensive journey through implementing enterprise-grade database
-          testing infrastructure for an OCaml web application, featuring
-          integration tests, transaction verification, migration rollback
-          testing, connection pool stress tests, and query performance
-          benchmarks.
-        </p>
-      </blockquote>
-      <p>
-        <strong>Project:</strong> Chaufr – Personal drivers, on demand, in your
-        own vehicle<br />
-        <strong>Tech Stack:</strong> OCaml, Alcotest, Lwt, Caqti, PostgreSQL,
-        UUID v7
-      </p>
-      <p>
-        What started as a simple &quot;add some tests&quot; task evolved into
-        building a comprehensive database testing infrastructure that could be
-        similar to what you'd find in enterprise-grade applications. This
-        weekend I document the implementation of a stable test suite covering
-        everything from basic CRUD operations to connection pool stress testing
-        and query performance benchmarking.
-      </p>
-      <h2 id="prerequisites-and-setup-requirements">
-        ⚠️ Prerequisites and Setup Requirements
-      </h2>
-      <p>
-        <strong>Database Requirements:</strong> This testing suite requires a
-        running PostgreSQL instance for full test execution. The tests are
-        designed to work with real database connections rather than mocks to
-        ensure production-like validation.
-      </p>
-      <p><strong>Setup Requirements:</strong></p>
-      <ul>
-        <li>
-          PostgreSQL 16+ running locally or accessible via connection string
-        </li>
-        <li>
-          Database credentials configured via environment variables or
-          <code>.env</code> file
-        </li>
-        <li>
-          Sufficient database privileges for schema modifications (CREATE/DROP
-          tables)
-        </li>
-      </ul>
-      <p>
-        <strong>Graceful Degradation:</strong> When a database connection is
-        unavailable, the test suite includes graceful degradation logic that
-        skips database-dependent tests rather than failing the entire test run.
-        This ensures CI/CD pipelines can continue even when database services
-        are temporarily unavailable, though full validation requires a working
-        database connection.
-      </p>
-      <hr />
-      <h2 id="sprint-overview-the-database-testing-infrastructure-build">
-        Sprint Overview: The Database Testing Infrastructure Build
-      </h2>
-      <h3 id="testing-philosophy">Testing Philosophy</h3>
-      <p>My approach was guided by these principles:</p>
-      <ul>
-        <li>
-          <strong>Real Database Integration</strong> - No mocking; test against
-          actual PostgreSQL
-        </li>
-        <li>
-          <strong>Development-Like Scenarios</strong> - Stress tests that mirror
-          real-world load
-        </li>
-        <li>
-          <strong>Migration Safety</strong> - Round-trip testing to ensure
-          rollback safety
-        </li>
-        <li>
-          <strong>Performance Baselines</strong> - Benchmarks to catch
-          performance regressions
-        </li>
-        <li>
-          <strong>Environment Flexibility</strong> - Configurable test
-          parameters via environment variables
-        </li>
-      </ul>
-      <h3 id="before-basic-integration-test">Before: Basic Integration Test</h3>
-      <pre><code class="language-ocaml">let test_crud_flow _ _ () =
+<!DOCTYPE html><!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><title>Database Testing in OCaml: From CRUD to Connection Pool Stress Testing</title><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><meta name="description" content="Building a comprehensive database testing suite for Chaufr: integration tests, transaction verification, migration rollback testing, connection pool stress tests, and performance benchmarks using Alcotest, Lwt, and Caqti"/><link rel="preload" href="/static/fonts/JetBrainsMono-Regular.woff2" data-as="font" data-type="font/woff2" data-crossorigin="anonymous"/><script>(function() {
+      const theme = localStorage.getItem('theme');
+      if (theme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else if (theme === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();</script><link rel="stylesheet" href="/static/css/main.css"/><link rel="stylesheet" href="/static/css/highlight.css"/><link rel="icon" href="/static/images/favicon.svg" type="image/svg+xml"/><script src="/static/js/main.js" defer="defer"></script><script src="/static/js/theme-toggle.js" defer="defer"></script><script src="/static/js/highlight.min.js" data-async="true" data-onload="hljs.highlightAll()"></script><meta property="og:title" content="Database Testing in OCaml: From CRUD to Connection Pool Stress Testing"/><meta property="og:description" content="Building a comprehensive database testing suite for Chaufr: integration tests, transaction verification, migration rollback testing, connection pool stress tests, and performance benchmarks using Alcotest, Lwt, and Caqti"/><meta property="og:url" content="https://fearful-odds.rocks//blog/database-testing-for-chaufr"/><meta property="og:image" content="/static/images/default-og.jpg"/><meta property="og:type" content="article"/></head><body class="page"><button class="theme-toggle" title="Toggle dark/light mode" data-aria-label="Toggle dark/light mode"><span class="sun-icon">☀️</span><span class="moon-icon">🌙</span></button><header class="site-header"><div><nav class="site-navigation" aria-label="Main navigation"><button class="mobile-nav-toggle" aria-expanded="false" aria-controls="primary-navigation" aria-label="Toggle navigation menu"><span class="hamburger"></span><span class="sr-only">Menu</span></button><ul class="nav-list" id="primary-navigation" data-visible="false"><li class="nav-item"><a href="/">Home</a></li><li class="nav-item"><a href="/about">About</a></li><li class="nav-item"><a href="/projects">Projects</a></li><li class="nav-item"><a href="/blog">Blog</a></li><li class="nav-item"><a href="/journal">Journal</a></li><li class="nav-item"><a href="/contact">Contact</a></li></ul></nav></div></header><main><h1 id="database-testing-in-ocaml-from-crud-to-connection-pool-stress-testing">Database Testing in OCaml: From CRUD to Connection Pool Stress Testing</h1>
+<blockquote>
+<p>A comprehensive journey through implementing enterprise-grade database testing infrastructure for an OCaml web application, featuring integration tests, transaction verification, migration rollback testing, connection pool stress tests, and query performance benchmarks.</p>
+</blockquote>
+<p><strong>Project:</strong> Chaufr – Personal drivers, on demand, in your own vehicle<br />
+<strong>Tech Stack:</strong> OCaml, Alcotest, Lwt, Caqti, PostgreSQL, UUID v7</p>
+<p>What started as a simple &quot;add some tests&quot; task evolved into building a comprehensive database testing infrastructure that could be similar to what you'd find in enterprise-grade applications. This weekend I  document the implementation of a stable test suite covering everything from basic CRUD operations to connection pool stress testing and query performance benchmarking.</p>
+<h2 id="prerequisites-and-setup-requirements">⚠️ Prerequisites and Setup Requirements</h2>
+<p><strong>Database Requirements:</strong>
+This testing suite requires a running PostgreSQL instance for full test execution. The tests are designed to work with real database connections rather than mocks to ensure production-like validation.</p>
+<p><strong>Setup Requirements:</strong></p>
+<ul>
+<li>PostgreSQL 16+ running locally or accessible via connection string
+</li>
+<li>Database credentials configured via environment variables or <code>.env</code> file
+</li>
+<li>Sufficient database privileges for schema modifications (CREATE/DROP tables)
+</li>
+</ul>
+<p><strong>Graceful Degradation:</strong>
+When a database connection is unavailable, the test suite includes graceful degradation logic that skips database-dependent tests rather than failing the entire test run. This ensures CI/CD pipelines can continue even when database services are temporarily unavailable, though full validation requires a working database connection.</p>
+<hr />
+<h2 id="sprint-overview-the-database-testing-infrastructure-build">Sprint Overview: The Database Testing Infrastructure Build</h2>
+<h3 id="testing-philosophy">Testing Philosophy</h3>
+<p>My approach was guided by these principles:</p>
+<ul>
+<li><strong>Real Database Integration</strong> - No mocking; test against actual PostgreSQL
+</li>
+<li><strong>Development-Like Scenarios</strong> - Stress tests that mirror real-world load
+</li>
+<li><strong>Migration Safety</strong> - Round-trip testing to ensure rollback safety
+</li>
+<li><strong>Performance Baselines</strong> - Benchmarks to catch performance regressions
+</li>
+<li><strong>Environment Flexibility</strong> - Configurable test parameters via environment variables
+</li>
+</ul>
+<h3 id="before-basic-integration-test">Before: Basic Integration Test</h3>
+<pre><code class="language-ocaml">let test_crud_flow _ _ () =
   match Database.Connection.init () with
   | exception ex -&gt; Printf.printf &quot;DB init failed, skipping...&quot;; Lwt.return ()
   | _ -&gt; (* basic user creation test *)
 </code></pre>
-      <p>
-        <strong>Note:</strong> This early implementation demonstrates the
-        graceful degradation approach - when database initialization fails,
-        tests are skipped rather than failed, allowing the test suite to
-        continue running even when PostgreSQL is unavailable. This pattern is
-        maintained throughout the comprehensive test suite.
-      </p>
-      <h3 id="after-comprehensive-test-suite">
-        After: Comprehensive Test Suite
-      </h3>
-      <pre><code class="language-ocaml">let database_tests =
+<p><strong>Note:</strong> This early implementation demonstrates the graceful degradation approach - when database initialization fails, tests are skipped rather than failed, allowing the test suite to continue running even when PostgreSQL is unavailable. This pattern is maintained throughout the comprehensive test suite.</p>
+<h3 id="after-comprehensive-test-suite">After: Comprehensive Test Suite</h3>
+<pre><code class="language-ocaml">let database_tests =
   [
     test_case &quot;env_and_schema_ready&quot; `Quick (fun _ _ -&gt; ensure_db_ready ());
     test_case &quot;user_crud&quot; `Quick (fun s c -&gt; test_user_crud s c ());
@@ -293,30 +66,20 @@
         test_query_performance_benchmarks s c ());
   ]
 </code></pre>
-      <hr />
-      <h2 id="key-accomplishments">Key Accomplishments</h2>
-      <h3 id="robust-test-infrastructure-setup">
-        1. 🏗️ Robust Test Infrastructure Setup
-      </h3>
-      <p>
-        <strong>Challenge:</strong> Ensure tests run consistently across
-        environments with proper database initialization.
-      </p>
-      <p>
-        <strong>Solution:</strong> Comprehensive environment detection and
-        database readiness verification.
-      </p>
-      <h4 id="environment-aware-test-setup">Environment-Aware Test Setup</h4>
-      <pre><code class="language-ocaml">let () =
+<hr />
+<h2 id="key-accomplishments">Key Accomplishments</h2>
+<h3 id="robust-test-infrastructure-setup">1. 🏗️ Robust Test Infrastructure Setup</h3>
+<p><strong>Challenge:</strong> Ensure tests run consistently across environments with proper database initialization.</p>
+<p><strong>Solution:</strong> Comprehensive environment detection and database readiness verification.</p>
+<h4 id="environment-aware-test-setup">Environment-Aware Test Setup</h4>
+<pre><code class="language-ocaml">let () =
   (match Sys.getenv_opt &quot;DUNE_SOURCEROOT&quot; with
   | Some root -&gt; Unix.chdir root
   | None -&gt; ());
   Dotenv.load ()
 </code></pre>
-      <h4 id="database-readiness-verification">
-        Database Readiness Verification
-      </h4>
-      <pre><code class="language-ocaml">let ensure_db_ready () =
+<h4 id="database-readiness-verification">Database Readiness Verification</h4>
+<pre><code class="language-ocaml">let ensure_db_ready () =
   let* ping = Connection.ping_database () in
   (match ping with
   | Ok _ -&gt; ()
@@ -338,30 +101,22 @@
         (Migrations.migration_error_to_string err));
   Lwt.return_unit
 </code></pre>
-      <p><strong>Benefits Achieved:</strong></p>
-      <ul>
-        <li>
-          ✅ Consistent test execution across development and CI environments
-        </li>
-        <li>✅ Automatic migration application before test runs</li>
-        <li>✅ Clear error reporting when database infrastructure fails</li>
-        <li>✅ Environment variable loading for configuration flexibility</li>
-      </ul>
-      <h3 id="comprehensive-crud-testing-with-uuid-v7">
-        2. 🔄 Comprehensive CRUD Testing with UUID v7
-      </h3>
-      <p>
-        <strong>Challenge:</strong> Test complete user lifecycle with modern
-        UUID v7 identifiers.
-      </p>
-      <p>
-        <strong>Solution:</strong> End-to-end CRUD testing with proper UUID
-        validation and model mapping.
-      </p>
-      <h4 id="uuid-based-test-data-generation">
-        UUID-Based Test Data Generation
-      </h4>
-      <pre><code class="language-ocaml">let generate_uuid () =
+<p><strong>Benefits Achieved:</strong></p>
+<ul>
+<li>✅ Consistent test execution across development and CI environments
+</li>
+<li>✅ Automatic migration application before test runs
+</li>
+<li>✅ Clear error reporting when database infrastructure fails
+</li>
+<li>✅ Environment variable loading for configuration flexibility
+</li>
+</ul>
+<h3 id="comprehensive-crud-testing-with-uuid-v7">2. 🔄 Comprehensive CRUD Testing with UUID v7</h3>
+<p><strong>Challenge:</strong> Test complete user lifecycle with modern UUID v7 identifiers.</p>
+<p><strong>Solution:</strong> End-to-end CRUD testing with proper UUID validation and model mapping.</p>
+<h4 id="uuid-based-test-data-generation">UUID-Based Test Data Generation</h4>
+<pre><code class="language-ocaml">let generate_uuid () =
   Uuidm.v7_non_monotonic_gen
     ~now_ms:(fun () -&gt; Int64.of_float (Unix.gettimeofday () *. 1000.0))
     (Stdlib.Random.State.make_self_init ())
@@ -374,8 +129,8 @@ let test_user_crud _ _ () =
   let email = &quot;test.&quot; ^ Uuidm.to_string (uid_gen ()) ^ &quot;@example.com&quot; in
   let phone = Some &quot;555-0100&quot; in
 </code></pre>
-      <h4 id="rigorous-assertion-testing">Rigorous Assertion Testing</h4>
-      <pre><code class="language-ocaml">let* fetched = UserService.get_user_by_id uid in
+<h4 id="rigorous-assertion-testing">Rigorous Assertion Testing</h4>
+<pre><code class="language-ocaml">let* fetched = UserService.get_user_by_id uid in
 (match fetched with
 | Ok (Some user) -&gt;
     Alcotest.(check string) &quot;name matches&quot; name user.first_name;
@@ -387,28 +142,22 @@ let test_user_crud _ _ () =
     Alcotest.failf &quot;User retrieval failed: %s&quot;
       (Queries.string_of_query_error err));
 </code></pre>
-      <p><strong>Testing Features:</strong></p>
-      <ul>
-        <li>✅ UUID v7 generation and validation</li>
-        <li>✅ Unique test data per run to avoid conflicts</li>
-        <li>✅ Complete create-read-update-delete cycle verification</li>
-        <li>✅ Proper name splitting logic validation</li>
-      </ul>
-      <h3 id="transaction-integrity-testing">
-        3. 💰 Transaction Integrity Testing
-      </h3>
-      <p>
-        <strong>Challenge:</strong> Verify that database transactions commit and
-        rollback correctly.
-      </p>
-      <p>
-        <strong>Solution:</strong> Explicit transaction testing with both
-        success and failure scenarios.
-      </p>
-      <h4 id="transaction-commit-verification">
-        Transaction Commit Verification
-      </h4>
-      <pre><code class="language-ocaml">let test_transactions _ _ () =
+<p><strong>Testing Features:</strong></p>
+<ul>
+<li>✅ UUID v7 generation and validation
+</li>
+<li>✅ Unique test data per run to avoid conflicts
+</li>
+<li>✅ Complete create-read-update-delete cycle verification
+</li>
+<li>✅ Proper name splitting logic validation
+</li>
+</ul>
+<h3 id="transaction-integrity-testing">3. 💰 Transaction Integrity Testing</h3>
+<p><strong>Challenge:</strong> Verify that database transactions commit and rollback correctly.</p>
+<p><strong>Solution:</strong> Explicit transaction testing with both success and failure scenarios.</p>
+<h4 id="transaction-commit-verification">Transaction Commit Verification</h4>
+<pre><code class="language-ocaml">let test_transactions _ _ () =
   let* () = ensure_db_ready () in
   (* Commit path *)
   let uid_gen = generate_uuid () in
@@ -432,8 +181,8 @@ let test_user_crud _ _ () =
                     Alcotest.failf &quot;txn get failed: %s&quot;
                       (Queries.string_of_query_error err))))
 </code></pre>
-      <h4 id="rollback-verification">Rollback Verification</h4>
-      <pre><code class="language-ocaml">(* Rollback path *)
+<h4 id="rollback-verification">Rollback Verification</h4>
+<pre><code class="language-ocaml">(* Rollback path *)
 let rb_email = &quot;rollback.&quot; ^ Uuidm.to_string (uid_gen ()) ^ &quot;@example.com&quot; in
 let* txn_rb =
   Lwt.catch
@@ -453,24 +202,22 @@ in
 | Error _ -&gt; ()
 | Ok _ -&gt; Alcotest.fail &quot;Rollback transaction unexpectedly succeeded&quot;);
 </code></pre>
-      <p><strong>Transaction Testing Features:</strong></p>
-      <ul>
-        <li>✅ Explicit transaction boundary testing</li>
-        <li>✅ Commit verification with data persistence</li>
-        <li>✅ Rollback verification with forced failures</li>
-        <li>✅ Connection pooling integration with transactions</li>
-      </ul>
-      <h3 id="migration-safety-testing">4. 🔄 Migration Safety Testing</h3>
-      <p>
-        <strong>Challenge:</strong> Ensure database migrations can be safely
-        rolled back and reapplied.
-      </p>
-      <p>
-        <strong>Solution:</strong> Comprehensive migration round-trip testing
-        with single and multi-step scenarios.
-      </p>
-      <h4 id="single-migration-round-trip">Single Migration Round-Trip</h4>
-      <pre><code class="language-ocaml">let test_migrations_roundtrip _ _ () =
+<p><strong>Transaction Testing Features:</strong></p>
+<ul>
+<li>✅ Explicit transaction boundary testing
+</li>
+<li>✅ Commit verification with data persistence
+</li>
+<li>✅ Rollback verification with forced failures
+</li>
+<li>✅ Connection pooling integration with transactions
+</li>
+</ul>
+<h3 id="migration-safety-testing">4. 🔄 Migration Safety Testing</h3>
+<p><strong>Challenge:</strong> Ensure database migrations can be safely rolled back and reapplied.</p>
+<p><strong>Solution:</strong> Comprehensive migration round-trip testing with single and multi-step scenarios.</p>
+<h4 id="single-migration-round-trip">Single Migration Round-Trip</h4>
+<pre><code class="language-ocaml">let test_migrations_roundtrip _ _ () =
   let* () = ensure_db_ready () in
   let migrations = GeneratedList.all_migrations in
   let* applied = Migrations.get_applied_migrations () in
@@ -505,10 +252,8 @@ in
           Alcotest.failf &quot;migrate_up (restore) failed: %s&quot;
             (Migrations.migration_error_to_string err))
 </code></pre>
-      <h4 id="multi-step-migration-chain-testing">
-        Multi-Step Migration Chain Testing
-      </h4>
-      <pre><code class="language-ocaml">let test_migrations_roundtrip_chain _ _ () =
+<h4 id="multi-step-migration-chain-testing">Multi-Step Migration Chain Testing</h4>
+<pre><code class="language-ocaml">let test_migrations_roundtrip_chain _ _ () =
   let* () = ensure_db_ready () in
   let all = GeneratedList.all_migrations in
   let find_m id =
@@ -571,28 +316,22 @@ in
       Alcotest.failf &quot;Final migrations Up failed: %s&quot;
         (Migrations.migration_error_to_string err));
 </code></pre>
-      <p><strong>Migration Testing Features:</strong></p>
-      <ul>
-        <li>✅ Single migration round-trip verification</li>
-        <li>✅ Multi-step migration chain testing</li>
-        <li>✅ Automatic restoration to consistent state</li>
-        <li>✅ Integration with generated migration list</li>
-      </ul>
-      <h3 id="connection-pool-stress-testing">
-        5. 🚀 Connection Pool Stress Testing
-      </h3>
-      <p>
-        <strong>Challenge:</strong> Verify connection pool behavior under
-        concurrent load.
-      </p>
-      <p>
-        <strong>Solution:</strong> Configurable stress testing with concurrent
-        workers and parameterized load.
-      </p>
-      <h4 id="environment-configurable-stress-testing">
-        Environment-Configurable Stress Testing
-      </h4>
-      <pre><code class="language-ocaml">(* New: helpers to parameterize stress/bench via env *)
+<p><strong>Migration Testing Features:</strong></p>
+<ul>
+<li>✅ Single migration round-trip verification
+</li>
+<li>✅ Multi-step migration chain testing
+</li>
+<li>✅ Automatic restoration to consistent state
+</li>
+<li>✅ Integration with generated migration list
+</li>
+</ul>
+<h3 id="connection-pool-stress-testing">5. 🚀 Connection Pool Stress Testing</h3>
+<p><strong>Challenge:</strong> Verify connection pool behavior under concurrent load.</p>
+<p><strong>Solution:</strong> Configurable stress testing with concurrent workers and parameterized load.</p>
+<h4 id="environment-configurable-stress-testing">Environment-Configurable Stress Testing</h4>
+<pre><code class="language-ocaml">(* New: helpers to parameterize stress/bench via env *)
 let getenv_int name default =
   match Sys.getenv_opt name with
   | Some v -&gt; ( try int_of_string v with _ -&gt; default)
@@ -603,10 +342,8 @@ let getenv_float name default =
   | Some v -&gt; ( try float_of_string v with _ -&gt; default)
   | None -&gt; default
 </code></pre>
-      <h4 id="concurrent-worker-implementation">
-        Concurrent Worker Implementation
-      </h4>
-      <pre><code class="language-ocaml">let test_connection_pool_stress _ _ () =
+<h4 id="concurrent-worker-implementation">Concurrent Worker Implementation</h4>
+<pre><code class="language-ocaml">let test_connection_pool_stress _ _ () =
   let* () = ensure_db_ready () in
   let concurrency = getenv_int &quot;DB_STRESS_CONCURRENCY&quot; 32 in
   let iters_per_worker = getenv_int &quot;DB_STRESS_ITERS&quot; 20 in
@@ -627,36 +364,30 @@ let getenv_float name default =
   let* () = Lwt.join tasks in
   Lwt.return_unit
 </code></pre>
-      <p><strong>Stress Testing Features:</strong></p>
-      <ul>
-        <li>
-          ✅ Configurable concurrency via <code>DB_STRESS_CONCURRENCY</code>
-        </li>
-        <li>✅ Adjustable iteration count via <code>DB_STRESS_ITERS</code></li>
-        <li>✅ Real connection pool exercise with ping operations</li>
-        <li>✅ Concurrent task coordination with <code>Lwt.join</code></li>
-      </ul>
-      <h3 id="query-performance-benchmarking">
-        6. 📊 Query Performance Benchmarking
-      </h3>
-      <p>
-        <strong>Challenge:</strong> Establish performance baselines and catch
-        regressions.
-      </p>
-      <p>
-        <strong>Solution:</strong> Comprehensive benchmarking infrastructure
-        with timing and thresholds.
-      </p>
-      <h4 id="timing-infrastructure">Timing Infrastructure</h4>
-      <pre><code class="language-ocaml">(* Helper: A Time function for benchmarking *)
+<p><strong>Stress Testing Features:</strong></p>
+<ul>
+<li>✅ Configurable concurrency via <code>DB_STRESS_CONCURRENCY</code>
+</li>
+<li>✅ Adjustable iteration count via <code>DB_STRESS_ITERS</code>
+</li>
+<li>✅ Real connection pool exercise with ping operations
+</li>
+<li>✅ Concurrent task coordination with <code>Lwt.join</code>
+</li>
+</ul>
+<h3 id="query-performance-benchmarking">6. 📊 Query Performance Benchmarking</h3>
+<p><strong>Challenge:</strong> Establish performance baselines and catch regressions.</p>
+<p><strong>Solution:</strong> Comprehensive benchmarking infrastructure with timing and thresholds.</p>
+<h4 id="timing-infrastructure">Timing Infrastructure</h4>
+<pre><code class="language-ocaml">(* Helper: A Time function for benchmarking *)
 let time_function f =
   let start = Unix.gettimeofday () in
   let* result = f () in
   let duration = Unix.gettimeofday () -. start in
   Lwt.return (result, duration)
 </code></pre>
-      <h4 id="ping-benchmark-implementation">Ping Benchmark Implementation</h4>
-      <pre><code class="language-ocaml">let ping_benchmark () =
+<h4 id="ping-benchmark-implementation">Ping Benchmark Implementation</h4>
+<pre><code class="language-ocaml">let ping_benchmark () =
   let open Lwt.Syntax in
   let iterations = getenv_int &quot;DB_PING_ITERATIONS&quot; 50 in
   let threshold_ms = getenv_float &quot;DB_PING_THRESHOLD_MS&quot; 300.0 in
@@ -685,8 +416,8 @@ let time_function f =
 
   Lwt.return_unit
 </code></pre>
-      <h4 id="end-to-end-query-benchmarking">End-to-End Query Benchmarking</h4>
-      <pre><code class="language-ocaml">let test_query_performance_benchmarks _ _ () =
+<h4 id="end-to-end-query-benchmarking">End-to-End Query Benchmarking</h4>
+<pre><code class="language-ocaml">let test_query_performance_benchmarks _ _ () =
   let open Lwt.Syntax in
   (* First, create a test user for benchmarking *)
   let* user_result =
@@ -735,18 +466,22 @@ let time_function f =
 
       Lwt.return_unit
 </code></pre>
-      <p><strong>Performance Testing Features:</strong></p>
-      <ul>
-        <li>✅ Configurable benchmark iterations and thresholds</li>
-        <li>✅ Statistical analysis with average timing calculations</li>
-        <li>✅ Threshold-based performance regression detection</li>
-        <li>✅ Automatic test data cleanup after benchmarking</li>
-      </ul>
-      <hr />
-      <h2 id="technical-deep-dive">Technical Deep Dive</h2>
-      <h3 id="test-dependencies-evolution">Test Dependencies Evolution</h3>
-      <h4 id="before-minimal-dependencies">Before: Minimal Dependencies</h4>
-      <pre><code class="language-dune">(test
+<p><strong>Performance Testing Features:</strong></p>
+<ul>
+<li>✅ Configurable benchmark iterations and thresholds
+</li>
+<li>✅ Statistical analysis with average timing calculations
+</li>
+<li>✅ Threshold-based performance regression detection
+</li>
+<li>✅ Automatic test data cleanup after benchmarking
+</li>
+</ul>
+<hr />
+<h2 id="technical-deep-dive">Technical Deep Dive</h2>
+<h3 id="test-dependencies-evolution">Test Dependencies Evolution</h3>
+<h4 id="before-minimal-dependencies">Before: Minimal Dependencies</h4>
+<pre><code class="language-dune">(test
  (name test_database)
  (libraries
   chaufr.server.models
@@ -763,10 +498,8 @@ let time_function f =
   alcotest
   alcotest-lwt)
 </code></pre>
-      <h4 id="after-development-ready-dependencies">
-        After: Development-Ready Dependencies
-      </h4>
-      <pre><code class="language-dune">(test
+<h4 id="after-development-ready-dependencies">After: Development-Ready Dependencies</h4>
+<pre><code class="language-dune">(test
  (name test_database)
  (libraries
   chaufr.server.models
@@ -786,15 +519,10 @@ let time_function f =
   alcotest
   alcotest-lwt)
 </code></pre>
-      <h3 id="service-layer-testing-integration">
-        Service Layer Testing Integration
-      </h3>
-      <p>
-        The testing infrastructure integrates seamlessly with the existing
-        service layer:
-      </p>
-      <h4 id="user-service-integration">User Service Integration</h4>
-      <pre><code class="language-ocaml">module UserService = Services.User_service
+<h3 id="service-layer-testing-integration">Service Layer Testing Integration</h3>
+<p>The testing infrastructure integrates seamlessly with the existing service layer:</p>
+<h4 id="user-service-integration">User Service Integration</h4>
+<pre><code class="language-ocaml">module UserService = Services.User_service
 module GeneratedList = Util_database_generated.Generated_list
 
 (* Direct service layer testing *)
@@ -806,8 +534,8 @@ let uid =
       Alcotest.failf &quot;User creation failed: %s&quot;
         (Queries.string_of_query_error err)
 </code></pre>
-      <h4 id="error-handling-integration">Error Handling Integration</h4>
-      <pre><code class="language-ocaml">(match fetched with
+<h4 id="error-handling-integration">Error Handling Integration</h4>
+<pre><code class="language-ocaml">(match fetched with
 | Ok (Some user) -&gt;
     Alcotest.(check string) &quot;name matches&quot; name user.first_name;
     (* ... more assertions *)
@@ -816,30 +544,23 @@ let uid =
     Alcotest.failf &quot;User retrieval failed: %s&quot;
       (Queries.string_of_query_error err));
 </code></pre>
-      <hr />
-      <h2 id="performance-and-scalability-results">
-        Performance and Scalability Results
-      </h2>
-      <h3 id="benchmark-configuration">Benchmark Configuration</h3>
-      <div class="table-container">
-        | Parameter | Environment Variable | Default | Purpose |
-        |-----------|---------------------|---------|---------| | Stress
-        Concurrency | `DB_STRESS_CONCURRENCY` | 32 | Concurrent workers for pool
-        testing | | Stress Iterations | `DB_STRESS_ITERS` | 20 | Operations per
-        worker | | Ping Iterations | `DB_PING_ITERATIONS` | 50 | Ping benchmark
-        sample size | | Ping Threshold | `DB_PING_THRESHOLD_MS` | 300.0 |
-        Maximum acceptable ping time |
-      </div>
-      <hr />
-      <h2 id="development-deployment-considerations">
-        Development Deployment Considerations
-      </h2>
-      <h3 id="cicd-integration">CI/CD Integration</h3>
-      <p>The test suite is designed for CI/CD environments:</p>
-      <h4 id="environment-variable-configuration">
-        Environment Variable Configuration
-      </h4>
-      <pre><code class="language-bash"># Development-like stress testing
+<hr />
+<h2 id="performance-and-scalability-results">Performance and Scalability Results</h2>
+<h3 id="benchmark-configuration">Benchmark Configuration</h3>
+<div class="table-container">
+| Parameter | Environment Variable | Default | Purpose |
+|-----------|---------------------|---------|---------|
+| Stress Concurrency | `DB_STRESS_CONCURRENCY` | 32 | Concurrent workers for pool testing |
+| Stress Iterations | `DB_STRESS_ITERS` | 20 | Operations per worker |
+| Ping Iterations | `DB_PING_ITERATIONS` | 50 | Ping benchmark sample size |
+| Ping Threshold | `DB_PING_THRESHOLD_MS` | 300.0 | Maximum acceptable ping time |
+</div>
+<hr />
+<h2 id="development-deployment-considerations">Development Deployment Considerations</h2>
+<h3 id="cicd-integration">CI/CD Integration</h3>
+<p>The test suite is designed for CI/CD environments:</p>
+<h4 id="environment-variable-configuration">Environment Variable Configuration</h4>
+<pre><code class="language-bash"># Development-like stress testing
 export DB_STRESS_CONCURRENCY=64
 export DB_STRESS_ITERS=100
 export DB_PING_ITERATIONS=200
@@ -848,290 +569,229 @@ export DB_PING_THRESHOLD_MS=100.0
 # Run tests
 dune exec -- test/test_database.exe
 </code></pre>
-      <h4 id="database-state-management">Database State Management</h4>
-      <ul>
-        <li>Tests ensure clean slate via migration management</li>
-        <li>Each test uses unique identifiers to avoid conflicts</li>
-        <li>Automatic cleanup after benchmark operations</li>
-        <li>Environment detection for consistent execution</li>
-        <li>
-          <strong>Graceful degradation:</strong> Tests skip rather than fail
-          when PostgreSQL is unavailable, ensuring CI/CD pipeline continuity
-        </li>
-      </ul>
-      <h3 id="monitoring-and-alerting-integration">
-        Monitoring and Alerting Integration
-      </h3>
-      <p>The benchmarking infrastructure provides foundation for:</p>
-      <ol>
-        <li>
-          <p><strong>Performance Regression Detection</strong></p>
-          <ul>
-            <li>Threshold-based assertions catch slowdowns</li>
-            <li>Statistical analysis identifies trends</li>
-            <li>Configurable thresholds per environment</li>
-          </ul>
-        </li>
-        <li>
-          <p><strong>Connection Pool Health</strong></p>
-          <ul>
-            <li>Stress testing validates pool behavior</li>
-            <li>Concurrent operation verification</li>
-            <li>Resource exhaustion detection</li>
-          </ul>
-        </li>
-        <li>
-          <p><strong>Migration Safety Verification</strong></p>
-          <ul>
-            <li>Round-trip testing ensures reversibility</li>
-            <li>Multi-step chain validation</li>
-            <li>Automatic state restoration</li>
-          </ul>
-        </li>
-      </ol>
-      <hr />
-      <h2 id="lessons-learned-and-best-practices">
-        Lessons Learned and Best Practices
-      </h2>
-      <h3 id="environment-configuration-strategy">
-        1. <strong>Environment Configuration Strategy</strong>
-      </h3>
-      <p><strong>✅ What Worked:</strong></p>
-      <ul>
-        <li>Environment variables for all configurable parameters</li>
-        <li>Sensible defaults for local development</li>
-        <li>Development-grade settings via environment overrides</li>
-        <li>Consistent configuration pattern across all tests</li>
-      </ul>
-      <p><strong>⚠️ Challenges Faced:</strong></p>
-      <ul>
-        <li>Initial hardcoded values made tests inflexible</li>
-        <li>Missing environment loading caused inconsistent behavior</li>
-        <li>Test isolation required careful unique data generation</li>
-      </ul>
-      <h3 id="real-database-vs-mocking">
-        2. <strong>Real Database vs Mocking</strong>
-      </h3>
-      <p><strong>✅ What Worked:</strong></p>
-      <ul>
-        <li>Real PostgreSQL integration catches actual issues</li>
-        <li>Migration testing impossible with mocks</li>
-        <li>Connection pool behavior requires real connections</li>
-        <li>Performance benchmarking needs actual database</li>
-      </ul>
-      <p><strong>⚠️ Lessons Learned:</strong></p>
-      <ul>
-        <li>Requires database setup in CI/CD environments</li>
-        <li>Test data cleanup essential for repeatability</li>
-        <li>Connection pool initialization adds test setup complexity</li>
-      </ul>
-      <h3 id="test-performance-architecture">
-        3. <strong>Test Performance Architecture</strong>
-      </h3>
-      <p><strong>✅ Best Practices Established:</strong></p>
-      <ul>
-        <li>Timing infrastructure for all benchmarks</li>
-        <li>Statistical analysis for meaningful results</li>
-        <li>Configurable thresholds prevent false positives</li>
-        <li>Comprehensive cleanup after performance tests</li>
-      </ul>
-      <p><strong>⚠️ Performance Considerations:</strong></p>
-      <ul>
-        <li>Stress testing must be calibrated for environment</li>
-        <li>Benchmark iterations affect test execution time</li>
-        <li>Concurrent operations require careful synchronization</li>
-      </ul>
-      <hr />
-      <h2 id="testing-infrastructure-readiness-checklist">
-        Testing Infrastructure Readiness Checklist
-      </h2>
-      <h3 id="completed-this-sprint">✅ Completed This Sprint</h3>
-      <ul>
-        <li>
-          [x] <strong>Comprehensive Test Suite</strong> - CRUD, transactions,
-          migrations, stress, performance
-        </li>
-        <li>
-          [x] <strong>Environment Configuration</strong> - Flexible
-          parameterization via environment variables
-        </li>
-        <li>
-          [x] <strong>Real Database Integration</strong> - PostgreSQL
-          integration with proper setup/teardown
-        </li>
-        <li>
-          [x] <strong>Migration Safety Testing</strong> - Single and multi-step
-          rollback verification
-        </li>
-        <li>
-          [x] <strong>Connection Pool Stress Testing</strong> - Concurrent
-          operation validation
-        </li>
-        <li>
-          [x] <strong>Performance Benchmarking</strong> - Timing infrastructure
-          with threshold assertions
-        </li>
-        <li>
-          [x] <strong>Service Layer Integration</strong> - End-to-end testing
-          through service layer
-        </li>
-        <li>
-          [x] <strong>Error Handling Verification</strong> - Comprehensive error
-          path testing
-        </li>
-      </ul>
-      <hr />
-      <h2 id="implementation-impact">Implementation Impact</h2>
-      <h3 id="code-quality-improvements">Code Quality Improvements</h3>
-      <ol>
-        <li>
-          <p><strong>Confidence in Database Operations</strong></p>
-          <ul>
-            <li>Comprehensive test coverage eliminates deployment anxiety</li>
-            <li>Migration testing prevents production rollback issues</li>
-            <li>Connection pool validation ensures scalability</li>
-          </ul>
-        </li>
-        <li>
-          <p><strong>Performance Regression Prevention</strong></p>
-          <ul>
-            <li>Benchmark baselines catch performance degradation</li>
-            <li>Threshold-based assertions provide early warning</li>
-            <li>Statistical analysis identifies trends</li>
-          </ul>
-        </li>
-        <li>
-          <p><strong>Operational Excellence</strong></p>
-          <ul>
-            <li>Real database testing mirrors production behavior</li>
-            <li>
-              Environment configuration supports multiple deployment stages
-            </li>
-            <li>Comprehensive error handling improves debugging</li>
-          </ul>
-        </li>
-      </ol>
-      <h3 id="development-velocity">Development Velocity</h3>
-      <p>The testing infrastructure provides:</p>
-      <ul>
-        <li>
-          <strong>Fast Feedback</strong> - Quick test execution for common
-          scenarios
-        </li>
-        <li>
-          <strong>Development Confidence</strong> - Stress testing validates
-          production readiness
-        </li>
-        <li>
-          <strong>Migration Safety</strong> - Rollback testing enables fearless
-          schema changes
-        </li>
-        <li>
-          <strong>Performance Baselines</strong> - Benchmark results guide
-          optimization efforts
-        </li>
-      </ul>
-      <hr />
-      <h2 id="conclusion">Conclusion</h2>
-      <p>
-        Building a production-grade database testing infrastructure in OCaml
-        demonstrates the ecosystem's maturity for enterprise applications. The
-        combination of Alcotest, Lwt, and Caqti provides a robust foundation for
-        comprehensive database testing.
-      </p>
-      <p>Key achievements:</p>
-      <ul>
-        <li>
-          <strong>Enterprise-grade testing</strong> covering all aspects of
-          database operations
-        </li>
-        <li>
-          <strong>Flexible configuration</strong> supporting development through
-          production environments
-        </li>
-        <li>
-          <strong>Performance baselines</strong> establishing monitoring
-          foundation
-        </li>
-        <li>
-          <strong>Migration safety</strong> ensuring reversible schema changes
-        </li>
-        <li>
-          <strong>Development readiness</strong> validating connection pool
-          behavior under load
-        </li>
-      </ul>
-      <p>
-        This testing infrastructure serves as both a safety net for current
-        development and a foundation for future scaling. The investment in
-        comprehensive testing pays dividends through reduced production issues,
-        faster development cycles, and increased confidence in database
-        operations.
-      </p>
-      <hr />
-      <h2 id="next-steps">Next Steps</h2>
-      <ol>
-        <li>
-          <strong>CI/CD Integration</strong> - Automated test execution in
-          deployment pipeline
-        </li>
-        <li>
-          <strong>Observability Enhancement</strong> - OpenTelemetry integration
-          for test metrics
-        </li>
-        <li>
-          <strong>Load Testing Expansion</strong> - Extended stress testing
-          scenarios
-        </li>
-        <li>
-          <strong>Documentation</strong> - Comprehensive testing guides and
-          runbooks
-        </li>
-      </ol>
-      <hr />
-      <p>
-        <em
-          >The OCaml ecosystem provides excellent tools for this critical
-          infrastructure layer.</em
-        >
-      </p>
+<h4 id="database-state-management">Database State Management</h4>
+<ul>
+<li>Tests ensure clean slate via migration management
+</li>
+<li>Each test uses unique identifiers to avoid conflicts
+</li>
+<li>Automatic cleanup after benchmark operations
+</li>
+<li>Environment detection for consistent execution
+</li>
+<li><strong>Graceful degradation:</strong> Tests skip rather than fail when PostgreSQL is unavailable, ensuring CI/CD pipeline continuity
+</li>
+</ul>
+<h3 id="monitoring-and-alerting-integration">Monitoring and Alerting Integration</h3>
+<p>The benchmarking infrastructure provides foundation for:</p>
+<ol>
+<li>
+<p><strong>Performance Regression Detection</strong></p>
+<ul>
+<li>Threshold-based assertions catch slowdowns
+</li>
+<li>Statistical analysis identifies trends
+</li>
+<li>Configurable thresholds per environment
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Connection Pool Health</strong></p>
+<ul>
+<li>Stress testing validates pool behavior
+</li>
+<li>Concurrent operation verification
+</li>
+<li>Resource exhaustion detection
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Migration Safety Verification</strong></p>
+<ul>
+<li>Round-trip testing ensures reversibility
+</li>
+<li>Multi-step chain validation
+</li>
+<li>Automatic state restoration
+</li>
+</ul>
+</li>
+</ol>
+<hr />
+<h2 id="lessons-learned-and-best-practices">Lessons Learned and Best Practices</h2>
+<h3 id="environment-configuration-strategy">1. <strong>Environment Configuration Strategy</strong></h3>
+<p><strong>✅ What Worked:</strong></p>
+<ul>
+<li>Environment variables for all configurable parameters
+</li>
+<li>Sensible defaults for local development
+</li>
+<li>Development-grade settings via environment overrides
+</li>
+<li>Consistent configuration pattern across all tests
+</li>
+</ul>
+<p><strong>⚠️ Challenges Faced:</strong></p>
+<ul>
+<li>Initial hardcoded values made tests inflexible
+</li>
+<li>Missing environment loading caused inconsistent behavior
+</li>
+<li>Test isolation required careful unique data generation
+</li>
+</ul>
+<h3 id="real-database-vs-mocking">2. <strong>Real Database vs Mocking</strong></h3>
+<p><strong>✅ What Worked:</strong></p>
+<ul>
+<li>Real PostgreSQL integration catches actual issues
+</li>
+<li>Migration testing impossible with mocks
+</li>
+<li>Connection pool behavior requires real connections
+</li>
+<li>Performance benchmarking needs actual database
+</li>
+</ul>
+<p><strong>⚠️ Lessons Learned:</strong></p>
+<ul>
+<li>Requires database setup in CI/CD environments
+</li>
+<li>Test data cleanup essential for repeatability
+</li>
+<li>Connection pool initialization adds test setup complexity
+</li>
+</ul>
+<h3 id="test-performance-architecture">3. <strong>Test Performance Architecture</strong></h3>
+<p><strong>✅ Best Practices Established:</strong></p>
+<ul>
+<li>Timing infrastructure for all benchmarks
+</li>
+<li>Statistical analysis for meaningful results
+</li>
+<li>Configurable thresholds prevent false positives
+</li>
+<li>Comprehensive cleanup after performance tests
+</li>
+</ul>
+<p><strong>⚠️ Performance Considerations:</strong></p>
+<ul>
+<li>Stress testing must be calibrated for environment
+</li>
+<li>Benchmark iterations affect test execution time
+</li>
+<li>Concurrent operations require careful synchronization
+</li>
+</ul>
+<hr />
+<h2 id="testing-infrastructure-readiness-checklist">Testing Infrastructure Readiness Checklist</h2>
+<h3 id="completed-this-sprint">✅ Completed This Sprint</h3>
+<ul>
+<li>[x] <strong>Comprehensive Test Suite</strong> - CRUD, transactions, migrations, stress, performance
+</li>
+<li>[x] <strong>Environment Configuration</strong> - Flexible parameterization via environment variables
+</li>
+<li>[x] <strong>Real Database Integration</strong> - PostgreSQL integration with proper setup/teardown
+</li>
+<li>[x] <strong>Migration Safety Testing</strong> - Single and multi-step rollback verification
+</li>
+<li>[x] <strong>Connection Pool Stress Testing</strong> - Concurrent operation validation
+</li>
+<li>[x] <strong>Performance Benchmarking</strong> - Timing infrastructure with threshold assertions
+</li>
+<li>[x] <strong>Service Layer Integration</strong> - End-to-end testing through service layer
+</li>
+<li>[x] <strong>Error Handling Verification</strong> - Comprehensive error path testing
+</li>
+</ul>
+<hr />
+<h2 id="implementation-impact">Implementation Impact</h2>
+<h3 id="code-quality-improvements">Code Quality Improvements</h3>
+<ol>
+<li>
+<p><strong>Confidence in Database Operations</strong></p>
+<ul>
+<li>Comprehensive test coverage eliminates deployment anxiety
+</li>
+<li>Migration testing prevents production rollback issues
+</li>
+<li>Connection pool validation ensures scalability
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Performance Regression Prevention</strong></p>
+<ul>
+<li>Benchmark baselines catch performance degradation
+</li>
+<li>Threshold-based assertions provide early warning
+</li>
+<li>Statistical analysis identifies trends
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Operational Excellence</strong></p>
+<ul>
+<li>Real database testing mirrors production behavior
+</li>
+<li>Environment configuration supports multiple deployment stages
+</li>
+<li>Comprehensive error handling improves debugging
+</li>
+</ul>
+</li>
+</ol>
+<h3 id="development-velocity">Development Velocity</h3>
+<p>The testing infrastructure provides:</p>
+<ul>
+<li><strong>Fast Feedback</strong> - Quick test execution for common scenarios
+</li>
+<li><strong>Development Confidence</strong> - Stress testing validates production readiness
+</li>
+<li><strong>Migration Safety</strong> - Rollback testing enables fearless schema changes
+</li>
+<li><strong>Performance Baselines</strong> - Benchmark results guide optimization efforts
+</li>
+</ul>
+<hr />
+<h2 id="conclusion">Conclusion</h2>
+<p>Building a production-grade database testing infrastructure in OCaml demonstrates the ecosystem's maturity for enterprise applications. The combination of Alcotest, Lwt, and Caqti provides a robust foundation for comprehensive database testing.</p>
+<p>Key achievements:</p>
+<ul>
+<li><strong>Enterprise-grade testing</strong> covering all aspects of database operations
+</li>
+<li><strong>Flexible configuration</strong> supporting development through production environments
+</li>
+<li><strong>Performance baselines</strong> establishing monitoring foundation
+</li>
+<li><strong>Migration safety</strong> ensuring reversible schema changes
+</li>
+<li><strong>Development readiness</strong> validating connection pool behavior under load
+</li>
+</ul>
+<p>This testing infrastructure serves as both a safety net for current development and a foundation for future scaling. The investment in comprehensive testing pays dividends through reduced production issues, faster development cycles, and increased confidence in database operations.</p>
+<hr />
+<h2 id="next-steps">Next Steps</h2>
+<ol>
+<li><strong>CI/CD Integration</strong> - Automated test execution in deployment pipeline
+</li>
+<li><strong>Observability Enhancement</strong> - OpenTelemetry integration for test metrics
+</li>
+<li><strong>Load Testing Expansion</strong> - Extended stress testing scenarios
+</li>
+<li><strong>Documentation</strong> - Comprehensive testing guides and runbooks
+</li>
+</ol>
+<hr />
+<p><em>The OCaml ecosystem provides excellent tools for this critical infrastructure layer.</em></p>
 
-      <div class="webring-nav">
-        <a
-          href="https://ring.muhokama.fun/u/aguluman/pred"
-          class="webring-link webring-prev prev"
-          title="Previous site in the webring"
-          >← Pred</a
-        >
-        <p class="webring-description center">
-          Hey, this site is part of
-          <a
-            href="https://ring.muhokama.fun"
-            target="_blank"
-            rel="noopener noreferrer"
-            >ring.muhokama.fun!</a
-          >
-        </p>
-        <a
-          href="https://ring.muhokama.fun/u/aguluman/succ"
-          class="webring-link webring-next next"
-          title="Next site in the webring"
-          >Succ →</a
-        >
-      </div>
-    </main>
-    <footer class="site-footer">
-      <div class="footer-bottom">
-        <p class="copyright">© 2025 Chukwuma Akunyili. All rights reserved.</p>
-      </div>
-    </footer>
-    <script src="/static/js/highlight.min.js"></script>
-    <script>
-      document.addEventListener("DOMContentLoaded", (event) => {
-        document.querySelectorAll("pre code").forEach((el) => {
-          hljs.highlightElement(el);
-        });
-      });
-    </script>
-  </body>
-</html>
+<div class="webring-nav">
+  <a href="https://ring.muhokama.fun/u/aguluman/pred" class="webring-link webring-prev prev" title="Previous site in the webring">← Pred</a>
+  <p class="webring-description center">
+    Hey, this site is part of 
+    <a href="https://ring.muhokama.fun" target="_blank" rel="noopener noreferrer">ring.muhokama.fun!</a>
+  </p>
+  <a href="https://ring.muhokama.fun/u/aguluman/succ" class="webring-link webring-next next" title="Next site in the webring">Succ →</a>
+</div></main><footer class="site-footer"><div class="footer-bottom"><p class="copyright">© 2026 Chukwuma Akunyili. All rights reserved.</p></div></footer></body></html>
