@@ -18,7 +18,7 @@ let meta_tags ~description =
     (* Preload critical fonts for faster rendering - only the Regular weight for initial load *)
     link
       ~rel:[ `Other "preload" ]
-      ~href:"/static/fonts/JetBrainsMonoNerdFont-Regular.woff2"
+      ~href:"/static/fonts/JetBrainsMono-Regular.woff2"
       ~a:
         [
           a_user_data "as" "font";
@@ -66,8 +66,6 @@ let layout ?(lang = "en") ~title_text ~description ~page_class
   let open Html in
   let meta_content = meta_tags ~description @ additional_head in
 
-  (* Highlight.js initialization is now handled by async onload *)
-  (* No need for separate initialization script *)
   html
     ~a:[ a_lang lang ]
     (head (title (txt title_text)) meta_content)

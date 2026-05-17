@@ -10,7 +10,7 @@ module Webring = struct
     base_url : string;
   }
 
-  (** Default webring configuration - you can customize this *)
+  (** Default webring configuration *)
   let default_config =
     {
       webring_name = "ring.muhokama.fun";
@@ -63,65 +63,5 @@ module Webring = struct
                 ]
               [ Html.txt "Next →" ];
           ];
-      ]
-
-  (** Compact version for footers *)
-  let compact_navigation ?(config = default_config) () =
-    let open Html in
-    div
-      ~a:[ a_class [ "webring-nav"; "webring-nav--compact" ] ]
-      [
-        span
-          ~a:[ a_class [ "webring-description" ] ]
-          [
-            Html.txt "Part of ";
-            a
-              ~a:
-                [
-                  a_href config.webring_url;
-                  a_target "_blank";
-                  a_rel [ `Noopener; `Noreferrer ];
-                ]
-              [ Html.txt config.webring_name ];
-            Html.txt " - ";
-          ];
-        span
-          ~a:[ a_class [ "webring-controls" ] ]
-          [
-            a
-              ~a:
-                [
-                  a_href (config.base_url ^ "/" ^ config.member_id ^ "/pred");
-                  a_class [ "webring-link"; "webring-prev" ];
-                  a_title "Previous site in the webring";
-                ]
-              [ Html.txt "Prev" ];
-            Html.txt " | ";
-            a
-              ~a:
-                [
-                  a_href (config.base_url ^ "/" ^ config.member_id ^ "/succ");
-                  a_class [ "webring-link"; "webring-next" ];
-                  a_title "Next site in the webring";
-                ]
-              [ Html.txt "Next" ];
-          ];
-      ]
-
-  (** Minimal badge version *)
-  let badge ?(config = default_config) () =
-    let open Html in
-    div
-      ~a:[ a_class [ "webring-badge" ] ]
-      [
-        a
-          ~a:
-            [
-              a_href config.webring_url;
-              a_target "_blank";
-              a_rel [ `Noopener; `Noreferrer ];
-              a_title ("Member of " ^ config.webring_name);
-            ]
-          [ Html.txt "🕸️ webring" ];
       ]
 end
