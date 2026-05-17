@@ -438,7 +438,7 @@ let process_route route =
         | Some d -> d
         | None -> "A page from Chukwuma Akunyili's memoir"
       in
-      let year = 2025 in
+      let year = 2026 in
       let author = "Chukwuma Akunyili" in
 
       (* Add webring navigation to content *)

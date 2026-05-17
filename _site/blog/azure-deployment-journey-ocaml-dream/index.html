@@ -1,281 +1,83 @@
-<!doctype html><!doctype html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
-  <head>
-    <title>
-      Azure Deployment Journey: OCaml Web Application with Dream Framework
-    </title>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="A comprehensive guide to deploying OCaml applications on Azure App Service using Azure Container Registry - from authentication challenges to production success"
-    />
-    <link
-      rel="preload"
-      href="/static/fonts/JetBrainsMonoNerdFont-Regular.woff2"
-      data-as="font"
-      data-type="font/woff2"
-      data-crossorigin="anonymous"
-    />
-    <script>
-      (function () {
-        const theme = localStorage.getItem("theme");
-        if (theme === "dark") {
-          document.documentElement.setAttribute("data-theme", "dark");
-        } else if (theme === "light") {
-          document.documentElement.setAttribute("data-theme", "light");
-        }
-      })();
-    </script>
-    <link rel="stylesheet" href="/static/css/main.css" />
-    <link />
-    <link rel="stylesheet" href="/static/css/highlight.css" />
-    <link rel="icon" href="/static/images/favicon.svg" type="image/svg+xml" />
-    <script src="/static/js/main.js" defer="defer"></script>
-    <script src="/static/js/theme-toggle.js" defer="defer"></script>
-    <script
-      src="/static/js/highlight.min.js"
-      data-async="true"
-      data-onload="hljs.highlightAll()"
-    ></script>
-    <meta
-      property="og:title"
-      content="Azure Deployment Journey: OCaml Web Application with Dream Framework"
-    />
-    <meta
-      property="og:description"
-      content="A comprehensive guide to deploying OCaml applications on Azure App Service using Azure Container Registry - from authentication challenges to production success"
-    />
-    <meta
-      property="og:url"
-      content="https://fearful-odds.rocks//blog/azure-deployment-journey-ocaml-dream"
-    />
-    <meta property="og:image" content="/static/images/default-og.jpg" />
-    <meta property="og:type" content="article" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@siteauthor" />
-    <meta
-      name="twitter:title"
-      content="Azure Deployment Journey: OCaml Web Application with Dream Framework"
-    />
-    <meta
-      name="twitter:description"
-      content="A comprehensive guide to deploying OCaml applications on Azure App Service using Azure Container Registry - from authentication challenges to production success"
-    />
-    <meta name="twitter:image" content="/static/images/default-og.jpg" />
-    <link
-      rel="canonical"
-      href="https://fearful-odds.rocks//blog/azure-deployment-journey-ocaml-dream"
-    />
-    <script data-type="application/ld+json">
-      {&quot;@context&quot;:&quot;https://schema.org&quot;,&quot;@type&quot;:&quot;WebPage&quot;,&quot;name&quot;:&quot;Azure Deployment Journey: OCaml Web Application with Dream Framework&quot;,&quot;description&quot;:&quot;A comprehensive guide to deploying OCaml applications on Azure App Service using Azure Container Registry - from authentication challenges to production success&quot;,&quot;url&quot;:&quot;https://fearful-odds.rocks//blog/azure-deployment-journey-ocaml-dream&quot;,&quot;image&quot;:&quot;/static/images/default-og.jpg&quot;}
-    </script>
-  </head>
-  <body class="page">
-    <button
-      class="theme-toggle"
-      title="Toggle dark/light mode"
-      data-aria-label="Toggle dark/light mode"
-    >
-      <span class="sun-icon">☀️</span><span class="moon-icon">🌙</span>
-    </button>
-    <header class="site-header">
-      <div>
-        <nav class="site-navigation" aria-label="Main navigation">
-          <button
-            class="mobile-nav-toggle"
-            aria-expanded="false"
-            aria-controls="primary-navigation"
-            aria-label="Toggle navigation menu"
-          >
-            <span class="hamburger"></span><span class="sr-only">Menu</span>
-          </button>
-          <ul class="nav-list" id="primary-navigation" data-visible="false">
-            <li class="nav-item"><a href="/">Home</a></li>
-            <li class="nav-item"><a href="/about">About</a></li>
-            <li class="nav-item"><a href="/projects">Projects</a></li>
-            <li class="nav-item"><a href="/blog">Blog</a></li>
-            <li class="nav-item"><a href="/journal">Journal</a></li>
-            <li class="nav-item"><a href="/contact">Contact</a></li>
-          </ul>
-          <div class="nav-right">
-            <ul class="social-nav">
-              <li>
-                <a
-                  href="https://github.com/aguluman"
-                  aria-label="GitHub"
-                  title="GitHub"
-                  class="social-link"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                  ><svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    xmlns:xlink="http://www.w3.org/1999/xlink"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    class="social-icon"
-                  >
-                    <path
-                      d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"
-                    ></path></svg
-                  ><span class="visually-hidden">GitHub</span></a
-                >
-              </li>
-              <li>
-                <a
-                  href="https://x.com/agulumans"
-                  aria-label="X"
-                  title="X"
-                  class="social-link"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                  ><svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    xmlns:xlink="http://www.w3.org/1999/xlink"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    class="social-icon"
-                  >
-                    <path
-                      d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
-                    ></path></svg
-                  ><span class="visually-hidden">Twitter</span></a
-                >
-              </li>
-              <li>
-                <a
-                  href="https://www.linkedin.com/in/chukwuma-akunyili/"
-                  aria-label="LinkedIn"
-                  title="LinkedIn"
-                  class="social-link"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                  ><svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    xmlns:xlink="http://www.w3.org/1999/xlink"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    class="social-icon"
-                  >
-                    <path
-                      d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"
-                    ></path></svg
-                  ><span class="visually-hidden">LinkedIn</span></a
-                >
-              </li>
-            </ul>
-          </div>
-        </nav>
-      </div>
-    </header>
-    <main>
-      <h1
-        id="azure-deployment-journey-ocaml-web-application-with-dream-framework"
-      >
-        Azure Deployment Journey: OCaml Web Application with Dream Framework
-      </h1>
-      <p>
-        <em
-          >A comprehensive guide to deploying OCaml applications on Azure App
-          Service using Azure Container Registry</em
-        >
-      </p>
-      <p>
-        <strong>Project:</strong> Chaufr – Personal drivers, on demand, in your
-        own vehicle<br />
-        <strong>Tech Stack:</strong> OCaml, Dream Framework, PostgreSQL, Azure
-        App Service, GitHub Actions
-      </p>
-      <p>
-        What started as a simple deployment task evolved into a comprehensive
-        exploration of Azure's container ecosystem, authentication mechanisms,
-        and optimization strategies. This chronicles our journey deploying an
-        OCaml web application to Azure App Service and the valuable lessons
-        learned along the way.
-      </p>
-      <h2 id="the-challenge-ocaml-on-azure">The Challenge: OCaml on Azure</h2>
-      <p>
-        Azure App Service has excellent built-in support for popular languages
-        like .NET, Python, Node.js, and Java. However,
-        <strong>OCaml is not natively supported</strong>, presenting several
-        challenges:
-      </p>
-      <ul>
-        <li>No native OCaml runtime in Azure App Service</li>
-        <li>No built-in package manager integration for opam</li>
-        <li>Limited documentation for OCaml deployments</li>
-        <li>Complex dependency management for OCaml libraries</li>
-      </ul>
-      <h3 id="why-we-chose-azure-container-registry-acr">
-        Why We Chose Azure Container Registry (ACR)
-      </h3>
-      <p>
-        Given the lack of native OCaml support, we decided on a
-        <strong>containerized approach</strong> using Azure Container Registry:
-      </p>
-      <p><strong>Benefits:</strong></p>
-      <ul>
-        <li>Full control over OCaml environment and dependencies</li>
-        <li>Reproducible builds across environments</li>
-        <li>Integration with Azure App Service container support</li>
-        <li>Scalability and enterprise-grade security</li>
-        <li>Cost-effective for moderate usage patterns</li>
-      </ul>
-      <h2 id="our-solution-architecture">Our Solution Architecture</h2>
-      <h3 id="high-level-architecture">High-Level Architecture</h3>
-      <pre><code>GitHub Repository → GitHub Actions → Azure Container Registry → Azure App Service
+<!DOCTYPE html><!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><title>Azure Deployment Journey: OCaml Web Application with Dream Framework</title><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><meta name="description" content="A comprehensive guide to deploying OCaml applications on Azure App Service using Azure Container Registry - from authentication challenges to production success"/><link rel="preload" href="/static/fonts/JetBrainsMonoNerdFont-Regular.woff2" data-as="font" data-type="font/woff2" data-crossorigin="anonymous"/><script>(function() {
+      const theme = localStorage.getItem('theme');
+      if (theme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else if (theme === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();</script><link rel="stylesheet" href="/static/css/main.css"/><link/><link rel="stylesheet" href="/static/css/highlight.css"/><link rel="icon" href="/static/images/favicon.svg" type="image/svg+xml"/><script src="/static/js/main.js" defer="defer"></script><script src="/static/js/theme-toggle.js" defer="defer"></script><script src="/static/js/highlight.min.js" data-async="true" data-onload="hljs.highlightAll()"></script><meta property="og:title" content="Azure Deployment Journey: OCaml Web Application with Dream Framework"/><meta property="og:description" content="A comprehensive guide to deploying OCaml applications on Azure App Service using Azure Container Registry - from authentication challenges to production success"/><meta property="og:url" content="https://fearful-odds.rocks//blog/azure-deployment-journey-ocaml-dream"/><meta property="og:image" content="/static/images/default-og.jpg"/><meta property="og:type" content="article"/><meta name="twitter:card" content="summary_large_image"/><meta name="twitter:site" content="@siteauthor"/><meta name="twitter:title" content="Azure Deployment Journey: OCaml Web Application with Dream Framework"/><meta name="twitter:description" content="A comprehensive guide to deploying OCaml applications on Azure App Service using Azure Container Registry - from authentication challenges to production success"/><meta name="twitter:image" content="/static/images/default-og.jpg"/><link rel="canonical" href="https://fearful-odds.rocks//blog/azure-deployment-journey-ocaml-dream"/><script data-type="application/ld+json">{&quot;@context&quot;:&quot;https://schema.org&quot;,&quot;@type&quot;:&quot;WebPage&quot;,&quot;name&quot;:&quot;Azure Deployment Journey: OCaml Web Application with Dream Framework&quot;,&quot;description&quot;:&quot;A comprehensive guide to deploying OCaml applications on Azure App Service using Azure Container Registry - from authentication challenges to production success&quot;,&quot;url&quot;:&quot;https://fearful-odds.rocks//blog/azure-deployment-journey-ocaml-dream&quot;,&quot;image&quot;:&quot;/static/images/default-og.jpg&quot;}</script></head><body class="page"><button class="theme-toggle" title="Toggle dark/light mode" data-aria-label="Toggle dark/light mode"><span class="sun-icon">☀️</span><span class="moon-icon">🌙</span></button><header class="site-header"><div><nav class="site-navigation" aria-label="Main navigation"><button class="mobile-nav-toggle" aria-expanded="false" aria-controls="primary-navigation" aria-label="Toggle navigation menu"><span class="hamburger"></span><span class="sr-only">Menu</span></button><ul class="nav-list" id="primary-navigation" data-visible="false"><li class="nav-item"><a href="/">Home</a></li><li class="nav-item"><a href="/about">About</a></li><li class="nav-item"><a href="/projects">Projects</a></li><li class="nav-item"><a href="/blog">Blog</a></li><li class="nav-item"><a href="/journal">Journal</a></li><li class="nav-item"><a href="/contact">Contact</a></li></ul><div class="nav-right"><ul class="social-nav"><li><a href="https://github.com/aguluman" aria-label="GitHub" title="GitHub" class="social-link" rel="noopener noreferrer" target="_blank"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="social-icon"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"></path></svg><span class="visually-hidden">GitHub</span></a></li><li><a href="https://x.com/agulumans" aria-label="X" title="X" class="social-link" rel="noopener noreferrer" target="_blank"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="social-icon"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></svg><span class="visually-hidden">Twitter</span></a></li><li><a href="https://www.linkedin.com/in/chukwuma-akunyili/" aria-label="LinkedIn" title="LinkedIn" class="social-link" rel="noopener noreferrer" target="_blank"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="social-icon"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"></path></svg><span class="visually-hidden">LinkedIn</span></a></li></ul></div></nav></div></header><main><h1 id="azure-deployment-journey-ocaml-web-application-with-dream-framework">Azure Deployment Journey: OCaml Web Application with Dream Framework</h1>
+<p><em>A comprehensive guide to deploying OCaml applications on Azure App Service using Azure Container Registry</em></p>
+<p><strong>Project:</strong> Chaufr – Personal drivers, on demand, in your own vehicle<br />
+<strong>Tech Stack:</strong> OCaml, Dream Framework, PostgreSQL, Azure App Service, GitHub Actions</p>
+<p>What started as a simple deployment task evolved into a comprehensive exploration of Azure's container ecosystem, authentication mechanisms, and optimization strategies. This chronicles our journey deploying an OCaml web application to Azure App Service and the valuable lessons learned along the way.</p>
+<h2 id="the-challenge-ocaml-on-azure">The Challenge: OCaml on Azure</h2>
+<p>Azure App Service has excellent built-in support for popular languages like .NET, Python, Node.js, and Java. However, <strong>OCaml is not natively supported</strong>, presenting several challenges:</p>
+<ul>
+<li>No native OCaml runtime in Azure App Service
+</li>
+<li>No built-in package manager integration for opam
+</li>
+<li>Limited documentation for OCaml deployments
+</li>
+<li>Complex dependency management for OCaml libraries
+</li>
+</ul>
+<h3 id="why-we-chose-azure-container-registry-acr">Why We Chose Azure Container Registry (ACR)</h3>
+<p>Given the lack of native OCaml support, we decided on a <strong>containerized approach</strong> using Azure Container Registry:</p>
+<p><strong>Benefits:</strong></p>
+<ul>
+<li>Full control over OCaml environment and dependencies
+</li>
+<li>Reproducible builds across environments
+</li>
+<li>Integration with Azure App Service container support
+</li>
+<li>Scalability and enterprise-grade security
+</li>
+<li>Cost-effective for moderate usage patterns
+</li>
+</ul>
+<h2 id="our-solution-architecture">Our Solution Architecture</h2>
+<h3 id="high-level-architecture">High-Level Architecture</h3>
+<pre><code>GitHub Repository → GitHub Actions → Azure Container Registry → Azure App Service
         ↓                ↓                    ↓                      ↓
    OCaml Source       Docker Build        Container Image       Running App
         ↓                ↓                    ↓                      ↓
    Dream Framework    Multi-stage Build   Optimized Image    PostgreSQL Connection
 </code></pre>
-      <h3 id="components-used">Components Used</h3>
-      <ul>
-        <li>
-          <strong>Azure App Service (B1 Basic)</strong> - Cost-effective hosting
-        </li>
-        <li>
-          <strong>Azure Container Registry</strong> - Private container
-          repository
-        </li>
-        <li>
-          <strong>Azure Database for PostgreSQL</strong> - Managed database
-          service
-        </li>
-        <li><strong>GitHub Actions</strong> - CI/CD pipeline</li>
-        <li>
-          <strong>Entra ID (Azure AD)</strong> - Authentication and
-          authorization
-        </li>
-        <li>
-          <strong>Application Insights</strong> - Monitoring and observability
-        </li>
-      </ul>
-      <h2 id="major-challenges-and-solutions">
-        Major Challenges and Solutions
-      </h2>
-      <h3 id="entra-id-permission-hurdle">1. 🔐 Entra ID Permission Hurdle</h3>
-      <p>
-        <strong>Challenge:</strong> GitHub Actions couldn't authenticate with
-        Azure services using OIDC (OpenID Connect).
-      </p>
-      <p><strong>Error Messages:</strong></p>
-      <pre><code>ERROR: The user, group or application does not have permissions to read the subscription
+<h3 id="components-used">Components Used</h3>
+<ul>
+<li><strong>Azure App Service (B1 Basic)</strong> - Cost-effective hosting
+</li>
+<li><strong>Azure Container Registry</strong> - Private container repository
+</li>
+<li><strong>Azure Database for PostgreSQL</strong> - Managed database service
+</li>
+<li><strong>GitHub Actions</strong> - CI/CD pipeline
+</li>
+<li><strong>Entra ID (Azure AD)</strong> - Authentication and authorization
+</li>
+<li><strong>Application Insights</strong> - Monitoring and observability
+</li>
+</ul>
+<h2 id="major-challenges-and-solutions">Major Challenges and Solutions</h2>
+<h3 id="entra-id-permission-hurdle">1. 🔐 Entra ID Permission Hurdle</h3>
+<p><strong>Challenge:</strong> GitHub Actions couldn't authenticate with Azure services using OIDC (OpenID Connect).</p>
+<p><strong>Error Messages:</strong></p>
+<pre><code>ERROR: The user, group or application does not have permissions to read the subscription
 </code></pre>
-      <p><strong>Root Cause:</strong></p>
-      <ul>
-        <li>Service principal lacked proper role assignments</li>
-        <li>Incorrect client ID configuration</li>
-        <li>Missing federated identity credentials</li>
-      </ul>
-      <p><strong>Solution:</strong></p>
-      <pre><code class="language-yaml"># GitHub Actions workflow configuration
+<p><strong>Root Cause:</strong></p>
+<ul>
+<li>Service principal lacked proper role assignments
+</li>
+<li>Incorrect client ID configuration
+</li>
+<li>Missing federated identity credentials
+</li>
+</ul>
+<p><strong>Solution:</strong></p>
+<pre><code class="language-yaml"># GitHub Actions workflow configuration
 - name: Azure Login (OIDC)
   uses: azure/login@v1
   with:
@@ -283,29 +85,28 @@
     tenant-id: ${{ secrets.AZURE_TENANT_ID }}
     subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 </code></pre>
-      <p><strong>Steps to Fix:</strong></p>
-      <ol>
-        <li>Created service principal: <code>gh-chaufr-deploy</code></li>
-        <li>Assigned <strong>Contributor</strong> role to resource group</li>
-        <li>Configured federated identity credentials for GitHub repository</li>
-        <li>Updated GitHub secrets with correct client ID</li>
-      </ol>
-      <h3 id="docker-file-drama">2. 🐳 Docker File Drama</h3>
-      <p>
-        <strong>Challenge:</strong> Multiple Docker-related issues that
-        prevented successful container builds.
-      </p>
-      <h4 id="issue-2.1-missing-system-dependencies">
-        Issue 2.1: Missing System Dependencies
-      </h4>
-      <p><strong>Error:</strong></p>
-      <pre><code>ERROR while compiling conf-libcurl.2
+<p><strong>Steps to Fix:</strong></p>
+<ol>
+<li>Created service principal: <code>gh-chaufr-deploy</code>
+</li>
+<li>Assigned <strong>Contributor</strong> role to resource group
+</li>
+<li>Configured federated identity credentials for GitHub repository
+</li>
+<li>Updated GitHub secrets with correct client ID
+</li>
+</ol>
+<h3 id="docker-file-drama">2. 🐳 Docker File Drama</h3>
+<p><strong>Challenge:</strong> Multiple Docker-related issues that prevented successful container builds.</p>
+<h4 id="issue-2.1-missing-system-dependencies">Issue 2.1: Missing System Dependencies</h4>
+<p><strong>Error:</strong></p>
+<pre><code>ERROR while compiling conf-libcurl.2
 &quot;curl-config&quot;: command not found.
 The packages you requested declare the following system dependencies:
     libcurl4-gnutls-dev libgmp-dev
 </code></pre>
-      <p><strong>Solution - Multi-stage Dockerfile:</strong></p>
-      <pre><code class="language-dockerfile"># Build stage - All development dependencies
+<p><strong>Solution - Multi-stage Dockerfile:</strong></p>
+<pre><code class="language-dockerfile"># Build stage - All development dependencies
 FROM ocaml/opam:debian-12-ocaml-5.3 AS builder
 WORKDIR /app
 
@@ -327,97 +128,71 @@ RUN apt-get update &amp;&amp; apt-get install -y --no-install-recommends \
     libgmp10 \
     libev4 &amp;&amp; rm -rf /var/lib/apt/lists/*
 </code></pre>
-      <h4 id="issue-2.2-package-name-differences-between-ubuntu-and-debian">
-        Issue 2.2: Package Name Differences Between Ubuntu and Debian
-      </h4>
-      <p>
-        <strong>Challenge:</strong> Local development used Ubuntu 24.04, but
-        Docker used Debian.
-      </p>
-      <p>
-        <strong
-          >Package Mapping Between Ubuntu 24.04 and Debian Bookworm</strong
-        >
-      </p>
-      <table>
-        <thead>
-          <tr>
-            <th>Component</th>
-            <th>Ubuntu 24.04</th>
-            <th>Debian Bookworm</th>
-            <th>Notes</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>libcurl (dev)</td>
-            <td><code>libcurl4-gnutls-dev</code></td>
-            <td><code>libcurl4-openssl-dev</code></td>
-            <td></td>
-          </tr>
-          <tr>
-            <td>libcurl (runtime)</td>
-            <td><code>libcurl4-gnutls</code></td>
-            <td><code>libcurl4</code></td>
-            <td></td>
-          </tr>
-          <tr>
-            <td>PostgreSQL</td>
-            <td><code>libpq5</code></td>
-            <td><code>libpq5</code></td>
-            <td>✅ Same name</td>
-          </tr>
-          <tr>
-            <td>GMP</td>
-            <td><code>libgmp10</code></td>
-            <td><code>libgmp10</code></td>
-            <td>✅ Same name</td>
-          </tr>
-        </tbody>
-      </table>
-      <h3 id="opam-environment-and-dune-build-issues">
-        3. 📦 Opam Environment and Dune Build Issues
-      </h3>
-      <p>
-        <strong>Challenge:</strong> OCaml build tools weren't available in the
-        container environment.
-      </p>
-      <p><strong>Error:</strong></p>
-      <pre><code>/bin/sh: 1: dune: not found
+<h4 id="issue-2.2-package-name-differences-between-ubuntu-and-debian">Issue 2.2: Package Name Differences Between Ubuntu and Debian</h4>
+<p><strong>Challenge:</strong> Local development used Ubuntu 24.04, but Docker used Debian.</p>
+<p><strong>Package Mapping Between Ubuntu 24.04 and Debian Bookworm</strong></p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Ubuntu 24.04</th>
+<th>Debian Bookworm</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>libcurl (dev)</td>
+<td><code>libcurl4-gnutls-dev</code></td>
+<td><code>libcurl4-openssl-dev</code></td>
+<td></td>
+</tr>
+<tr>
+<td>libcurl (runtime)</td>
+<td><code>libcurl4-gnutls</code></td>
+<td><code>libcurl4</code></td>
+<td></td>
+</tr>
+<tr>
+<td>PostgreSQL</td>
+<td><code>libpq5</code></td>
+<td><code>libpq5</code></td>
+<td>✅ Same name</td>
+</tr>
+<tr>
+<td>GMP</td>
+<td><code>libgmp10</code></td>
+<td><code>libgmp10</code></td>
+<td>✅ Same name</td>
+</tr>
+</tbody>
+</table>
+<h3 id="opam-environment-and-dune-build-issues">3. 📦 Opam Environment and Dune Build Issues</h3>
+<p><strong>Challenge:</strong> OCaml build tools weren't available in the container environment.</p>
+<p><strong>Error:</strong></p>
+<pre><code>/bin/sh: 1: dune: not found
 </code></pre>
-      <p>
-        <strong>Root Cause:</strong> The opam environment wasn't activated
-        before running dune build.
-      </p>
-      <p><strong>Solution:</strong></p>
-      <pre><code class="language-dockerfile"># Activate opam environment before building
+<p><strong>Root Cause:</strong> The opam environment wasn't activated before running dune build.</p>
+<p><strong>Solution:</strong></p>
+<pre><code class="language-dockerfile"># Activate opam environment before building
 RUN eval $(opam env) &amp;&amp; dune build --profile=release ./bin/main.exe
 </code></pre>
-      <h3 id="acr-pull-permission-challenge">
-        4. 🔗 ACR Pull Permission Challenge
-      </h3>
-      <p>
-        <strong>Challenge:</strong> Azure App Service couldn't pull container
-        images from Azure Container Registry.
-      </p>
-      <p><strong>Error:</strong></p>
-      <pre><code>WARNING: No credential was provided to access Azure Container Registry. Trying to look up...
+<h3 id="acr-pull-permission-challenge">4. 🔗 ACR Pull Permission Challenge</h3>
+<p><strong>Challenge:</strong> Azure App Service couldn't pull container images from Azure Container Registry.</p>
+<p><strong>Error:</strong></p>
+<pre><code>WARNING: No credential was provided to access Azure Container Registry. Trying to look up...
 WARNING: Retrieving credentials failed
 </code></pre>
-      <p><strong>Solutions Explored:</strong></p>
-      <h4 id="option-1-acr-admin-access-initial-solution">
-        Option 1: ACR Admin Access (Initial Solution)
-      </h4>
-      <pre><code class="language-yaml">- name: Enable ACR admin access and get credentials
+<p><strong>Solutions Explored:</strong></p>
+<h4 id="option-1-acr-admin-access-initial-solution">Option 1: ACR Admin Access (Initial Solution)</h4>
+<pre><code class="language-yaml">- name: Enable ACR admin access and get credentials
   run: |
     az acr update -n ${{ secrets.ACR_NAME }} --admin-enabled true
     ACR_USERNAME=$(az acr credential show -n ${{ secrets.ACR_NAME }} --query username -o tsv)
     ACR_PASSWORD=$(az acr credential show -n ${{ secrets.ACR_NAME }} --query passwords[0].value -o tsv)
 </code></pre>
-      <h4 id="option-2-managed-identity-recommended-best-practice">
-        Option 2: Managed Identity (Recommended Best Practice)
-      </h4>
-      <pre><code class="language-yaml">- name: Configure ACR access via Managed Identity
+<h4 id="option-2-managed-identity-recommended-best-practice">Option 2: Managed Identity (Recommended Best Practice)</h4>
+<pre><code class="language-yaml">- name: Configure ACR access via Managed Identity
   run: |
     PRINCIPAL_ID=$(az webapp identity show -g ${{ secrets.RESOURCE_GROUP }} -n $WEBAPP_NAME --query principalId -o tsv)
     az role assignment create \
@@ -425,27 +200,21 @@ WARNING: Retrieving credentials failed
       --scope /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/${{ secrets.RESOURCE_GROUP }}/providers/Microsoft.ContainerRegistry/registries/${{ secrets.ACR_NAME }} \
       --role &quot;AcrPull&quot;
 </code></pre>
-      <h3 id="the-interface-discovery-0.0.0.0-vs-127.0.0.1">
-        5. 🌐 The Interface Discovery: 0.0.0.0 vs 127.0.0.1
-      </h3>
-      <p>
-        <strong>Challenge:</strong> OCaml application was accessible locally but
-        returned HTTP 503 errors on Azure.
-      </p>
-      <p><strong>Root Cause:</strong> Network interface binding issue.</p>
-      <p><strong>Local Development (Working):</strong></p>
-      <pre><code class="language-ocaml">Dream.run ~interface:&quot;127.0.0.1&quot; ~port:8080 app
+<h3 id="the-interface-discovery-0.0.0.0-vs-127.0.0.1">5. 🌐 The Interface Discovery: 0.0.0.0 vs 127.0.0.1</h3>
+<p><strong>Challenge:</strong> OCaml application was accessible locally but returned HTTP 503 errors on Azure.</p>
+<p><strong>Root Cause:</strong> Network interface binding issue.</p>
+<p><strong>Local Development (Working):</strong></p>
+<pre><code class="language-ocaml">Dream.run ~interface:&quot;127.0.0.1&quot; ~port:8080 app
 </code></pre>
-      <p><strong>Azure App Service (Failing):</strong></p>
-      <ul>
-        <li>
-          Azure's reverse proxy couldn't connect to
-          <code>127.0.0.1</code> inside the container
-        </li>
-        <li>Container was only accepting localhost connections</li>
-      </ul>
-      <p><strong>The Critical Discovery:</strong></p>
-      <pre><code class="language-ocaml">let get_interface () =
+<p><strong>Azure App Service (Failing):</strong></p>
+<ul>
+<li>Azure's reverse proxy couldn't connect to <code>127.0.0.1</code> inside the container
+</li>
+<li>Container was only accepting localhost connections
+</li>
+</ul>
+<p><strong>The Critical Discovery:</strong></p>
+<pre><code class="language-ocaml">let get_interface () =
   match Sys.getenv_opt &quot;INTERFACE&quot; with
   | Some interface -&gt; interface
   | None -&gt; (
@@ -453,209 +222,219 @@ WARNING: Retrieving credentials failed
       | Some _ -&gt; &quot;0.0.0.0&quot; (* Azure App Service - allows external connections *)
       | None -&gt; &quot;127.0.0.1&quot; (* Local development - secure default *))
 </code></pre>
-      <p><strong>Key Insight:</strong></p>
-      <ul>
-        <li>
-          <code>0.0.0.0</code> binds to all network interfaces, allowing Azure's
-          reverse proxy to connect
-        </li>
-        <li><code>127.0.0.1</code> restricts access to localhost only</li>
-        <li>
-          Azure App Service automatically sets
-          <code>WEBSITE_SITE_NAME</code> environment variable
-        </li>
-      </ul>
-      <h3 id="pinned-package-management">6. 🏗️ Pinned Package Management</h3>
-      <p>
-        <strong>Challenge:</strong> Using a pinned OCaml package
-        (<code>simple_dotenv</code>) that wasn't available in standard opam
-        repository.
-      </p>
-      <p><strong>Solution:</strong></p>
-      <pre><code class="language-dockerfile"># Pin to specific commit hash for caching stability
+<p><strong>Key Insight:</strong></p>
+<ul>
+<li><code>0.0.0.0</code> binds to all network interfaces, allowing Azure's reverse proxy to connect
+</li>
+<li><code>127.0.0.1</code> restricts access to localhost only
+</li>
+<li>Azure App Service automatically sets <code>WEBSITE_SITE_NAME</code> environment variable
+</li>
+</ul>
+<h3 id="pinned-package-management">6. 🏗️ Pinned Package Management</h3>
+<p><strong>Challenge:</strong> Using a pinned OCaml package (<code>simple_dotenv</code>) that wasn't available in standard opam repository.</p>
+<p><strong>Solution:</strong></p>
+<pre><code class="language-dockerfile"># Pin to specific commit hash for caching stability
 RUN opam update &amp;&amp; \
     opam pin add -y simple_dotenv.1.0.0 git+https://github.com/Lomig/simple_dotenv.git#05ef4a35eff29784abc3f454ee36163f3ae48747
 </code></pre>
-      <p><strong>Benefits:</strong></p>
-      <ul>
-        <li>Specific commit hash ensures reproducible builds</li>
-        <li>Docker layer caching works effectively</li>
-        <li>No dependency on external repository availability during builds</li>
-      </ul>
-      <h2 id="key-learnings">Key Learnings</h2>
-      <h3 id="azure-app-service-container-networking">
-        1. Azure App Service Container Networking
-      </h3>
-      <p>
-        <strong>Discovery:</strong> Azure App Service uses a reverse proxy
-        architecture that requires containers to bind to
-        <code>0.0.0.0</code> rather than <code>127.0.0.1</code>.
-      </p>
-      <p><strong>Implementation:</strong></p>
-      <pre><code class="language-ocaml">(* Dynamic interface selection based on environment *)
+<p><strong>Benefits:</strong></p>
+<ul>
+<li>Specific commit hash ensures reproducible builds
+</li>
+<li>Docker layer caching works effectively
+</li>
+<li>No dependency on external repository availability during builds
+</li>
+</ul>
+<h2 id="key-learnings">Key Learnings</h2>
+<h3 id="azure-app-service-container-networking">1. Azure App Service Container Networking</h3>
+<p><strong>Discovery:</strong> Azure App Service uses a reverse proxy architecture that requires containers to bind to <code>0.0.0.0</code> rather than <code>127.0.0.1</code>.</p>
+<p><strong>Implementation:</strong></p>
+<pre><code class="language-ocaml">(* Dynamic interface selection based on environment *)
 let get_interface () =
   match Sys.getenv_opt &quot;WEBSITE_SITE_NAME&quot; with
   | Some _ -&gt; &quot;0.0.0.0&quot; (* Azure automatically sets this *)
   | None -&gt; &quot;127.0.0.1&quot; (* Local development *)
 </code></pre>
-      <h3 id="github-secrets-management-strategy">
-        2. GitHub Secrets Management Strategy
-      </h3>
-      <p><strong>What We Used:</strong></p>
-      <ul>
-        <li><code>AZURE_CLIENT_ID</code> - Service principal client ID</li>
-        <li><code>AZURE_TENANT_ID</code> - Azure tenant identifier</li>
-        <li><code>AZURE_SUBSCRIPTION_ID</code> - Target subscription</li>
-        <li><code>ACR_NAME</code> - Azure Container Registry name</li>
-        <li><code>RESOURCE_GROUP</code> - Resource group name</li>
-        <li><code>POSTGRES_SERVER</code> - Database server name</li>
-        <li>
-          <code>PG_ADMIN_USER</code> / <code>PG_ADMIN_PASSWORD</code> - Database
-          credentials
-        </li>
-      </ul>
-      <p><strong>Security Best Practices:</strong></p>
-      <ul>
-        <li>Used OIDC authentication instead of storing long-lived secrets</li>
-        <li>Implemented credential masking in application logs</li>
-        <li>Rotated database passwords after accidental exposure</li>
-      </ul>
-      <h3 id="multi-stage-docker-build-optimization">
-        3. Multi-Stage Docker Build Optimization
-      </h3>
-      <p><strong>Build Stage (Large):</strong></p>
-      <pre><code class="language-dockerfile">FROM ocaml/opam:debian-12-ocaml-5.3 AS builder
+<h3 id="github-secrets-management-strategy">2. GitHub Secrets Management Strategy</h3>
+<p><strong>What We Used:</strong></p>
+<ul>
+<li><code>AZURE_CLIENT_ID</code> - Service principal client ID
+</li>
+<li><code>AZURE_TENANT_ID</code> - Azure tenant identifier
+</li>
+<li><code>AZURE_SUBSCRIPTION_ID</code> - Target subscription
+</li>
+<li><code>ACR_NAME</code> - Azure Container Registry name
+</li>
+<li><code>RESOURCE_GROUP</code> - Resource group name
+</li>
+<li><code>POSTGRES_SERVER</code> - Database server name
+</li>
+<li><code>PG_ADMIN_USER</code> / <code>PG_ADMIN_PASSWORD</code> - Database credentials
+</li>
+</ul>
+<p><strong>Security Best Practices:</strong></p>
+<ul>
+<li>Used OIDC authentication instead of storing long-lived secrets
+</li>
+<li>Implemented credential masking in application logs
+</li>
+<li>Rotated database passwords after accidental exposure
+</li>
+</ul>
+<h3 id="multi-stage-docker-build-optimization">3. Multi-Stage Docker Build Optimization</h3>
+<p><strong>Build Stage (Large):</strong></p>
+<pre><code class="language-dockerfile">FROM ocaml/opam:debian-12-ocaml-5.3 AS builder
 # ~500MB with all development tools
 </code></pre>
-      <p><strong>Runtime Stage (Small):</strong></p>
-      <pre><code class="language-dockerfile">FROM debian:bookworm-slim
+<p><strong>Runtime Stage (Small):</strong></p>
+<pre><code class="language-dockerfile">FROM debian:bookworm-slim
 # ~150MB with only runtime dependencies
 </code></pre>
-      <p><strong>Result:</strong> 70% reduction in final image size.</p>
-      <h3 id="ocaml-specific-deployment-patterns">
-        4. OCaml-Specific Deployment Patterns
-      </h3>
-      <p><strong>Dependency Management:</strong></p>
-      <pre><code class="language-dockerfile"># Copy opam metadata first for better caching
+<p><strong>Result:</strong> 70% reduction in final image size.</p>
+<h3 id="ocaml-specific-deployment-patterns">4. OCaml-Specific Deployment Patterns</h3>
+<p><strong>Dependency Management:</strong></p>
+<pre><code class="language-dockerfile"># Copy opam metadata first for better caching
 COPY dune-project chaufr.opam ./
 RUN opam install -y --deps-only .
 
 # Copy source code last
 COPY . .
 </code></pre>
-      <p><strong>Environment Activation:</strong></p>
-      <pre><code class="language-dockerfile">RUN eval $(opam env) &amp;&amp; dune build --profile=release ./bin/main.exe
+<p><strong>Environment Activation:</strong></p>
+<pre><code class="language-dockerfile">RUN eval $(opam env) &amp;&amp; dune build --profile=release ./bin/main.exe
 </code></pre>
-      <h2 id="cost-optimization-strategies">Cost Optimization Strategies</h2>
-      <h3 id="github-actions-credits-conservation">
-        1. GitHub Actions Credits Conservation
-      </h3>
-      <p>
-        <strong>Problem:</strong> Limited GitHub Actions credits on Pro account.
-      </p>
-      <p><strong>Docker Build Caching Strategy:</strong></p>
-      <pre><code class="language-yaml">- name: Build and push with cache
+<h2 id="cost-optimization-strategies">Cost Optimization Strategies</h2>
+<h3 id="github-actions-credits-conservation">1. GitHub Actions Credits Conservation</h3>
+<p><strong>Problem:</strong> Limited GitHub Actions credits on Pro account.</p>
+<p><strong>Docker Build Caching Strategy:</strong></p>
+<pre><code class="language-yaml">- name: Build and push with cache
   uses: docker/build-push-action@v4
   with:
     cache-from: type=gha
     cache-to: type=gha,mode=max
 </code></pre>
-      <p><strong>Pinned Dependencies for Cache Stability:</strong></p>
-      <ul>
-        <li>
-          Pinning to specific commit hashes ensures Docker layer caching works
-          effectively
-        </li>
-        <li>
-          Dependencies layer cached when <code>dune-project</code> unchanged
-        </li>
-        <li>60-70% build time reduction on subsequent builds</li>
-      </ul>
-      <p><strong>Expected Savings:</strong></p>
-      <ul>
-        <li>First build: ~8-10 minutes (no cache)</li>
-        <li>Subsequent builds: ~2-3 minutes (with cache)</li>
-        <li>Monthly credit usage: ~70% reduction</li>
-      </ul>
-      <h3 id="azure-container-registry-pricing">
-        2. Azure Container Registry Pricing
-      </h3>
-      <p><strong>ACR Standard Tier Benefits:</strong></p>
-      <ul>
-        <li>100GB storage included</li>
-        <li>Unlimited private repositories</li>
-        <li>Webhook support for automated deployments</li>
-        <li>Geo-replication capabilities</li>
-      </ul>
-      <p><strong>Our Usage Pattern:</strong></p>
-      <ul>
-        <li>Container images: ~150MB each</li>
-        <li>Monthly deployments: ~15-20</li>
-        <li>Storage cost: &lt;$5/month</li>
-        <li>Data transfer: Minimal (same region)</li>
-      </ul>
-      <h3 id="azure-app-service-b1-instance">
-        3. Azure App Service B1 Instance
-      </h3>
-      <p><strong>Why B1 Basic Plan:</strong></p>
-      <ul>
-        <li><strong>Cost:</strong> ~$13/month</li>
-        <li><strong>Resources:</strong> 1.75GB RAM, 1 vCPU</li>
-        <li><strong>Perfect for:</strong> MVP and development workloads</li>
-        <li><strong>Scaling:</strong> Easy upgrade path to higher tiers</li>
-      </ul>
-      <p><strong>Performance Characteristics:</strong></p>
-      <ul>
-        <li>Container startup: 20-30 seconds</li>
-        <li>Health check response: &lt;100ms</li>
-        <li>Database connection pooling: 5-10 connections</li>
-        <li>Suitable for moderate traffic (~1000 requests/hour)</li>
-      </ul>
-      <h2 id="final-architecture">Final Architecture</h2>
-      <h3 id="production-deployment-flow">Production Deployment Flow</h3>
-      <h4 id="code-push-to-github">1. <strong>Code Push to GitHub</strong></h4>
-      <pre><code class="language-bash">git push origin main
+<p><strong>Pinned Dependencies for Cache Stability:</strong></p>
+<ul>
+<li>Pinning to specific commit hashes ensures Docker layer caching works effectively
+</li>
+<li>Dependencies layer cached when <code>dune-project</code> unchanged
+</li>
+<li>60-70% build time reduction on subsequent builds
+</li>
+</ul>
+<p><strong>Expected Savings:</strong></p>
+<ul>
+<li>First build: ~8-10 minutes (no cache)
+</li>
+<li>Subsequent builds: ~2-3 minutes (with cache)
+</li>
+<li>Monthly credit usage: ~70% reduction
+</li>
+</ul>
+<h3 id="azure-container-registry-pricing">2. Azure Container Registry Pricing</h3>
+<p><strong>ACR Standard Tier Benefits:</strong></p>
+<ul>
+<li>100GB storage included
+</li>
+<li>Unlimited private repositories
+</li>
+<li>Webhook support for automated deployments
+</li>
+<li>Geo-replication capabilities
+</li>
+</ul>
+<p><strong>Our Usage Pattern:</strong></p>
+<ul>
+<li>Container images: ~150MB each
+</li>
+<li>Monthly deployments: ~15-20
+</li>
+<li>Storage cost: &lt;$5/month
+</li>
+<li>Data transfer: Minimal (same region)
+</li>
+</ul>
+<h3 id="azure-app-service-b1-instance">3. Azure App Service B1 Instance</h3>
+<p><strong>Why B1 Basic Plan:</strong></p>
+<ul>
+<li><strong>Cost:</strong> ~$13/month
+</li>
+<li><strong>Resources:</strong> 1.75GB RAM, 1 vCPU
+</li>
+<li><strong>Perfect for:</strong> MVP and development workloads
+</li>
+<li><strong>Scaling:</strong> Easy upgrade path to higher tiers
+</li>
+</ul>
+<p><strong>Performance Characteristics:</strong></p>
+<ul>
+<li>Container startup: 20-30 seconds
+</li>
+<li>Health check response: &lt;100ms
+</li>
+<li>Database connection pooling: 5-10 connections
+</li>
+<li>Suitable for moderate traffic (~1000 requests/hour)
+</li>
+</ul>
+<h2 id="final-architecture">Final Architecture</h2>
+<h3 id="production-deployment-flow">Production Deployment Flow</h3>
+<h4 id="code-push-to-github">1. <strong>Code Push to GitHub</strong></h4>
+<pre><code class="language-bash">git push origin main
 </code></pre>
-      <h4 id="github-actions-triggers">
-        2. <strong>GitHub Actions Triggers</strong>
-      </h4>
-      <ul>
-        <li>Builds OCaml application in Docker container</li>
-        <li>Pushes to Azure Container Registry</li>
-        <li>Updates Azure App Service container configuration</li>
-        <li>Runs health checks with exponential backoff</li>
-      </ul>
-      <h4 id="azure-app-service">3. <strong>Azure App Service</strong></h4>
-      <ul>
-        <li>Pulls latest container from ACR</li>
-        <li>Starts container with environment variables</li>
-        <li>Configures reverse proxy for external access</li>
-        <li>Connects to Azure Database for PostgreSQL</li>
-      </ul>
-      <h3 id="health-check-endpoints">Health Check Endpoints</h3>
-      <pre><code>GET /health              -&gt; &quot;ok&quot; (basic liveness)
+<h4 id="github-actions-triggers">2. <strong>GitHub Actions Triggers</strong></h4>
+<ul>
+<li>Builds OCaml application in Docker container
+</li>
+<li>Pushes to Azure Container Registry
+</li>
+<li>Updates Azure App Service container configuration
+</li>
+<li>Runs health checks with exponential backoff
+</li>
+</ul>
+<h4 id="azure-app-service">3. <strong>Azure App Service</strong></h4>
+<ul>
+<li>Pulls latest container from ACR
+</li>
+<li>Starts container with environment variables
+</li>
+<li>Configures reverse proxy for external access
+</li>
+<li>Connects to Azure Database for PostgreSQL
+</li>
+</ul>
+<h3 id="health-check-endpoints">Health Check Endpoints</h3>
+<pre><code>GET /health              -&gt; &quot;ok&quot; (basic liveness)
 GET /health/detailed     -&gt; Database connection status
 GET /diagnostic          -&gt; Environment variables (masked)
 GET /status              -&gt; Container runtime information
 </code></pre>
-      <h3 id="environment-variables-configuration">
-        Environment Variables Configuration
-      </h3>
-      <p><strong>Azure App Service automatically provides:</strong></p>
-      <ul>
-        <li><code>WEBSITE_SITE_NAME</code> - App service name</li>
-        <li><code>PORT</code> - Container port (8080)</li>
-      </ul>
-      <p><strong>GitHub Actions configures:</strong></p>
-      <ul>
-        <li><code>DATABASE_URL</code> - PostgreSQL connection string</li>
-        <li><code>ENVIRONMENT</code> - &quot;production&quot;</li>
-        <li><code>OTEL_SERVICE_NAME</code> - &quot;chaufr&quot;</li>
-        <li><code>OTEL_SERVICE_VERSION</code> - Git commit hash</li>
-      </ul>
-      <h3 id="security-implementation">Security Implementation</h3>
-      <p><strong>Credential Masking:</strong></p>
-      <pre><code class="language-ocaml">let mask_database_url url =
+<h3 id="environment-variables-configuration">Environment Variables Configuration</h3>
+<p><strong>Azure App Service automatically provides:</strong></p>
+<ul>
+<li><code>WEBSITE_SITE_NAME</code> - App service name
+</li>
+<li><code>PORT</code> - Container port (8080)
+</li>
+</ul>
+<p><strong>GitHub Actions configures:</strong></p>
+<ul>
+<li><code>DATABASE_URL</code> - PostgreSQL connection string
+</li>
+<li><code>ENVIRONMENT</code> - &quot;production&quot;
+</li>
+<li><code>OTEL_SERVICE_NAME</code> - &quot;chaufr&quot;
+</li>
+<li><code>OTEL_SERVICE_VERSION</code> - Git commit hash
+</li>
+</ul>
+<h3 id="security-implementation">Security Implementation</h3>
+<p><strong>Credential Masking:</strong></p>
+<pre><code class="language-ocaml">let mask_database_url url =
   try
     (* Replace password with *** in connection strings *)
     let protocol_end = String.index url '@' in
@@ -666,41 +445,44 @@ GET /status              -&gt; Container runtime information
   with
   | Not_found -&gt; &quot;postgresql://***:***@***&quot;
 </code></pre>
-      <h2 id="lessons-for-future-developers">Lessons for Future Developers</h2>
-      <h3 id="ocaml-on-azure-containerization-is-the-way">
-        1. OCaml on Azure: Containerization is the Way
-      </h3>
-      <p><strong>Don't try to:</strong></p>
-      <ul>
-        <li>Use Azure App Service built-in language support</li>
-        <li>Manually install OCaml runtime in App Service</li>
-        <li>Use Azure Functions with custom runtime</li>
-      </ul>
-      <p><strong>Do instead:</strong></p>
-      <ul>
-        <li>Embrace Docker containerization</li>
-        <li>Use multi-stage builds for optimization</li>
-        <li>Leverage Azure Container Registry</li>
-      </ul>
-      <h3 id="authentication-oidc-over-service-principals">
-        2. Authentication: OIDC Over Service Principals
-      </h3>
-      <p><strong>Modern approach:</strong></p>
-      <pre><code class="language-yaml">permissions:
+<h2 id="lessons-for-future-developers">Lessons for Future Developers</h2>
+<h3 id="ocaml-on-azure-containerization-is-the-way">1. OCaml on Azure: Containerization is the Way</h3>
+<p><strong>Don't try to:</strong></p>
+<ul>
+<li>Use Azure App Service built-in language support
+</li>
+<li>Manually install OCaml runtime in App Service
+</li>
+<li>Use Azure Functions with custom runtime
+</li>
+</ul>
+<p><strong>Do instead:</strong></p>
+<ul>
+<li>Embrace Docker containerization
+</li>
+<li>Use multi-stage builds for optimization
+</li>
+<li>Leverage Azure Container Registry
+</li>
+</ul>
+<h3 id="authentication-oidc-over-service-principals">2. Authentication: OIDC Over Service Principals</h3>
+<p><strong>Modern approach:</strong></p>
+<pre><code class="language-yaml">permissions:
   id-token: write
   contents: read
 </code></pre>
-      <p><strong>Benefits:</strong></p>
-      <ul>
-        <li>No long-lived secrets in GitHub</li>
-        <li>Automatic token rotation</li>
-        <li>Enhanced security audit trail</li>
-      </ul>
-      <h3 id="environment-detection-pattern">
-        3. Environment Detection Pattern
-      </h3>
-      <p><strong>Robust environment detection:</strong></p>
-      <pre><code class="language-ocaml">let detect_environment () =
+<p><strong>Benefits:</strong></p>
+<ul>
+<li>No long-lived secrets in GitHub
+</li>
+<li>Automatic token rotation
+</li>
+<li>Enhanced security audit trail
+</li>
+</ul>
+<h3 id="environment-detection-pattern">3. Environment Detection Pattern</h3>
+<p><strong>Robust environment detection:</strong></p>
+<pre><code class="language-ocaml">let detect_environment () =
   match Sys.getenv_opt &quot;WEBSITE_SITE_NAME&quot; with
   | Some site_name -&gt; `Azure_App_Service site_name
   | None -&gt; (
@@ -708,27 +490,33 @@ GET /status              -&gt; Container runtime information
       | Some _ -&gt; `GitHub_Actions
       | None -&gt; `Local_Development)
 </code></pre>
-      <h3 id="cost-management-strategies">4. Cost Management Strategies</h3>
-      <p><strong>For GitHub Actions:</strong></p>
-      <ul>
-        <li>Implement Docker layer caching</li>
-        <li>Use specific commit hashes for dependencies</li>
-        <li>Add <code>.dockerignore</code> to reduce build context</li>
-      </ul>
-      <p><strong>For Azure:</strong></p>
-      <ul>
-        <li>Start with B1 Basic App Service plan</li>
-        <li>Use ACR Standard tier (cost-effective)</li>
-        <li>Monitor usage with Application Insights</li>
-      </ul>
-      <h3 id="debugging-techniques">5. Debugging Techniques</h3>
-      <p><strong>Container startup issues:</strong></p>
-      <pre><code class="language-yaml">- name: Tail logs for debugging
+<h3 id="cost-management-strategies">4. Cost Management Strategies</h3>
+<p><strong>For GitHub Actions:</strong></p>
+<ul>
+<li>Implement Docker layer caching
+</li>
+<li>Use specific commit hashes for dependencies
+</li>
+<li>Add <code>.dockerignore</code> to reduce build context
+</li>
+</ul>
+<p><strong>For Azure:</strong></p>
+<ul>
+<li>Start with B1 Basic App Service plan
+</li>
+<li>Use ACR Standard tier (cost-effective)
+</li>
+<li>Monitor usage with Application Insights
+</li>
+</ul>
+<h3 id="debugging-techniques">5. Debugging Techniques</h3>
+<p><strong>Container startup issues:</strong></p>
+<pre><code class="language-yaml">- name: Tail logs for debugging
   run: |
     az webapp log tail -n $WEBAPP_NAME -g ${{ secrets.RESOURCE_GROUP }} --timeout 60 || true
 </code></pre>
-      <p><strong>Health check debugging:</strong></p>
-      <pre><code class="language-yaml">- name: Enhanced Health Check
+<p><strong>Health check debugging:</strong></p>
+<pre><code class="language-yaml">- name: Enhanced Health Check
   run: |
     # Test multiple endpoints with detailed error reporting
     for endpoint in &quot;/health&quot; &quot;/diagnostic&quot; &quot;/status&quot; &quot;/&quot;; do
@@ -738,133 +526,87 @@ GET /status              -&gt; Container runtime information
       cat response.txt
     done
 </code></pre>
-      <h2 id="performance-metrics">Performance Metrics</h2>
-      <h3 id="build-times">Build Times</h3>
-      <ul>
-        <li><strong>Cold build (no cache):</strong> 8-10 minutes</li>
-        <li><strong>Warm build (with cache):</strong> 2-3 minutes</li>
-        <li><strong>Cache hit rate:</strong> ~80% for typical development</li>
-      </ul>
-      <h3 id="deployment-times">Deployment Times</h3>
-      <ul>
-        <li><strong>Container build:</strong> 2-3 minutes (cached)</li>
-        <li><strong>ACR push:</strong> 30-60 seconds</li>
-        <li><strong>App Service deployment:</strong> 60-90 seconds</li>
-        <li><strong>Health check stabilization:</strong> 30-60 seconds</li>
-        <li><strong>Total deployment time:</strong> 4-6 minutes</li>
-      </ul>
-      <h3 id="runtime-performance">Runtime Performance</h3>
-      <ul>
-        <li><strong>Container startup:</strong> 20-30 seconds</li>
-        <li><strong>Health endpoint response:</strong> &lt;100ms</li>
-        <li><strong>Database query response:</strong> 10-50ms</li>
-        <li>
-          <strong>Memory usage:</strong> ~100MB (OCaml runtime + dependencies)
-        </li>
-      </ul>
-      <h2 id="future-improvements">Future Improvements</h2>
-      <h3 id="enhanced-monitoring">1. Enhanced Monitoring</h3>
-      <ul>
-        <li>Implement Application Insights custom metrics</li>
-        <li>Add structured logging with JSON format</li>
-        <li>Set up Azure Monitor alerts for critical failures</li>
-      </ul>
-      <h3 id="security-hardening">2. Security Hardening</h3>
-      <ul>
-        <li>Implement Azure Key Vault for sensitive configuration</li>
-        <li>Add network security groups and private endpoints</li>
-        <li>Regular dependency vulnerability scanning</li>
-      </ul>
-      <h3 id="scalability-enhancements">3. Scalability Enhancements</h3>
-      <ul>
-        <li>Implement horizontal scaling triggers</li>
-        <li>Add Azure Load Balancer for multi-instance deployments</li>
-        <li>Database connection pooling optimization</li>
-      </ul>
-      <h2 id="conclusion">Conclusion</h2>
-      <p>
-        This journey taught us that deploying OCaml applications to Azure App
-        Service is entirely feasible with the right approach. The key insights:
-      </p>
-      <p>
-        <strong>✅ Containerization enables OCaml on Azure</strong><br />
-        <strong
-          >✅ Network interface binding (<code>0.0.0.0</code>) is critical for
-          Azure App Service</strong
-        ><br />
-        <strong
-          >✅ OIDC authentication is more secure than traditional service
-          principals</strong
-        ><br />
-        <strong
-          >✅ Docker caching strategies significantly reduce CI/CD costs</strong
-        ><br />
-        <strong
-          >✅ Multi-stage builds optimize both build time and image size</strong
-        >
-      </p>
-      <p>
-        <strong>💡 The labor of love was worth it</strong> - we now have a
-        robust, secure, and cost-effective deployment pipeline for OCaml
-        applications on Azure.
-      </p>
-      <p>
-        For developers embarking on similar journeys: embrace the complexity,
-        document your discoveries, and remember that the modern cloud platforms
-        can support virtually any technology stack with the right architectural
-        decisions.
-      </p>
-      <hr />
-      <p>
-        <em
-          >This documentation represents our collective learning from deploying
-          the Chaufr platform to Azure. We hope it serves as a valuable resource
-          for the OCaml and Azure communities.</em
-        >
-      </p>
-      <p>
-        <strong>Live Application:</strong> Will be shared soon, be on the look
-        out.<br />
-        <strong>Technology Stack:</strong> OCaml 5.3, Dream Framework, TyXML,
-        PostgreSQL, Azure App Service, GitHub Actions.
-      </p>
+<h2 id="performance-metrics">Performance Metrics</h2>
+<h3 id="build-times">Build Times</h3>
+<ul>
+<li><strong>Cold build (no cache):</strong> 8-10 minutes
+</li>
+<li><strong>Warm build (with cache):</strong> 2-3 minutes
+</li>
+<li><strong>Cache hit rate:</strong> ~80% for typical development
+</li>
+</ul>
+<h3 id="deployment-times">Deployment Times</h3>
+<ul>
+<li><strong>Container build:</strong> 2-3 minutes (cached)
+</li>
+<li><strong>ACR push:</strong> 30-60 seconds
+</li>
+<li><strong>App Service deployment:</strong> 60-90 seconds
+</li>
+<li><strong>Health check stabilization:</strong> 30-60 seconds
+</li>
+<li><strong>Total deployment time:</strong> 4-6 minutes
+</li>
+</ul>
+<h3 id="runtime-performance">Runtime Performance</h3>
+<ul>
+<li><strong>Container startup:</strong> 20-30 seconds
+</li>
+<li><strong>Health endpoint response:</strong> &lt;100ms
+</li>
+<li><strong>Database query response:</strong> 10-50ms
+</li>
+<li><strong>Memory usage:</strong> ~100MB (OCaml runtime + dependencies)
+</li>
+</ul>
+<h2 id="future-improvements">Future Improvements</h2>
+<h3 id="enhanced-monitoring">1. Enhanced Monitoring</h3>
+<ul>
+<li>Implement Application Insights custom metrics
+</li>
+<li>Add structured logging with JSON format
+</li>
+<li>Set up Azure Monitor alerts for critical failures
+</li>
+</ul>
+<h3 id="security-hardening">2. Security Hardening</h3>
+<ul>
+<li>Implement Azure Key Vault for sensitive configuration
+</li>
+<li>Add network security groups and private endpoints
+</li>
+<li>Regular dependency vulnerability scanning
+</li>
+</ul>
+<h3 id="scalability-enhancements">3. Scalability Enhancements</h3>
+<ul>
+<li>Implement horizontal scaling triggers
+</li>
+<li>Add Azure Load Balancer for multi-instance deployments
+</li>
+<li>Database connection pooling optimization
+</li>
+</ul>
+<h2 id="conclusion">Conclusion</h2>
+<p>This journey taught us that deploying OCaml applications to Azure App Service is entirely feasible with the right approach. The key insights:</p>
+<p><strong>✅ Containerization enables OCaml on Azure</strong><br />
+<strong>✅ Network interface binding (<code>0.0.0.0</code>) is critical for Azure App Service</strong><br />
+<strong>✅ OIDC authentication is more secure than traditional service principals</strong><br />
+<strong>✅ Docker caching strategies significantly reduce CI/CD costs</strong><br />
+<strong>✅ Multi-stage builds optimize both build time and image size</strong></p>
+<p><strong>💡 The labor of love was worth it</strong> - we now have a robust, secure, and cost-effective deployment pipeline for OCaml applications on Azure.</p>
+<p>For developers embarking on similar journeys: embrace the complexity, document your discoveries, and remember that the modern cloud platforms can support virtually any technology stack with the right architectural decisions.</p>
+<hr />
+<p><em>This documentation represents our collective learning from deploying the Chaufr platform to Azure. We hope it serves as a valuable resource for the OCaml and Azure communities.</em></p>
+<p><strong>Live Application:</strong> Will be shared soon, be on the look out.<br />
+<strong>Technology Stack:</strong> OCaml 5.3, Dream Framework, TyXML, PostgreSQL, Azure App Service, GitHub Actions.</p>
 
-      <div class="webring-nav">
-        <a
-          href="https://ring.muhokama.fun/u/aguluman/pred"
-          class="webring-link webring-prev prev"
-          title="Previous site in the webring"
-          >← Pred</a
-        >
-        <p class="webring-description center">
-          Hey, this site is part of
-          <a
-            href="https://ring.muhokama.fun"
-            target="_blank"
-            rel="noopener noreferrer"
-            >ring.muhokama.fun!</a
-          >
-        </p>
-        <a
-          href="https://ring.muhokama.fun/u/aguluman/succ"
-          class="webring-link webring-next next"
-          title="Next site in the webring"
-          >Succ →</a
-        >
-      </div>
-    </main>
-    <footer class="site-footer">
-      <div class="footer-bottom">
-        <p class="copyright">© 2025 Chukwuma Akunyili. All rights reserved.</p>
-      </div>
-    </footer>
-    <script src="/static/js/highlight.min.js"></script>
-    <script>
-      document.addEventListener("DOMContentLoaded", (event) => {
-        document.querySelectorAll("pre code").forEach((el) => {
-          hljs.highlightElement(el);
-        });
-      });
-    </script>
-  </body>
-</html>
+<div class="webring-nav">
+  <a href="https://ring.muhokama.fun/u/aguluman/pred" class="webring-link webring-prev prev" title="Previous site in the webring">← Pred</a>
+  <p class="webring-description center">
+    Hey, this site is part of 
+    <a href="https://ring.muhokama.fun" target="_blank" rel="noopener noreferrer">ring.muhokama.fun!</a>
+  </p>
+  <a href="https://ring.muhokama.fun/u/aguluman/succ" class="webring-link webring-next next" title="Next site in the webring">Succ →</a>
+</div></main><footer class="site-footer"><div class="footer-bottom"><p class="copyright">© 2026 Chukwuma Akunyili. All rights reserved.</p></div></footer><script src="/static/js/highlight.min.js"></script><script>document.addEventListener('DOMContentLoaded', (event) => { document.querySelectorAll('pre code').forEach((el) => { hljs.highlightElement(el); }); });</script></body></html>

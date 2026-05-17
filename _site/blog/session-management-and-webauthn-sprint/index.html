@@ -1,232 +1,42 @@
-<!doctype html><!doctype html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
-  <head>
-    <title>
-      Session Management &amp; WebAuthn : Secure Sessions and Better Auth
-    </title>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="Implementing secure session utilities, upgrading WebAuthn flows with better logging."
-    />
-    <link
-      rel="preload"
-      href="/static/fonts/JetBrainsMonoNerdFont-Regular.woff2"
-      data-as="font"
-      data-type="font/woff2"
-      data-crossorigin="anonymous"
-    />
-    <script>
-      (function () {
-        const theme = localStorage.getItem("theme");
-        if (theme === "dark") {
-          document.documentElement.setAttribute("data-theme", "dark");
-        } else if (theme === "light") {
-          document.documentElement.setAttribute("data-theme", "light");
-        }
-      })();
-    </script>
-    <link rel="stylesheet" href="/static/css/main.css" />
-    <link />
-    <link rel="stylesheet" href="/static/css/highlight.css" />
-    <link rel="icon" href="/static/images/favicon.svg" type="image/svg+xml" />
-    <script src="/static/js/main.js" defer="defer"></script>
-    <script src="/static/js/theme-toggle.js" defer="defer"></script>
-    <script
-      src="/static/js/highlight.min.js"
-      data-async="true"
-      data-onload="hljs.highlightAll()"
-    ></script>
-    <meta
-      property="og:title"
-      content="Session Management &amp; WebAuthn : Secure Sessions and Better Auth"
-    />
-    <meta
-      property="og:description"
-      content="Implementing secure session utilities, upgrading WebAuthn flows with better logging."
-    />
-    <meta
-      property="og:url"
-      content="https://fearful-odds.rocks//blog/session-management-and-webauthn-sprint"
-    />
-    <meta property="og:image" content="/static/images/default-og.jpg" />
-    <meta property="og:type" content="article" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@siteauthor" />
-    <meta
-      name="twitter:title"
-      content="Session Management &amp; WebAuthn : Secure Sessions and Better Auth"
-    />
-    <meta
-      name="twitter:description"
-      content="Implementing secure session utilities, upgrading WebAuthn flows with better logging."
-    />
-    <meta name="twitter:image" content="/static/images/default-og.jpg" />
-    <link
-      rel="canonical"
-      href="https://fearful-odds.rocks//blog/session-management-and-webauthn-sprint"
-    />
-    <script data-type="application/ld+json">
-      {&quot;@context&quot;:&quot;https://schema.org&quot;,&quot;@type&quot;:&quot;WebPage&quot;,&quot;name&quot;:&quot;Session Management &amp; WebAuthn : Secure Sessions and Better Auth&quot;,&quot;description&quot;:&quot;Implementing secure session utilities, upgrading WebAuthn flows with better logging.&quot;,&quot;url&quot;:&quot;https://fearful-odds.rocks//blog/session-management-and-webauthn-sprint&quot;,&quot;image&quot;:&quot;/static/images/default-og.jpg&quot;}
-    </script>
-  </head>
-  <body class="page">
-    <button
-      class="theme-toggle"
-      title="Toggle dark/light mode"
-      data-aria-label="Toggle dark/light mode"
-    >
-      <span class="sun-icon">☀️</span><span class="moon-icon">🌙</span>
-    </button>
-    <header class="site-header">
-      <div>
-        <nav class="site-navigation" aria-label="Main navigation">
-          <button
-            class="mobile-nav-toggle"
-            aria-expanded="false"
-            aria-controls="primary-navigation"
-            aria-label="Toggle navigation menu"
-          >
-            <span class="hamburger"></span><span class="sr-only">Menu</span>
-          </button>
-          <ul class="nav-list" id="primary-navigation" data-visible="false">
-            <li class="nav-item"><a href="/">Home</a></li>
-            <li class="nav-item"><a href="/about">About</a></li>
-            <li class="nav-item"><a href="/projects">Projects</a></li>
-            <li class="nav-item"><a href="/blog">Blog</a></li>
-            <li class="nav-item"><a href="/journal">Journal</a></li>
-            <li class="nav-item"><a href="/contact">Contact</a></li>
-          </ul>
-          <div class="nav-right">
-            <ul class="social-nav">
-              <li>
-                <a
-                  href="https://github.com/aguluman"
-                  aria-label="GitHub"
-                  title="GitHub"
-                  class="social-link"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                  ><svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    xmlns:xlink="http://www.w3.org/1999/xlink"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    class="social-icon"
-                  >
-                    <path
-                      d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"
-                    ></path></svg
-                  ><span class="visually-hidden">GitHub</span></a
-                >
-              </li>
-              <li>
-                <a
-                  href="https://x.com/agulumans"
-                  aria-label="X"
-                  title="X"
-                  class="social-link"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                  ><svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    xmlns:xlink="http://www.w3.org/1999/xlink"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    class="social-icon"
-                  >
-                    <path
-                      d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
-                    ></path></svg
-                  ><span class="visually-hidden">Twitter</span></a
-                >
-              </li>
-              <li>
-                <a
-                  href="https://www.linkedin.com/in/chukwuma-akunyili/"
-                  aria-label="LinkedIn"
-                  title="LinkedIn"
-                  class="social-link"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                  ><svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    xmlns:xlink="http://www.w3.org/1999/xlink"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    class="social-icon"
-                  >
-                    <path
-                      d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"
-                    ></path></svg
-                  ><span class="visually-hidden">LinkedIn</span></a
-                >
-              </li>
-            </ul>
-          </div>
-        </nav>
-      </div>
-    </header>
-    <main>
-      <h1
-        id="session-management-webauthn-sprint-secure-sessions-and-better-auth"
-      >
-        Session Management &amp; WebAuthn Sprint: Secure Sessions and Better
-        Auth
-      </h1>
-      <blockquote>
-        <p>
-          A focused session bringing first‑class session management and sturdier
-          WebAuthn flows. This day's todos establishes a hardened, centralized
-          session layer and streamlines the auth handlers to rely on it with
-          minimal duplication. Deep WebAuthn implementation details remain in
-          the dedicated passkey article, keeping this post focused and
-          operationally oriented.
-        </p>
-      </blockquote>
-      <h2 id="overview">Overview</h2>
-      <ul>
-        <li>
-          New session utilities with absolute and idle timeouts, device
-          fingerprinting, IP capture, and per‑request renewal
-        </li>
-        <li>
-          WebAuthn handlers now persist challenges/user IDs in session and emit
-          clearer, structured logs
-        </li>
-      </ul>
-      <h2 id="key-accomplishments">Key accomplishments</h2>
-      <h3 id="secure-session-management-utilities">
-        1) 🔐 Secure session management utilities
-      </h3>
-      <p>
-        A new <code>Util.Session</code> module centralizes session semantics for
-        both password and WebAuthn flows:
-      </p>
-      <ul>
-        <li>
-          Session creation, validation, idle/absolute timeout, and invalidation
-        </li>
-        <li>
-          Device fingerprinting (stable hash of
-          <code>User-Agent | Accept-Language | Accept-Encoding</code>) and
-          client IP capture (<code>X-Forwarded-For</code> →
-          <code>X-Real-IP</code> → socket)
-        </li>
-        <li>Automatic per‑request renewal of <code>last_activity</code></li>
-        <li>WebAuthn challenge and user‑ID storage helpers</li>
-        <li>JSON‑friendly error signaling for expired/idle/invalid sessions</li>
-        <li>Optional stats API for UI/observability</li>
-      </ul>
-      <p>Session timing and result types:</p>
-      <pre><code class="language-ocaml">let session_max_age = 86400   (* 24h *)
+<!DOCTYPE html><!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><title>Session Management &amp; WebAuthn : Secure Sessions and Better Auth</title><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><meta name="description" content="Implementing secure session utilities, upgrading WebAuthn flows with better logging."/><link rel="preload" href="/static/fonts/JetBrainsMonoNerdFont-Regular.woff2" data-as="font" data-type="font/woff2" data-crossorigin="anonymous"/><script>(function() {
+      const theme = localStorage.getItem('theme');
+      if (theme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else if (theme === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();</script><link rel="stylesheet" href="/static/css/main.css"/><link/><link rel="stylesheet" href="/static/css/highlight.css"/><link rel="icon" href="/static/images/favicon.svg" type="image/svg+xml"/><script src="/static/js/main.js" defer="defer"></script><script src="/static/js/theme-toggle.js" defer="defer"></script><script src="/static/js/highlight.min.js" data-async="true" data-onload="hljs.highlightAll()"></script><meta property="og:title" content="Session Management &amp; WebAuthn : Secure Sessions and Better Auth"/><meta property="og:description" content="Implementing secure session utilities, upgrading WebAuthn flows with better logging."/><meta property="og:url" content="https://fearful-odds.rocks//blog/session-management-and-webauthn-sprint"/><meta property="og:image" content="/static/images/default-og.jpg"/><meta property="og:type" content="article"/><meta name="twitter:card" content="summary_large_image"/><meta name="twitter:site" content="@siteauthor"/><meta name="twitter:title" content="Session Management &amp; WebAuthn : Secure Sessions and Better Auth"/><meta name="twitter:description" content="Implementing secure session utilities, upgrading WebAuthn flows with better logging."/><meta name="twitter:image" content="/static/images/default-og.jpg"/><link rel="canonical" href="https://fearful-odds.rocks//blog/session-management-and-webauthn-sprint"/><script data-type="application/ld+json">{&quot;@context&quot;:&quot;https://schema.org&quot;,&quot;@type&quot;:&quot;WebPage&quot;,&quot;name&quot;:&quot;Session Management &amp; WebAuthn : Secure Sessions and Better Auth&quot;,&quot;description&quot;:&quot;Implementing secure session utilities, upgrading WebAuthn flows with better logging.&quot;,&quot;url&quot;:&quot;https://fearful-odds.rocks//blog/session-management-and-webauthn-sprint&quot;,&quot;image&quot;:&quot;/static/images/default-og.jpg&quot;}</script></head><body class="page"><button class="theme-toggle" title="Toggle dark/light mode" data-aria-label="Toggle dark/light mode"><span class="sun-icon">☀️</span><span class="moon-icon">🌙</span></button><header class="site-header"><div><nav class="site-navigation" aria-label="Main navigation"><button class="mobile-nav-toggle" aria-expanded="false" aria-controls="primary-navigation" aria-label="Toggle navigation menu"><span class="hamburger"></span><span class="sr-only">Menu</span></button><ul class="nav-list" id="primary-navigation" data-visible="false"><li class="nav-item"><a href="/">Home</a></li><li class="nav-item"><a href="/about">About</a></li><li class="nav-item"><a href="/projects">Projects</a></li><li class="nav-item"><a href="/blog">Blog</a></li><li class="nav-item"><a href="/journal">Journal</a></li><li class="nav-item"><a href="/contact">Contact</a></li></ul><div class="nav-right"><ul class="social-nav"><li><a href="https://github.com/aguluman" aria-label="GitHub" title="GitHub" class="social-link" rel="noopener noreferrer" target="_blank"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="social-icon"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"></path></svg><span class="visually-hidden">GitHub</span></a></li><li><a href="https://x.com/agulumans" aria-label="X" title="X" class="social-link" rel="noopener noreferrer" target="_blank"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="social-icon"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></svg><span class="visually-hidden">Twitter</span></a></li><li><a href="https://www.linkedin.com/in/chukwuma-akunyili/" aria-label="LinkedIn" title="LinkedIn" class="social-link" rel="noopener noreferrer" target="_blank"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="social-icon"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"></path></svg><span class="visually-hidden">LinkedIn</span></a></li></ul></div></nav></div></header><main><h1 id="session-management-webauthn-sprint-secure-sessions-and-better-auth">Session Management &amp; WebAuthn Sprint: Secure Sessions and Better Auth</h1>
+<blockquote>
+<p>A focused session bringing first‑class session management and sturdier WebAuthn flows.
+This day's todos establishes a hardened, centralized session layer and streamlines the auth handlers to rely on it with minimal duplication. Deep WebAuthn implementation details remain in the dedicated passkey article, keeping this post focused and operationally oriented.</p>
+</blockquote>
+<h2 id="overview">Overview</h2>
+<ul>
+<li>New session utilities with absolute and idle timeouts, device fingerprinting, IP capture, and per‑request renewal
+</li>
+<li>WebAuthn handlers now persist challenges/user IDs in session and emit clearer, structured logs
+</li>
+</ul>
+<h2 id="key-accomplishments">Key accomplishments</h2>
+<h3 id="secure-session-management-utilities">1) 🔐 Secure session management utilities</h3>
+<p>A new <code>Util.Session</code> module centralizes session semantics for both password and WebAuthn flows:</p>
+<ul>
+<li>Session creation, validation, idle/absolute timeout, and invalidation
+</li>
+<li>Device fingerprinting (stable hash of <code>User-Agent | Accept-Language | Accept-Encoding</code>) and client IP capture (<code>X-Forwarded-For</code> → <code>X-Real-IP</code> → socket)
+</li>
+<li>Automatic per‑request renewal of <code>last_activity</code>
+</li>
+<li>WebAuthn challenge and user‑ID storage helpers
+</li>
+<li>JSON‑friendly error signaling for expired/idle/invalid sessions
+</li>
+<li>Optional stats API for UI/observability
+</li>
+</ul>
+<p>Session timing and result types:</p>
+<pre><code class="language-ocaml">let session_max_age = 86400   (* 24h *)
 let session_idle_timeout = 3600 (* 1h *)
 
 type validation_result =
@@ -235,11 +45,8 @@ type validation_result =
   | IdleTimeout
   | Invalid of string
 </code></pre>
-      <p>
-        Automatic validation middleware with public route bypass (full
-        function):
-      </p>
-      <pre><code class="language-ocaml">let session_middleware inner_handler request =
+<p>Automatic validation middleware with public route bypass (full function):</p>
+<pre><code class="language-ocaml">let session_middleware inner_handler request =
   ...existing code ...
   if List.mem path public_paths then inner_handler request
   else
@@ -260,11 +67,8 @@ type validation_result =
              {|{&quot;error&quot;:&quot;Invalid session&quot;,&quot;code&quot;:&quot;SESSION_INVALID&quot;,&quot;reason&quot;:&quot;%s&quot;}|}
              reason)
 </code></pre>
-      <p>
-        WebAuthn helpers encapsulate session storage (with clear function
-        names):
-      </p>
-      <pre><code class="language-ocaml">let set_webauthn_challenge request challenge =
+<p>WebAuthn helpers encapsulate session storage (with clear function names):</p>
+<pre><code class="language-ocaml">let set_webauthn_challenge request challenge =
   Dream.set_session_field request challenge_field challenge
 
 let get_webauthn_challenge request =
@@ -282,8 +86,8 @@ let get_webauthn_user_id request =
 let clear_webauthn_user_id request =
   Dream.set_session_field request user_id_webauthn_field &quot;&quot;
 </code></pre>
-      <p>A compact stats view supports observability and UI hints:</p>
-      <pre><code class="language-ocaml">type session_stats = { 
+<p>A compact stats view supports observability and UI hints:</p>
+<pre><code class="language-ocaml">type session_stats = { 
   user_id : string; 
   age_seconds : float; 
   idle_seconds : float;
@@ -291,32 +95,20 @@ let clear_webauthn_user_id request =
   device_id : string option; 
   ip_address : string option }
 </code></pre>
-      <h3 id="webauthn-handler-upgrades">2) 🪪 WebAuthn handler upgrades</h3>
-      <p>
-        WebAuthn registration/authentication flows now log with consistent tags
-        and richer context, and they use <code>Util.Session</code> to manage
-        ephemeral challenge/user linkage:
-      </p>
-      <ul>
-        <li>
-          Structured logging with <code>Dream.error/warning/info</code>,
-          including backtraces on failures
-        </li>
-        <li>
-          Registration start stores a freshly generated challenge and the
-          current user ID in the session
-        </li>
-        <li>
-          Authentication start fetches the user by email and prepares an
-          allow‑list
-        </li>
-        <li>
-          Finish endpoints decode/validate payloads and respond with consistent
-          JSON
-        </li>
-      </ul>
-      <p>Illustrative snippets:</p>
-      <pre><code class="language-ocaml">let log_error msg = Dream.error (fun log -&gt; log &quot;[webauthn_auth_finish] %s&quot; msg)
+<h3 id="webauthn-handler-upgrades">2) 🪪 WebAuthn handler upgrades</h3>
+<p>WebAuthn registration/authentication flows now log with consistent tags and richer context, and they use <code>Util.Session</code> to manage ephemeral challenge/user linkage:</p>
+<ul>
+<li>Structured logging with <code>Dream.error/warning/info</code>, including backtraces on failures
+</li>
+<li>Registration start stores a freshly generated challenge and the current user ID in the session
+</li>
+<li>Authentication start fetches the user by email and prepares an allow‑list
+</li>
+<li>Finish endpoints decode/validate payloads and respond with consistent JSON
+</li>
+</ul>
+<p>Illustrative snippets:</p>
+<pre><code class="language-ocaml">let log_error msg = Dream.error (fun log -&gt; log &quot;[webauthn_auth_finish] %s&quot; msg)
 let log_warning msg = Dream.warning (fun log -&gt; log &quot;[webauthn_auth_finish] %s&quot; msg)
 
 let webauthn_authenticate_finish_handler request =
@@ -348,21 +140,16 @@ let webauthn_authenticate_finish_handler request =
     Dream.json ~status:`Internal_Server_Error
       {|{&quot;success&quot;:false,&quot;message&quot;:&quot;Internal server error&quot;}|}
 </code></pre>
-      <h3 id="sessionaware-server-bootstrap">
-        3) Session‑aware server bootstrap
-      </h3>
-      <p>The server bootstrap is environment agnostic:</p>
-      <ul>
-        <li>
-          Enforces a strong cookie secret: rejects
-          <code>SESSION_SECRET</code> shorter than 32 chars
-        </li>
-        <li>
-          Wires cookie sessions and telemetry middleware before the router
-        </li>
-      </ul>
-      <p>Representative guardrail for the secret:</p>
-      <pre><code class="language-ocaml">let get_session_secret () =
+<h3 id="sessionaware-server-bootstrap">3) Session‑aware server bootstrap</h3>
+<p>The server bootstrap is environment agnostic:</p>
+<ul>
+<li>Enforces a strong cookie secret: rejects <code>SESSION_SECRET</code> shorter than 32 chars
+</li>
+<li>Wires cookie sessions and telemetry middleware before the router
+</li>
+</ul>
+<p>Representative guardrail for the secret:</p>
+<pre><code class="language-ocaml">let get_session_secret () =
   match Sys.getenv_opt &quot;SESSION_SECRET&quot; with
   | Some secret when String.length secret &gt;= 32 -&gt; secret
   | Some _ -&gt;
@@ -374,132 +161,66 @@ let webauthn_authenticate_finish_handler request =
         &quot;Error: SESSION_SECRET is not set. Please configure it in your environment.\n&quot;;
       exit 1
 </code></pre>
-      <h2 id="technical-deep-dive">Technical deep dive</h2>
-      <h3 id="session-lifecycle-and-contracts">
-        Session lifecycle and contracts
-      </h3>
-      <ul>
-        <li>Inputs: <code>Dream.request</code></li>
-        <li>
-          Storage: cookie session fields (user id, created_at, last_activity,
-          device id, IP)
-        </li>
-        <li>Timeouts: 24h absolute, 1h idle</li>
-        <li>Renewal: write <code>last_activity</code> on valid access</li>
-        <li>
-          Error modes: <code>Expired</code> | <code>IdleTimeout</code> |
-          <code>Invalid of string</code>
-        </li>
-        <li>
-          Success criteria: <code>Valid</code> → downstream handler executes
-        </li>
-      </ul>
-      <p>Edge cases covered:</p>
-      <ul>
-        <li>
-          Missing session fields →
-          <code>Invalid &quot;No active session&quot;</code>
-        </li>
-        <li>
-          Malformed timestamps → coerced via
-          <code>float_of_string_opt</code> with safe defaults
-        </li>
-        <li>
-          Device fingerprint mismatch → immediate invalidation +
-          <code>Invalid</code> result
-        </li>
-        <li>
-          Proxy chains → first IP in <code>X-Forwarded-For</code> used when
-          present
-        </li>
-      </ul>
-      <h3 id="device-fingerprinting-and-ip-extraction">
-        Device fingerprinting and IP extraction
-      </h3>
-      <p>
-        A simple, deterministic device fingerprint is derived from stable
-        request headers, hashed via <code>Digest</code>. The client IP
-        prioritizes <code>X-Forwarded-For</code>, then <code>X-Real-IP</code>,
-        and finally the socket address, mapping cleanly to typical reverse‑proxy
-        deployments.
-      </p>
-      <h3 id="webauthn-challenge-persistence">
-        WebAuthn challenge persistence
-      </h3>
-      <p>
-        Registration/authentication flows persist the challenge and user
-        identity in the session, minimizing cross‑request coupling and avoiding
-        ad‑hoc stores. Helpers (<code>set_webauthn_challenge</code>,
-        <code>get_webauthn_challenge</code>, <code>set_webauthn_user_id</code>)
-        keep the handlers declarative.
-      </p>
-      <h2 id="security-considerations">Security considerations</h2>
-      <ul>
-        <li>Strong cookie secret enforcement prevents weak session MACs</li>
-        <li>
-          Absolute and idle timeouts cap exposure and reduce hijacking windows
-        </li>
-        <li>Device mismatch invalidates suspicious sessions</li>
-        <li>
-          Masking of DB connection strings avoids accidental credential leakage
-          in logs/pages
-        </li>
-        <li>
-          Centralized helpers reduce handler‑level mistakes around session state
-        </li>
-      </ul>
-      <h2 id="developer-experience">Developer experience</h2>
-      <ul>
-        <li>
-          Consistent, tagged logs via <code>Dream.error/warning/info</code>,
-          with backtraces captured on unexpected exceptions
-        </li>
-        <li>
-          JSON response shape standardized across auth/session failure paths
-        </li>
-        <li>
-          Encapsulated helpers for challenge/user management simplify handler
-          code
-        </li>
-      </ul>
-      <p><em>Nintai: Courage to keep going when time gets tough.</em></p>
+<h2 id="technical-deep-dive">Technical deep dive</h2>
+<h3 id="session-lifecycle-and-contracts">Session lifecycle and contracts</h3>
+<ul>
+<li>Inputs: <code>Dream.request</code>
+</li>
+<li>Storage: cookie session fields (user id, created_at, last_activity, device id, IP)
+</li>
+<li>Timeouts: 24h absolute, 1h idle
+</li>
+<li>Renewal: write <code>last_activity</code> on valid access
+</li>
+<li>Error modes: <code>Expired</code> | <code>IdleTimeout</code> | <code>Invalid of string</code>
+</li>
+<li>Success criteria: <code>Valid</code> → downstream handler executes
+</li>
+</ul>
+<p>Edge cases covered:</p>
+<ul>
+<li>Missing session fields → <code>Invalid &quot;No active session&quot;</code>
+</li>
+<li>Malformed timestamps → coerced via <code>float_of_string_opt</code> with safe defaults
+</li>
+<li>Device fingerprint mismatch → immediate invalidation + <code>Invalid</code> result
+</li>
+<li>Proxy chains → first IP in <code>X-Forwarded-For</code> used when present
+</li>
+</ul>
+<h3 id="device-fingerprinting-and-ip-extraction">Device fingerprinting and IP extraction</h3>
+<p>A simple, deterministic device fingerprint is derived from stable request headers, hashed via <code>Digest</code>. The client IP prioritizes <code>X-Forwarded-For</code>, then <code>X-Real-IP</code>, and finally the socket address, mapping cleanly to typical reverse‑proxy deployments.</p>
+<h3 id="webauthn-challenge-persistence">WebAuthn challenge persistence</h3>
+<p>Registration/authentication flows persist the challenge and user identity in the session, minimizing cross‑request coupling and avoiding ad‑hoc stores. Helpers (<code>set_webauthn_challenge</code>, <code>get_webauthn_challenge</code>, <code>set_webauthn_user_id</code>) keep the handlers declarative.</p>
+<h2 id="security-considerations">Security considerations</h2>
+<ul>
+<li>Strong cookie secret enforcement prevents weak session MACs
+</li>
+<li>Absolute and idle timeouts cap exposure and reduce hijacking windows
+</li>
+<li>Device mismatch invalidates suspicious sessions
+</li>
+<li>Masking of DB connection strings avoids accidental credential leakage in logs/pages
+</li>
+<li>Centralized helpers reduce handler‑level mistakes around session state
+</li>
+</ul>
+<h2 id="developer-experience">Developer experience</h2>
+<ul>
+<li>Consistent, tagged logs via <code>Dream.error/warning/info</code>, with backtraces captured on unexpected exceptions
+</li>
+<li>JSON response shape standardized across auth/session failure paths
+</li>
+<li>Encapsulated helpers for challenge/user management simplify handler code
+</li>
+</ul>
+<p><em>Nintai: Courage to keep going when time gets tough.</em></p>
 
-      <div class="webring-nav">
-        <a
-          href="https://ring.muhokama.fun/u/aguluman/pred"
-          class="webring-link webring-prev prev"
-          title="Previous site in the webring"
-          >← Pred</a
-        >
-        <p class="webring-description center">
-          Hey, this site is part of
-          <a
-            href="https://ring.muhokama.fun"
-            target="_blank"
-            rel="noopener noreferrer"
-            >ring.muhokama.fun!</a
-          >
-        </p>
-        <a
-          href="https://ring.muhokama.fun/u/aguluman/succ"
-          class="webring-link webring-next next"
-          title="Next site in the webring"
-          >Succ →</a
-        >
-      </div>
-    </main>
-    <footer class="site-footer">
-      <div class="footer-bottom">
-        <p class="copyright">© 2025 Chukwuma Akunyili. All rights reserved.</p>
-      </div>
-    </footer>
-    <script src="/static/js/highlight.min.js"></script>
-    <script>
-      document.addEventListener("DOMContentLoaded", (event) => {
-        document.querySelectorAll("pre code").forEach((el) => {
-          hljs.highlightElement(el);
-        });
-      });
-    </script>
-  </body>
-</html>
+<div class="webring-nav">
+  <a href="https://ring.muhokama.fun/u/aguluman/pred" class="webring-link webring-prev prev" title="Previous site in the webring">← Pred</a>
+  <p class="webring-description center">
+    Hey, this site is part of 
+    <a href="https://ring.muhokama.fun" target="_blank" rel="noopener noreferrer">ring.muhokama.fun!</a>
+  </p>
+  <a href="https://ring.muhokama.fun/u/aguluman/succ" class="webring-link webring-next next" title="Next site in the webring">Succ →</a>
+</div></main><footer class="site-footer"><div class="footer-bottom"><p class="copyright">© 2026 Chukwuma Akunyili. All rights reserved.</p></div></footer><script src="/static/js/highlight.min.js"></script><script>document.addEventListener('DOMContentLoaded', (event) => { document.querySelectorAll('pre code').forEach((el) => { hljs.highlightElement(el); }); });</script></body></html>

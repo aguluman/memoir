@@ -1,246 +1,40 @@
-<!doctype html><!doctype html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
-  <head>
-    <title>Securing the Monolith: CSRF, Redis, and the Driver Lifecycle</title>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="From fixing critical security holes to architecting the driver signup flow. A deep dive into CSRF in Dream, Azure Redis, and the importance of building a mental model."
-    />
-    <link
-      rel="preload"
-      href="/static/fonts/JetBrainsMonoNerdFont-Regular.woff2"
-      data-as="font"
-      data-type="font/woff2"
-      data-crossorigin="anonymous"
-    />
-    <script>
-      (function () {
-        const theme = localStorage.getItem("theme");
-        if (theme === "dark") {
-          document.documentElement.setAttribute("data-theme", "dark");
-        } else if (theme === "light") {
-          document.documentElement.setAttribute("data-theme", "light");
-        }
-      })();
-    </script>
-    <link rel="stylesheet" href="/static/css/main.css" />
-    <link />
-    <link rel="stylesheet" href="/static/css/highlight.css" />
-    <link rel="icon" href="/static/images/favicon.svg" type="image/svg+xml" />
-    <script src="/static/js/main.js" defer="defer"></script>
-    <script src="/static/js/theme-toggle.js" defer="defer"></script>
-    <script
-      src="/static/js/highlight.min.js"
-      data-async="true"
-      data-onload="hljs.highlightAll()"
-    ></script>
-    <meta
-      property="og:title"
-      content="Securing the Monolith: CSRF, Redis, and the Driver Lifecycle"
-    />
-    <meta
-      property="og:description"
-      content="From fixing critical security holes to architecting the driver signup flow. A deep dive into CSRF in Dream, Azure Redis, and the importance of building a mental model."
-    />
-    <meta
-      property="og:url"
-      content="https://fearful-odds.rocks//blog/securing-the-monolith:csrf-and-the-driver-lifecycle"
-    />
-    <meta property="og:image" content="/static/images/default-og.jpg" />
-    <meta property="og:type" content="article" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@siteauthor" />
-    <meta
-      name="twitter:title"
-      content="Securing the Monolith: CSRF, Redis, and the Driver Lifecycle"
-    />
-    <meta
-      name="twitter:description"
-      content="From fixing critical security holes to architecting the driver signup flow. A deep dive into CSRF in Dream, Azure Redis, and the importance of building a mental model."
-    />
-    <meta name="twitter:image" content="/static/images/default-og.jpg" />
-    <link
-      rel="canonical"
-      href="https://fearful-odds.rocks//blog/securing-the-monolith:csrf-and-the-driver-lifecycle"
-    />
-    <script data-type="application/ld+json">
-      {&quot;@context&quot;:&quot;https://schema.org&quot;,&quot;@type&quot;:&quot;WebPage&quot;,&quot;name&quot;:&quot;Securing the Monolith: CSRF, Redis, and the Driver Lifecycle&quot;,&quot;description&quot;:&quot;From fixing critical security holes to architecting the driver signup flow. A deep dive into CSRF in Dream, Azure Redis, and the importance of building a mental model.&quot;,&quot;url&quot;:&quot;https://fearful-odds.rocks//blog/securing-the-monolith:csrf-and-the-driver-lifecycle&quot;,&quot;image&quot;:&quot;/static/images/default-og.jpg&quot;}
-    </script>
-  </head>
-  <body class="page">
-    <button
-      class="theme-toggle"
-      title="Toggle dark/light mode"
-      data-aria-label="Toggle dark/light mode"
-    >
-      <span class="sun-icon">☀️</span><span class="moon-icon">🌙</span>
-    </button>
-    <header class="site-header">
-      <div>
-        <nav class="site-navigation" aria-label="Main navigation">
-          <button
-            class="mobile-nav-toggle"
-            aria-expanded="false"
-            aria-controls="primary-navigation"
-            aria-label="Toggle navigation menu"
-          >
-            <span class="hamburger"></span><span class="sr-only">Menu</span>
-          </button>
-          <ul class="nav-list" id="primary-navigation" data-visible="false">
-            <li class="nav-item"><a href="/">Home</a></li>
-            <li class="nav-item"><a href="/about">About</a></li>
-            <li class="nav-item"><a href="/projects">Projects</a></li>
-            <li class="nav-item"><a href="/blog">Blog</a></li>
-            <li class="nav-item"><a href="/journal">Journal</a></li>
-            <li class="nav-item"><a href="/contact">Contact</a></li>
-          </ul>
-          <div class="nav-right">
-            <ul class="social-nav">
-              <li>
-                <a
-                  href="https://github.com/aguluman"
-                  aria-label="GitHub"
-                  title="GitHub"
-                  class="social-link"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                  ><svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    xmlns:xlink="http://www.w3.org/1999/xlink"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    class="social-icon"
-                  >
-                    <path
-                      d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"
-                    ></path></svg
-                  ><span class="visually-hidden">GitHub</span></a
-                >
-              </li>
-              <li>
-                <a
-                  href="https://x.com/agulumans"
-                  aria-label="X"
-                  title="X"
-                  class="social-link"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                  ><svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    xmlns:xlink="http://www.w3.org/1999/xlink"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    class="social-icon"
-                  >
-                    <path
-                      d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
-                    ></path></svg
-                  ><span class="visually-hidden">Twitter</span></a
-                >
-              </li>
-              <li>
-                <a
-                  href="https://www.linkedin.com/in/chukwuma-akunyili/"
-                  aria-label="LinkedIn"
-                  title="LinkedIn"
-                  class="social-link"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                  ><svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    xmlns:xlink="http://www.w3.org/1999/xlink"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    class="social-icon"
-                  >
-                    <path
-                      d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"
-                    ></path></svg
-                  ><span class="visually-hidden">LinkedIn</span></a
-                >
-              </li>
-            </ul>
-          </div>
-        </nav>
-      </div>
-    </header>
-    <main>
-      <h1 id="securing-the-monolith-csrf-redis-and-the-driver-lifecycle">
-        Securing the Monolith: CSRF, Redis, and the Driver Lifecycle
-      </h1>
-      <blockquote>
-        <p>
-          Building a secure authentication flow, optimizing for Azure, and the
-          journey of reclaiming my mental model from AI agents.
-        </p>
-      </blockquote>
-      <p>
-        <strong>Project:</strong> Chaufr – Personal drivers, on demand, in your
-        own vehicle<br />
-        <strong>Tech Stack:</strong> OCaml 5.3.0, Dream Framework, Azure Redis,
-        PostgreSQL, GitHub Actions<br />
-        <strong>Status:</strong> ✅ Production - Driver Flow &amp; Security
-        Hardening
-      </p>
-      <p>
-        This weekend was about moving from &quot;it works&quot; to &quot;it is
-        right.&quot; As I transition Chaufr from a prototype to a robust
-        monolithic application, I tackled three critical pillars: security
-        (fixing CSRF), architecture (the driver signup lifecycle), and
-        infrastructure (Azure Redis and deployment resilience).
-      </p>
-      <p>Here is how I secured the monolith and structured the data.</p>
-      <hr />
-      <h2 id="the-csrf-trap-moving-beyond-csrffalse">
-        1. The CSRF Trap: Moving beyond <code>~csrf:false</code>
-      </h2>
-      <p>
-        In the early stages of development, specifically when testing with
-        Postman or cURL, it is tempting to disable Cross-Site Request Forgery
-        (CSRF) protection to reduce friction. I had this flag sitting in my
-        handlers:
-      </p>
-      <pre><code class="language-ocaml">match%lwt Dream.form ~csrf:false request with
+<!DOCTYPE html><!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><title>Securing the Monolith: CSRF, Redis, and the Driver Lifecycle</title><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><meta name="description" content="From fixing critical security holes to architecting the driver signup flow. A deep dive into CSRF in Dream, Azure Redis, and the importance of building a mental model."/><link rel="preload" href="/static/fonts/JetBrainsMonoNerdFont-Regular.woff2" data-as="font" data-type="font/woff2" data-crossorigin="anonymous"/><script>(function() {
+      const theme = localStorage.getItem('theme');
+      if (theme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else if (theme === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();</script><link rel="stylesheet" href="/static/css/main.css"/><link/><link rel="stylesheet" href="/static/css/highlight.css"/><link rel="icon" href="/static/images/favicon.svg" type="image/svg+xml"/><script src="/static/js/main.js" defer="defer"></script><script src="/static/js/theme-toggle.js" defer="defer"></script><script src="/static/js/highlight.min.js" data-async="true" data-onload="hljs.highlightAll()"></script><meta property="og:title" content="Securing the Monolith: CSRF, Redis, and the Driver Lifecycle"/><meta property="og:description" content="From fixing critical security holes to architecting the driver signup flow. A deep dive into CSRF in Dream, Azure Redis, and the importance of building a mental model."/><meta property="og:url" content="https://fearful-odds.rocks//blog/securing-the-monolith:csrf-and-the-driver-lifecycle"/><meta property="og:image" content="/static/images/default-og.jpg"/><meta property="og:type" content="article"/><meta name="twitter:card" content="summary_large_image"/><meta name="twitter:site" content="@siteauthor"/><meta name="twitter:title" content="Securing the Monolith: CSRF, Redis, and the Driver Lifecycle"/><meta name="twitter:description" content="From fixing critical security holes to architecting the driver signup flow. A deep dive into CSRF in Dream, Azure Redis, and the importance of building a mental model."/><meta name="twitter:image" content="/static/images/default-og.jpg"/><link rel="canonical" href="https://fearful-odds.rocks//blog/securing-the-monolith:csrf-and-the-driver-lifecycle"/><script data-type="application/ld+json">{&quot;@context&quot;:&quot;https://schema.org&quot;,&quot;@type&quot;:&quot;WebPage&quot;,&quot;name&quot;:&quot;Securing the Monolith: CSRF, Redis, and the Driver Lifecycle&quot;,&quot;description&quot;:&quot;From fixing critical security holes to architecting the driver signup flow. A deep dive into CSRF in Dream, Azure Redis, and the importance of building a mental model.&quot;,&quot;url&quot;:&quot;https://fearful-odds.rocks//blog/securing-the-monolith:csrf-and-the-driver-lifecycle&quot;,&quot;image&quot;:&quot;/static/images/default-og.jpg&quot;}</script></head><body class="page"><button class="theme-toggle" title="Toggle dark/light mode" data-aria-label="Toggle dark/light mode"><span class="sun-icon">☀️</span><span class="moon-icon">🌙</span></button><header class="site-header"><div><nav class="site-navigation" aria-label="Main navigation"><button class="mobile-nav-toggle" aria-expanded="false" aria-controls="primary-navigation" aria-label="Toggle navigation menu"><span class="hamburger"></span><span class="sr-only">Menu</span></button><ul class="nav-list" id="primary-navigation" data-visible="false"><li class="nav-item"><a href="/">Home</a></li><li class="nav-item"><a href="/about">About</a></li><li class="nav-item"><a href="/projects">Projects</a></li><li class="nav-item"><a href="/blog">Blog</a></li><li class="nav-item"><a href="/journal">Journal</a></li><li class="nav-item"><a href="/contact">Contact</a></li></ul><div class="nav-right"><ul class="social-nav"><li><a href="https://github.com/aguluman" aria-label="GitHub" title="GitHub" class="social-link" rel="noopener noreferrer" target="_blank"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="social-icon"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"></path></svg><span class="visually-hidden">GitHub</span></a></li><li><a href="https://x.com/agulumans" aria-label="X" title="X" class="social-link" rel="noopener noreferrer" target="_blank"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="social-icon"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></svg><span class="visually-hidden">Twitter</span></a></li><li><a href="https://www.linkedin.com/in/chukwuma-akunyili/" aria-label="LinkedIn" title="LinkedIn" class="social-link" rel="noopener noreferrer" target="_blank"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="social-icon"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"></path></svg><span class="visually-hidden">LinkedIn</span></a></li></ul></div></nav></div></header><main><h1 id="securing-the-monolith-csrf-redis-and-the-driver-lifecycle">Securing the Monolith: CSRF, Redis, and the Driver Lifecycle</h1>
+<blockquote>
+<p>Building a secure authentication flow, optimizing for Azure, and the journey of reclaiming my mental model from AI agents.</p>
+</blockquote>
+<p><strong>Project:</strong> Chaufr – Personal drivers, on demand, in your own vehicle<br />
+<strong>Tech Stack:</strong> OCaml 5.3.0, Dream Framework, Azure Redis, PostgreSQL, GitHub Actions<br />
+<strong>Status:</strong> ✅ Production - Driver Flow &amp; Security Hardening</p>
+<p>This weekend was about moving from &quot;it works&quot; to &quot;it is right.&quot; As I transition Chaufr from a prototype to a robust monolithic application, I tackled three critical pillars: security (fixing CSRF), architecture (the driver signup lifecycle), and infrastructure (Azure Redis and deployment resilience).</p>
+<p>Here is how I secured the monolith and structured the data.</p>
+<hr />
+<h2 id="the-csrf-trap-moving-beyond-csrffalse">1. The CSRF Trap: Moving beyond <code>~csrf:false</code></h2>
+<p>In the early stages of development, specifically when testing with Postman or cURL, it is tempting to disable Cross-Site Request Forgery (CSRF) protection to reduce friction. I had this flag sitting in my handlers:</p>
+<pre><code class="language-ocaml">match%lwt Dream.form ~csrf:false request with
 (* ... *)
 </code></pre>
-      <p>
-        While this allowed for rapid API testing, leaving it in a browser-based
-        application is a critical vulnerability. It allows attackers to trick
-        users into submitting forms (like &quot;Create Driver&quot;) without
-        their consent.
-      </p>
-      <h3 id="the-fix-passing-the-request">
-        The Fix: passing the <code>request</code>
-      </h3>
-      <p>
-        Fixing this wasn't just about changing <code>false</code> to
-        <code>true</code>. It forced a better architectural flow. I realized
-        that to generate a secure token, the <strong>View</strong> layer needed
-        access to the <strong>Request</strong> object, something I hadn't been
-        passing down.
-      </p>
-      <p><strong>The Pattern:</strong></p>
-      <ol>
-        <li>
-          <strong>Controller:</strong> Pass the <code>request</code> object to
-          the render function.
-        </li>
-        <li>
-          <strong>View:</strong> Use <code>Dream.csrf_token request</code> to
-          generate the secret.
-        </li>
-        <li><strong>HTML:</strong> Inject it into a hidden input field.</li>
-      </ol>
-      <!-- end list -->
-      <pre><code class="language-ocaml">(* In the View (driver_profile.ml) *)
+<p>While this allowed for rapid API testing, leaving it in a browser-based application is a critical vulnerability. It allows attackers to trick users into submitting forms (like &quot;Create Driver&quot;) without their consent.</p>
+<h3 id="the-fix-passing-the-request">The Fix: passing the <code>request</code></h3>
+<p>Fixing this wasn't just about changing <code>false</code> to <code>true</code>. It forced a better architectural flow. I realized that to generate a secure token, the <strong>View</strong> layer needed access to the <strong>Request</strong> object, something I hadn't been passing down.</p>
+<p><strong>The Pattern:</strong></p>
+<ol>
+<li><strong>Controller:</strong> Pass the <code>request</code> object to the render function.
+</li>
+<li><strong>View:</strong> Use <code>Dream.csrf_token request</code> to generate the secret.
+</li>
+<li><strong>HTML:</strong> Inject it into a hidden input field.
+</li>
+</ol>
+<!-- end list -->
+<pre><code class="language-ocaml">(* In the View (driver_profile.ml) *)
 input 
   [ 
     type_ &quot;hidden&quot;; 
@@ -248,87 +42,41 @@ input
     value &quot;%s&quot; (Dream.csrf_token request) 
   ];
 </code></pre>
-      <p>
-        This simple change rippled through <code>auth.ml</code>,
-        <code>login.ml</code>, and <code>signup.ml</code>, locking down the
-        entire application. Every write operation is now intentional and
-        cryptographically verified.
-      </p>
-      <hr />
-      <h2 id="architecting-the-driver-flow">2. Architecting the Driver Flow</h2>
-      <p>
-        With security locked in, I moved to the core business logic: The
-        distinction between a <strong>User</strong> (Car Owner) and a
-        <strong>Driver</strong>.
-      </p>
-      <p>
-        I didn't want a fragmented database, so I opted for a linked approach
-        using Foreign Keys.
-      </p>
-      <h3 id="the-fork-in-the-road-ux">The &quot;Fork in the Road&quot; UX</h3>
-      <p>The signup process now handles two distinct paths:</p>
-      <ol>
-        <li>
-          <strong>Car Owner:</strong> Completes the standard signup and provides
-          a <code>vehicle_description</code>.
-        </li>
-        <li>
-          <strong>Driver:</strong> Skips the vehicle description. The system
-          detects this intention and redirects them to a secondary
-          <strong>Driver Profile</strong> form.
-        </li>
-      </ol>
-      <h3 id="database-implications">Database Implications</h3>
-      <p>
-        To support this, I modified the <code>drivers</code> table to enforce
-        strict ownership:
-      </p>
-      <pre><code class="language-sql">ALTER TABLE drivers 
+<p>This simple change rippled through <code>auth.ml</code>, <code>login.ml</code>, and <code>signup.ml</code>, locking down the entire application. Every write operation is now intentional and cryptographically verified.</p>
+<hr />
+<h2 id="architecting-the-driver-flow">2. Architecting the Driver Flow</h2>
+<p>With security locked in, I moved to the core business logic: The distinction between a <strong>User</strong> (Car Owner) and a <strong>Driver</strong>.</p>
+<p>I didn't want a fragmented database, so I opted for a linked approach using Foreign Keys.</p>
+<h3 id="the-fork-in-the-road-ux">The &quot;Fork in the Road&quot; UX</h3>
+<p>The signup process now handles two distinct paths:</p>
+<ol>
+<li><strong>Car Owner:</strong> Completes the standard signup and provides a <code>vehicle_description</code>.
+</li>
+<li><strong>Driver:</strong> Skips the vehicle description. The system detects this intention and redirects them to a secondary <strong>Driver Profile</strong> form.
+</li>
+</ol>
+<h3 id="database-implications">Database Implications</h3>
+<p>To support this, I modified the <code>drivers</code> table to enforce strict ownership:</p>
+<pre><code class="language-sql">ALTER TABLE drivers 
 ADD CONSTRAINT fk_user 
 FOREIGN KEY (user_id) REFERENCES users (id);
 </code></pre>
-      <p>
-        This keeps a single user identity while allowing specific accounts to
-        &quot;upgrade&quot; to driver status. I also added performance indexes
-        on <code>email</code> (for login speed) and <code>location</code> (for
-        the upcoming geospatial search feature).
-      </p>
-      <hr />
-      <h2 id="infrastructure-azure-redis-deployment-resilience">
-        3. Infrastructure: Azure Redis &amp; Deployment Resilience
-      </h2>
-      <p>
-        As traffic grows, relying on in-memory session storage isn't enough. I
-        provisioned an <strong>Azure Redis</strong> resource to handle:
-      </p>
-      <ul>
-        <li>
-          <strong>Rate Limiting:</strong> Preventing abuse on login/signup
-          endpoints.
-        </li>
-        <li>
-          <strong>Session Storage:</strong> Decoupling state from the
-          application container.
-        </li>
-      </ul>
-      <h3 id="the-heisenbug-in-deployment">
-        The &quot;Heisenbug&quot; in Deployment
-      </h3>
-      <p>
-        Deploying this updated stack revealed a flaw in my GitHub Actions
-        pipeline. My health check script was failing with a cryptic
-        <code>cat: response.txt: No such file or directory</code>.
-      </p>
-      <p>
-        The issue? <code>curl</code> was failing to connect (because the app
-        hadn't fully started or the DB was cold), exiting immediately, and never
-        creating the output file.
-      </p>
-      <p>
-        <strong>The Robust Fix:</strong> I rewrote the deployment script to
-        guarantee file existence and handle connection refusals gracefully:
-      </p>
-      <pre><code class="language-yaml"># 1. Ensure file exists before writing
+<p>This keeps a single user identity while allowing specific accounts to &quot;upgrade&quot; to driver status. I also added performance indexes on <code>email</code> (for login speed) and <code>location</code> (for the upcoming geospatial search feature).</p>
+<hr />
+<h2 id="infrastructure-azure-redis-deployment-resilience">3. Infrastructure: Azure Redis &amp; Deployment Resilience</h2>
+<p>As traffic grows, relying on in-memory session storage isn't enough. I provisioned an <strong>Azure Redis</strong> resource to handle:</p>
+<ul>
+<li><strong>Rate Limiting:</strong> Preventing abuse on login/signup endpoints.
+</li>
+<li><strong>Session Storage:</strong> Decoupling state from the application container.
+</li>
+</ul>
+<h3 id="the-heisenbug-in-deployment">The &quot;Heisenbug&quot; in Deployment</h3>
+<p>Deploying this updated stack revealed a flaw in my GitHub Actions pipeline. My health check script was failing with a cryptic <code>cat: response.txt: No such file or directory</code>.</p>
+<p>The issue? <code>curl</code> was failing to connect (because the app hadn't fully started or the DB was cold), exiting immediately, and never creating the output file.</p>
+<p><strong>The Robust Fix:</strong>
+I rewrote the deployment script to guarantee file existence and handle connection refusals gracefully:</p>
+<pre><code class="language-yaml"># 1. Ensure file exists before writing
 rm -f response.txt
 touch response.txt
 
@@ -338,72 +86,26 @@ HTTP_STATUS=$(curl -s --max-time 10 -o response.txt -w &quot;%{http_code}&quot; 
 # 3. Read safely
 cat response.txt
 </code></pre>
-      <p>
-        This small change ensures the CI/CD pipeline waits patiently for the
-        application (and the database) to wake up before declaring failure.
-      </p>
-      <hr />
-      <h2 id="conclusion-reclaiming-the-mental-model">
-        Conclusion: Reclaiming the Mental Model
-      </h2>
-      <p>
-        I recently uninstalled my &quot;Agentic AI&quot; tools. While they wrote
-        code fast, I realized I was losing the mental model of my own codebase.
-      </p>
-      <p>
-        Debugging the CSRF token flow today proved why that was the right
-        decision. By manually threading the <code>request</code> object through
-        the controllers and views, I now understand exactly how data flows
-        through Chaufr. I understand the <em>Why</em>, not just the
-        <em>How</em>.
-      </p>
-      <p>
-        We are now live with a secure, indexed, and architecturally sound
-        foundation.
-      </p>
-      <p><strong>Next Steps:</strong></p>
-      <ul>
-        <li>Implement the Redis-backed Rate Limiter in Azure.</li>
-        <li>Build the &quot;Request a Ride&quot; frontend and backend.</li>
-      </ul>
-      <p><em>Slow is smooth, and smooth is fast.</em></p>
+<p>This small change ensures the CI/CD pipeline waits patiently for the application (and the database) to wake up before declaring failure.</p>
+<hr />
+<h2 id="conclusion-reclaiming-the-mental-model">Conclusion: Reclaiming the Mental Model</h2>
+<p>I recently uninstalled my &quot;Agentic AI&quot; tools. While they wrote code fast, I realized I was losing the mental model of my own codebase.</p>
+<p>Debugging the CSRF token flow today proved why that was the right decision. By manually threading the <code>request</code> object through the controllers and views, I now understand exactly how data flows through Chaufr. I understand the <em>Why</em>, not just the <em>How</em>.</p>
+<p>We are now live with a secure, indexed, and architecturally sound foundation.</p>
+<p><strong>Next Steps:</strong></p>
+<ul>
+<li>Implement the Redis-backed Rate Limiter in Azure.
+</li>
+<li>Build the &quot;Request a Ride&quot; frontend and backend.
+</li>
+</ul>
+<p><em>Slow is smooth, and smooth is fast.</em></p>
 
-      <div class="webring-nav">
-        <a
-          href="https://ring.muhokama.fun/u/aguluman/pred"
-          class="webring-link webring-prev prev"
-          title="Previous site in the webring"
-          >← Pred</a
-        >
-        <p class="webring-description center">
-          Hey, this site is part of
-          <a
-            href="https://ring.muhokama.fun"
-            target="_blank"
-            rel="noopener noreferrer"
-            >ring.muhokama.fun!</a
-          >
-        </p>
-        <a
-          href="https://ring.muhokama.fun/u/aguluman/succ"
-          class="webring-link webring-next next"
-          title="Next site in the webring"
-          >Succ →</a
-        >
-      </div>
-    </main>
-    <footer class="site-footer">
-      <div class="footer-bottom">
-        <p class="copyright">© 2025 Chukwuma Akunyili. All rights reserved.</p>
-      </div>
-    </footer>
-    <script src="/static/js/highlight.min.js"></script>
-    <script>
-      document.addEventListener("DOMContentLoaded", (event) => {
-        document.querySelectorAll("pre code").forEach((el) => {
-          hljs.highlightElement(el);
-        });
-      });
-    </script>
-  </body>
-</html>
+<div class="webring-nav">
+  <a href="https://ring.muhokama.fun/u/aguluman/pred" class="webring-link webring-prev prev" title="Previous site in the webring">← Pred</a>
+  <p class="webring-description center">
+    Hey, this site is part of 
+    <a href="https://ring.muhokama.fun" target="_blank" rel="noopener noreferrer">ring.muhokama.fun!</a>
+  </p>
+  <a href="https://ring.muhokama.fun/u/aguluman/succ" class="webring-link webring-next next" title="Next site in the webring">Succ →</a>
+</div></main><footer class="site-footer"><div class="footer-bottom"><p class="copyright">© 2026 Chukwuma Akunyili. All rights reserved.</p></div></footer><script src="/static/js/highlight.min.js"></script><script>document.addEventListener('DOMContentLoaded', (event) => { document.querySelectorAll('pre code').forEach((el) => { hljs.highlightElement(el); }); });</script></body></html>
