@@ -49,15 +49,8 @@ let meta_tags ~description =
     script ~a:[ a_src "/static/js/main.js"; a_defer () ] (txt "");
     (* Theme toggle JavaScript *)
     script ~a:[ a_src "/static/js/theme-toggle.js"; a_defer () ] (txt "");
-    (* Highlight.js *)
-    script
-      ~a:
-        [
-          a_src "/static/js/highlight.min.js";
-          a_user_data "async" "true";
-          a_user_data "onload" "hljs.highlightAll()";
-        ]
-      (txt "");
+    (* Highlight.js — synchronous so hljs is defined before deferred main.js runs *)
+    script ~a:[ a_src "/static/js/highlight.min.js" ] (txt "");
   ]
 
 (** Base HTML layout to be used by all pages *)
