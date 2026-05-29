@@ -52,73 +52,25 @@ let ensure_directory_exists dir =
     failwith
       (Printf.sprintf "Failed to create directory %s: %s" normalized_dir msg)
 
+(* Binary-safe read: with_open_bin closes the channel even on exception, and
+   binary mode avoids CRLF translation that corrupts images / shifts byte
+   counts on Windows. *)
 let read_file path =
-  let normalized_path = normalize_path path in
-  try
-    let ic = open_in normalized_path in
-    try
-      let len = in_channel_length ic in
-      let content = really_input_string ic len in
-      close_in ic;
-      content
-    with e ->
-      close_in ic;
-      raise
-        (Failure
-           (Printf.sprintf "Failed to read file %s: %s" normalized_path
-              (Printexc.to_string e)))
+  let path = normalize_path path in
+  try In_channel.with_open_bin path In_channel.input_all
   with Sys_error msg ->
-    raise
-      (Failure (Printf.sprintf "Failed to open file %s: %s" normalized_path msg))
+    failwith (Printf.sprintf "Failed to read file %s: %s" path msg)
 
+(* Binary-safe write, used for every output (HTML, CSS, JS, images alike). *)
 let write_file path content =
-  let normalized_path = normalize_path path in
+  let path = normalize_path path in
+  ensure_directory_exists (Filename.dirname path);
+  Printf.printf "Writing file: %s\n" path;
   try
-    ensure_directory_exists (Filename.dirname normalized_path);
-    Printf.printf "Writing file: %s\n" normalized_path;
-    let oc = open_out normalized_path in
-    try
-      output_string oc content;
-      close_out oc
-    with e ->
-      close_out oc;
-      raise
-        (Failure
-           (Printf.sprintf "Failed to write to file %s: %s" normalized_path
-              (Printexc.to_string e)))
+    Out_channel.with_open_bin path (fun oc ->
+        Out_channel.output_string oc content)
   with Sys_error msg ->
-    raise
-      (Failure
-         (Printf.sprintf "Failed to create file %s: %s" normalized_path msg))
-
-(* File type detection *)
-type file_type =
-  | HTML
-  | CSS
-  | JavaScript
-  | Image
-  | Other
-
-let determine_file_type path =
-  match String.lowercase_ascii (Filename.extension path) with
-  | ".html" | ".htm" -> HTML
-  | ".css" -> CSS
-  | ".js" -> JavaScript
-  | ".png" | ".jpg" | ".jpeg" | ".gif" | ".svg" | ".webp" -> Image
-  | _ -> Other
-
-let write_output_file ~content ~path =
-  let dir = Filename.dirname path in
-  ensure_directory_exists dir;
-  let file_type = determine_file_type path in
-  let oc =
-    match file_type with
-    | Image -> open_out_bin path (* Binary mode for images *)
-    | _ -> open_out path (* Text mode for other files *)
-  in
-  output_string oc content;
-  close_out oc;
-  Printf.printf "Written: %s\n" path
+    failwith (Printf.sprintf "Failed to write file %s: %s" path msg)
 
 (* Process markdown content *)
 let process_markdown ~file_path ~content =
@@ -157,6 +109,9 @@ type route_metadata = {
   _tags : string list;
 }
 
+let empty_route_metadata =
+  { title = None; _date = None; _description = None; _tags = [] }
+
 let extract_route_metadata file_path =
   let content = read_file file_path in
   let frontmatter_pattern = "^---\n\\(\\(.\\|\n\\)*?\\)\n---\n" in
@@ -167,8 +122,7 @@ let extract_route_metadata file_path =
     try
       (* Use your existing YAML parsing logic from markdown_parser.ml *)
       match Yaml.of_string yaml_str with
-      | Error _ ->
-          { title = None; _date = None; _description = None; _tags = [] }
+      | Error _ -> empty_route_metadata
       | Ok yaml ->
           let get_string yaml key =
             match Yaml.Util.find key yaml with
@@ -191,8 +145,8 @@ let extract_route_metadata file_path =
             _description = get_string yaml "description";
             _tags = get_string_list yaml "tags";
           }
-    with _ -> { title = None; _date = None; _description = None; _tags = [] }
-  else { title = None; _date = None; _description = None; _tags = [] }
+    with _ -> empty_route_metadata
+  else empty_route_metadata
 
 (* Helper type for content entries *)
 type content_entry = {
@@ -214,43 +168,52 @@ type entry_display_config = {
   not_found_message : string;
 }
 
+(* List the renderable markdown files in a directory (skips index.md and
+   subdirectories). Shared by content listing and RSS collection. *)
+let markdown_files dir =
+  if Sys.file_exists dir && Sys.is_directory dir then
+    Sys.readdir dir |> Array.to_list
+    |> List.filter (fun f ->
+        Filename.extension f = ".md"
+        && f <> "index.md"
+        && not (Sys.is_directory (Filename.concat dir f)))
+    |> List.map (Filename.concat dir)
+  else []
+
+(* Newest-first date ordering (None sorts last). *)
+let compare_by_date_desc date_a date_b =
+  match (date_a, date_b) with
+  | Some a, Some b -> String.compare b a
+  | Some _, None -> -1
+  | None, Some _ -> 1
+  | None, None -> 0
+
 (* Common function to process markdown files in a directory *)
 let process_content_files dir url_prefix =
-  let entries = ref [] in
-  (if Sys.file_exists dir && Sys.is_directory dir then
-     let files = Sys.readdir dir in
-     Array.iter
-       (fun file ->
-         let full_path = Filename.concat dir file in
-         if
-           (not (Sys.is_directory full_path))
-           && Filename.extension file = ".md"
-           && file <> "index.md"
-         then
-           let metadata = extract_route_metadata full_path in
-           let entry : content_entry =
-             {
-               title =
-                 (match metadata.title with
-                 | Some t -> t
-                 | None -> Filename.remove_extension file);
-               date = metadata._date;
-               description = metadata._description;
-               url = url_prefix ^ Filename.remove_extension file;
-             }
-           in
-           entries := entry :: !entries)
-       files);
-
-  (* Sort entries by date (newest first) *)
+  let entries =
+    List.map
+      (fun full_path ->
+        let file = Filename.basename full_path in
+        let metadata = extract_route_metadata full_path in
+        {
+          title =
+            (match metadata.title with
+            | Some t -> t
+            | None -> Filename.remove_extension file);
+          date = metadata._date;
+          description = metadata._description;
+          url = url_prefix ^ Filename.remove_extension file;
+        })
+      (markdown_files dir)
+  in
+  (* Sort entries by date (newest first), falling back to title when both
+     entries are undated. *)
   List.sort
     (fun a b ->
       match (a.date, b.date) with
-      | Some date_a, Some date_b -> String.compare date_b date_a
-      | Some _, None -> -1
-      | None, Some _ -> 1
-      | None, None -> String.compare a.title b.title)
-    !entries
+      | None, None -> String.compare a.title b.title
+      | _ -> compare_by_date_desc a.date b.date)
+    entries
 
 (* Generic function to generate entry listings *)
 let generate_entries_html dir display_config =
@@ -326,21 +289,17 @@ let generate_blog_entries_html blog_dir =
   in
   generate_entries_html blog_dir config
 
+(* Strip a leading "<prefix>/" group from a path if present. *)
+let strip_prefix re s =
+  if Str.string_match (Str.regexp re) s 0 then Str.matched_group 1 s else s
+
 (* URL path mapping *)
 let clean_url_path path =
-  let path = Filename.remove_extension path in
-  (* Remove "content/pages/" or "pages/" prefix if it exists to create cleaner URLs *)
+  (* Drop content/ then pages/ prefixes for cleaner URLs. *)
   let path =
-    (* First remove content/ prefix *)
-    let path =
-      if Str.string_match (Str.regexp "content/\\(.*\\)") path 0 then
-        Str.matched_group 1 path
-      else path
-    in
-    (* Then remove pages/ prefix *)
-    if Str.string_match (Str.regexp "pages/\\(.*\\)") path 0 then
-      Str.matched_group 1 path
-    else path
+    Filename.remove_extension path
+    |> strip_prefix "content/\\(.*\\)"
+    |> strip_prefix "pages/\\(.*\\)"
   in
   let path = if path = "index" then "/" else "/" ^ path in
   String.map
@@ -348,6 +307,14 @@ let clean_url_path path =
       | '\\' -> '/'
       | c -> c)
     path
+
+(* True when file_path is the index.md of the given section directory. *)
+let is_section_index file_path section =
+  Filename.basename file_path = "index.md"
+  && Filename.basename (Filename.dirname file_path) = section
+
+let replace_placeholder pat rep s =
+  Str.global_replace (Str.regexp_string pat) rep s
 
 (* Process Page Route *)
 let process_route route =
@@ -372,8 +339,7 @@ let process_route route =
             Filename.basename clean_path = "index"
             ||
             (* Also avoid duplicate index for files that would map to the same path *)
-            String.contains clean_path '/'
-            && String.ends_with ~suffix:"index/index" clean_path
+            String.ends_with ~suffix:"index/index" clean_path
           then
             (* For section index files like about/index.md *)
             let dir = Filename.dirname clean_path in
@@ -385,7 +351,7 @@ let process_route route =
   let metadata = extract_route_metadata route.file_path in
   let content = read_file route.file_path in
   match route.content_type with
-  | Asset -> write_output_file ~content ~path:output_path
+  | Asset -> write_file output_path content
   | _ ->
       let title =
         match metadata.title with
@@ -394,40 +360,17 @@ let process_route route =
       in
       let html_content = process_markdown ~file_path:route.file_path ~content in
 
-      (* Special handling for journal index page *)
+      (* Inject blog/journal listings into their section index pages. *)
       let final_html_content =
-        if
-          Filename.basename route.file_path = "index.md"
-          && String.contains route.file_path '/'
-          && String.contains (Filename.dirname route.file_path) '/'
-          && Filename.basename (Filename.dirname route.file_path) = "journal"
-        then
-          (* This is the journal index page - inject journal entries *)
-          let journal_dir = Filename.dirname route.file_path in
-          let journal_entries_html =
-            generate_journal_entries_html journal_dir
-          in
-          (* Replace the placeholder div with actual journal entries *)
-          let pattern = "<div id=\"journal-entries-placeholder\"></div>" in
-          let replacement = journal_entries_html in
-          Str.global_replace
-            (Str.regexp_string pattern)
-            replacement html_content
-        else if
-          Filename.basename route.file_path = "index.md"
-          && String.contains route.file_path '/'
-          && String.contains (Filename.dirname route.file_path) '/'
-          && Filename.basename (Filename.dirname route.file_path) = "blog"
-        then
-          (* This is the blog index page - inject blog entries *)
-          let blog_dir = Filename.dirname route.file_path in
-          let blog_entries_html = generate_blog_entries_html blog_dir in
-          (* Replace the placeholder div with actual blog entries *)
-          let pattern = "<div id=\"blog-entries-placeholder\"></div>" in
-          let replacement = blog_entries_html in
-          Str.global_replace
-            (Str.regexp_string pattern)
-            replacement html_content
+        let dir = Filename.dirname route.file_path in
+        if is_section_index route.file_path "journal" then
+          replace_placeholder "<div id=\"journal-entries-placeholder\"></div>"
+            (generate_journal_entries_html dir)
+            html_content
+        else if is_section_index route.file_path "blog" then
+          replace_placeholder "<div id=\"blog-entries-placeholder\"></div>"
+            (generate_blog_entries_html dir)
+            html_content
         else html_content
       in
       let url_path =
@@ -462,7 +405,7 @@ let process_route route =
           ~url:(Memoir_lib.site_domain ^ url_path)
           ()
       in
-      write_output_file ~content:page_string ~path:output_path
+      write_file output_path page_string
 
 let content_type_of_path path =
   match Filename.dirname path with
@@ -514,10 +457,11 @@ type build_cache = {
   cache_file : string;
 }
 
+let cache_file_path = Filename.concat config.output_dir ".build-cache"
+
 let load_build_cache () =
-  let cache_file = Filename.concat config.output_dir ".build-cache" in
   try
-    let content = read_file cache_file in
+    let content = read_file cache_file_path in
     let lines = String.split_on_char '\n' content in
     let file_hashes =
       List.filter_map
@@ -527,8 +471,8 @@ let load_build_cache () =
           | _ -> None (* Skip invalid or old format lines *))
         lines
     in
-    { file_hashes; cache_file }
-  with _ -> { file_hashes = []; cache_file }
+    { file_hashes; cache_file = cache_file_path }
+  with _ -> { file_hashes = []; cache_file = cache_file_path }
 
 let save_build_cache cache =
   let content =
@@ -592,40 +536,28 @@ let update_cache_with_dependencies file_path cache =
 
 (* Generic function to collect content from a directory for RSS feed *)
 let collect_content_from_dir dir url_prefix =
-  if not (Sys.file_exists dir && Sys.is_directory dir) then []
-  else
-    let files = Sys.readdir dir in
-    Array.fold_left
-      (fun acc file ->
-        let full_path = Filename.concat dir file in
-        if
-          (not (Sys.is_directory full_path))
-          && Filename.extension file = ".md"
-          && file <> "index.md"
-        then
-          let metadata = extract_route_metadata full_path in
-          let content = read_file full_path in
-          let page =
-            {
-              Memoir_lib.metadata =
-                {
-                  title =
-                    (match metadata.title with
-                    | Some t -> t
-                    | None -> Filename.remove_extension file);
-                  date = metadata._date;
-                  tags = metadata._tags;
-                  summary = metadata._description;
-                  draft = false;
-                };
-              content;
-              url = url_prefix ^ Filename.remove_extension file;
-              source_path = full_path;
-            }
-          in
-          page :: acc
-        else acc)
-      [] files
+  List.map
+    (fun full_path ->
+      let file = Filename.basename full_path in
+      let metadata = extract_route_metadata full_path in
+      let content = read_file full_path in
+      {
+        Memoir_lib.metadata =
+          {
+            title =
+              (match metadata.title with
+              | Some t -> t
+              | None -> Filename.remove_extension file);
+            date = metadata._date;
+            tags = metadata._tags;
+            summary = metadata._description;
+            draft = false;
+          };
+        content;
+        url = url_prefix ^ Filename.remove_extension file;
+        source_path = full_path;
+      })
+    (markdown_files dir)
 
 (* Extract RSS feed generation into a separate function *)
 let generate_rss_feed () =
@@ -656,11 +588,8 @@ let generate_rss_feed () =
   let sorted_pages =
     List.sort
       (fun a b ->
-        match (a.Memoir_lib.metadata.date, b.Memoir_lib.metadata.date) with
-        | Some date_a, Some date_b -> String.compare date_b date_a
-        | Some _, None -> -1
-        | None, Some _ -> 1
-        | None, None -> 0)
+        compare_by_date_desc a.Memoir_lib.metadata.date
+          b.Memoir_lib.metadata.date)
       pages
   in
 
@@ -670,64 +599,65 @@ let generate_rss_feed () =
   Printf.printf "RSS feed generated at: %s (%d items)\n" rss_output_path
     (List.length sorted_pages)
 
-(* Generate site *)
-let generate_site () =
-  print_endline "Starting site generation...";
+(* Remove duplicate index files (dir/index.html alongside dir/index/index.html) *)
+let remove_duplicate_index_files () =
+  let rec process_dir dir =
+    if Sys.file_exists dir && Sys.is_directory dir then
+      try
+        let entries = Sys.readdir dir in
+        Array.iter
+          (fun entry ->
+            if entry <> "." && entry <> ".." then
+              let path = Filename.concat dir entry in
+              if Sys.is_directory path then (
+                let index_path = Filename.concat dir (entry ^ "/index.html") in
+                let nested_index_path =
+                  Filename.concat dir (entry ^ "/index/index.html")
+                in
+                if
+                  Sys.file_exists index_path
+                  && Sys.file_exists nested_index_path
+                then (
+                  Printf.printf "Removing duplicate index file: %s\n"
+                    nested_index_path;
+                  Sys.remove nested_index_path;
+                  (* Also try to remove the empty index directory *)
+                  try
+                    Unix.rmdir (Filename.concat dir (entry ^ "/index"));
+                    Printf.printf "Removed empty directory: %s\n"
+                      (Filename.concat dir (entry ^ "/index"))
+                  with _ -> ());
+                process_dir path))
+          entries
+      with Sys_error _ -> ()
+  in
+  process_dir (Filename.concat config.output_dir "")
 
-  (* Load build cache *)
-  let cache = load_build_cache () in
+(* Generate site. With ~force:true, the cache is ignored and every route is
+   rebuilt; the cache is still rewritten afterwards. *)
+let generate_site ?(force = false) () =
+  if force then print_endline "Forcing full rebuild (ignoring cache)..."
+  else print_endline "Starting site generation...";
+
+  (* Load (or reset) the build cache *)
+  let cache =
+    if force then { file_hashes = []; cache_file = cache_file_path }
+    else load_build_cache ()
+  in
 
   (* Ensure output directory exists *)
   ensure_directory_exists config.output_dir;
-
-  (* Remove duplicate index files if they exist *)
-  let remove_duplicate_index_files () =
-    let rec process_dir dir =
-      if Sys.file_exists dir && Sys.is_directory dir then
-        try
-          let entries = Sys.readdir dir in
-          Array.iter
-            (fun entry ->
-              if entry <> "." && entry <> ".." then
-                let path = Filename.concat dir entry in
-                if Sys.is_directory path then (
-                  (* Check if we have both dir/index.html and dir/index/index.html *)
-                  let index_path =
-                    Filename.concat dir (entry ^ "/index.html")
-                  in
-                  let nested_index_path =
-                    Filename.concat dir (entry ^ "/index/index.html")
-                  in
-                  if
-                    Sys.file_exists index_path
-                    && Sys.file_exists nested_index_path
-                  then (
-                    Printf.printf "Removing duplicate index file: %s\n"
-                      nested_index_path;
-                    Sys.remove nested_index_path;
-                    (* Also try to remove the empty index directory *)
-                    try
-                      Unix.rmdir (Filename.concat dir (entry ^ "/index"));
-                      Printf.printf "Removed empty directory: %s\n"
-                        (Filename.concat dir (entry ^ "/index"))
-                    with _ -> ());
-                  process_dir path))
-            entries
-        with Sys_error _ -> ()
-    in
-    process_dir (Filename.concat config.output_dir "")
-  in
 
   (* Collect and process routes *)
   let routes = collect_routes () in
   Printf.printf "Collected %d routes\n" (List.length routes);
 
-  (* Process each route *)
+  (* Process each route, skipping unmodified ones unless forcing *)
   let final_cache =
     List.fold_left
       (fun acc (route : route) ->
-        if is_file_modified route.file_path acc then (
-          Printf.printf "Processing modified route: %s -> %s\n" route.file_path
+        if force || is_file_modified route.file_path acc then (
+          Printf.printf "Processing route: %s -> %s\n" route.file_path
             route.url_path;
           process_route route;
           update_cache_with_dependencies route.file_path acc)
@@ -746,59 +676,19 @@ let generate_site () =
   (* Generate RSS feed *)
   generate_rss_feed ();
 
-  print_endline "Site generation complete!";
-  ()
+  print_endline "Site generation complete!"
 
 (* Entry point *)
 let () =
   print_endline "Memoir Generation - OCaml Static Site Generator";
   try
     (* Check for --force flag in command line arguments *)
-    let force_rebuild =
+    let force =
       Array.length Sys.argv > 1
       && (Sys.argv.(1) = "--force" || Sys.argv.(1) = "-f")
     in
-
-    if force_rebuild then (
-      print_endline "Forcing full rebuild (ignoring cache)...";
-
-      (* Ensure output directory exists *)
-      ensure_directory_exists config.output_dir;
-
-      (* Collect routes *)
-      let routes = collect_routes () in
-      Printf.printf "Collected %d routes\n" (List.length routes);
-
-      (* Process all routes *)
-      List.iter
-        (fun (route : route) ->
-          Printf.printf "Processing route: %s -> %s\n" route.file_path
-            route.url_path;
-          process_route route)
-        routes;
-
-      (* Update cache *)
-      let cache =
-        {
-          file_hashes = [];
-          cache_file = Filename.concat config.output_dir ".build-cache";
-        }
-      in
-      let final_cache =
-        List.fold_left
-          (fun acc (route : route) -> update_cache_entry route.file_path acc)
-          cache routes
-      in
-      save_build_cache final_cache;
-
-      (* Generate RSS feed - now just one call! *)
-      generate_rss_feed ();
-
-      print_endline "Forced rebuild complete!")
-    else (
-      print_endline "Using incremental build (cache enabled)...";
-      generate_site ());
-
+    if not force then print_endline "Using incremental build (cache enabled)...";
+    generate_site ~force ();
     exit 0
   with e ->
     prerr_endline ("Error: " ^ Printexc.to_string e);
