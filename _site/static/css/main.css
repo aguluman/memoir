@@ -785,7 +785,7 @@ tbody tr:last-child td {
 /* 11. Footer ---------------------------------------------------------------- */
 .site-footer {
   margin-top: auto;
-  padding: 1.25rem 1rem;
+  padding: 1rem 1rem;
   text-align: center;
   background: var(--footer-bg);
   color: var(--footer-text);
