@@ -123,13 +123,11 @@
    * Initialize the website functionality
    */
   function initWebsite() {
-    console.log("Memoir website initialized");
-
-    // Initialize navigation
     initNavigation();
 
-    // Add any additional initialization code here
-    // This file is included before theme-toggle.js
+    if (window.hljs) {
+      hljs.highlightAll();
+    }
   }
 
   // Initialize when DOM is ready
