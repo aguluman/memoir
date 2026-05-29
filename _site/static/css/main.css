@@ -1,6 +1,5 @@
 /* =============================================================================
    Fearful Odds — main.css
-   A refined monospace "developer's memoir" theme.
 
    Contents
    --------
@@ -785,7 +784,7 @@ tbody tr:last-child td {
 /* 11. Footer ---------------------------------------------------------------- */
 .site-footer {
   margin-top: auto;
-  padding: 1rem 1rem;
+  padding: 0.5rem 1rem;
   text-align: center;
   background: var(--footer-bg);
   color: var(--footer-text);
@@ -809,7 +808,7 @@ tbody tr:last-child td {
 @media (max-width: 768px) {
   .mobile-nav-toggle {
     display: block;
-    order: -1;
+    order: 1;
     margin-right: auto;
   }
 
@@ -821,6 +820,7 @@ tbody tr:last-child td {
   .nav-list {
     position: fixed;
     inset: 0;
+    height: 100dvh;
     flex-direction: column;
     justify-content: center;
     gap: 1.25rem;
