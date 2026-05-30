@@ -33,49 +33,92 @@ let site_domain = "https://fearful-odds.rocks"
 let empty_metadata =
   { title = "Untitled"; date = None; tags = []; summary = None; draft = false }
 
-(* Parse YAML frontmatter from markdown content *)
-let parse_frontmatter content =
-  try
-    (* Check if content starts with "---" *)
-    let content_length = String.length content in
-    if content_length > 6 && String.sub content 0 3 = "---" then
-      (* Find the end of frontmatter (second "---") *)
-      let rec find_end i =
-        if i + 2 >= content_length then None
-        else if String.sub content i 3 = "---" then Some i
-        else find_end (i + 1)
-      in
-      match find_end 3 with
-      | Some end_pos -> (
-          let frontmatter = String.sub content 3 (end_pos - 3) in
-          let remaining =
-            String.sub content (end_pos + 3) (content_length - end_pos - 3)
-          in
-          (* Parse the YAML *)
-          try
-            let _yaml = Yaml.of_string frontmatter in
-            (* Convert to metadata *)
-            (* This is a basic implementation - expand with proper error handling *)
-            (empty_metadata, remaining)
-          with _ -> (empty_metadata, content))
-      | None -> (empty_metadata, content)
-    else (empty_metadata, content)
-  with _ -> (empty_metadata, content)
+(* --- Filesystem helpers (shared by the generator and the dev server) ----- *)
 
-(* Process markdown with frontmatter *)
-let process_content file_path =
-  try
-    let content =
-      Sys.readdir file_path |> ignore;
-      "TODO: Implement file reading"
-    in
-    let metadata, _markdown = parse_frontmatter content in
-    let html = "TODO: Convert markdown to HTML" in
-    Some
-      { metadata; content = html; url = "/TODO/url"; source_path = file_path }
-  with _ -> None
+(* Normalise a path: resolve "."/".." segments and drop empty ones. Mirrors the
+   per-executable copies this replaces, including stripping a leading slash —
+   both callers feed it slash-prefixed-stripped or relative paths already. *)
+let normalize_path path =
+  let rec normalize acc = function
+    | [] -> acc
+    | "." :: rest -> normalize acc rest
+    | ".." :: rest -> (
+        match acc with
+        | _ :: parent -> normalize parent rest
+        | [] -> normalize [] rest)
+    | x :: rest -> normalize (x :: acc) rest
+  in
+  let parts = String.split_on_char '/' path |> List.filter (fun s -> s <> "") in
+  String.concat "/" (List.rev (normalize [] parts))
 
-(* Utility functions - to be implemented *)
+(* Binary-safe read; closes the channel even on exception, and binary mode
+   avoids CRLF translation that would corrupt images / shift byte counts. *)
+let read_file path =
+  try In_channel.with_open_bin path In_channel.input_all
+  with Sys_error msg ->
+    failwith (Printf.sprintf "Failed to read file %s: %s" path msg)
+
+(* Create [dir] and any missing parents. *)
+let rec ensure_directory_exists dir =
+  if dir = "" || dir = "." || dir = "/" || Sys.file_exists dir then (
+    if Sys.file_exists dir && not (Sys.is_directory dir) then
+      failwith (Printf.sprintf "%s exists but is not a directory" dir))
+  else (
+    ensure_directory_exists (Filename.dirname dir);
+    Sys.mkdir dir 0o755)
+
+(* Binary-safe write; creates parent directories as needed. *)
+let write_file path content =
+  ensure_directory_exists (Filename.dirname path);
+  try
+    Out_channel.with_open_bin path (fun oc ->
+        Out_channel.output_string oc content)
+  with Sys_error msg ->
+    failwith (Printf.sprintf "Failed to write file %s: %s" path msg)
+
+(* --- Content loading for the RSS feed ------------------------------------ *)
+
+(* Load blog and journal posts as RSS [page]s. Single source of truth used by
+   both bin/generator.ml and bin/server.ml; frontmatter is parsed by the same
+   YAML parser the generator uses for pages. Ordering/limiting is left to
+   {!generate_rss_feed}. *)
+let load_rss_pages ~content_dir =
+  let load subdir url_prefix =
+    let dir = Filename.concat content_dir subdir in
+    if Sys.file_exists dir && Sys.is_directory dir then
+      Sys.readdir dir |> Array.to_list
+      |> List.filter_map (fun file ->
+          if Filename.check_suffix file ".md" && file <> "index.md" then
+            try
+              let path = Filename.concat dir file in
+              let content = read_file path in
+              let fm =
+                Memoir_content.Markdown_parser.frontmatter_of_content content
+              in
+              let slug = Filename.remove_extension file in
+              Some
+                {
+                  metadata =
+                    {
+                      title =
+                        (match fm.Content_types.title with
+                        | "" | "Untitled" -> slug
+                        | t -> t);
+                      date = fm.Content_types.date;
+                      tags = fm.Content_types.tags;
+                      summary = fm.Content_types.description;
+                      draft = fm.Content_types.draft;
+                    };
+                  content;
+                  url = url_prefix ^ slug;
+                  source_path = path;
+                }
+            with _ -> None
+          else None)
+    else []
+  in
+  load "pages/blog" "/blog/" @ load "pages/journal" "/journal/"
+
 let escape_xml s =
   let chars = String.to_seq s |> List.of_seq in
   let escaped =
@@ -91,11 +134,28 @@ let escape_xml s =
   in
   String.concat "" escaped
 
+let rfc822_months =
+  [|
+    "";
+    "Jan";
+    "Feb";
+    "Mar";
+    "Apr";
+    "May";
+    "Jun";
+    "Jul";
+    "Aug";
+    "Sep";
+    "Oct";
+    "Nov";
+    "Dec";
+  |]
+
+let rfc822_days = [| "Sun"; "Mon"; "Tue"; "Wed"; "Thu"; "Fri"; "Sat" |]
+
 let format_rfc822_date date_str =
-  (* Convert ISO date to RFC822 format for RSS *)
   match date_str with
   | Some date -> (
-      (* Parse YYYY-MM-DD format and convert to RFC822 *)
       try
         let parts = String.split_on_char '-' date in
         match parts with
@@ -103,25 +163,6 @@ let format_rfc822_date date_str =
             let year_int = int_of_string year in
             let month_int = int_of_string month in
             let day_int = int_of_string day in
-            let months =
-              [|
-                "";
-                "Jan";
-                "Feb";
-                "Mar";
-                "Apr";
-                "May";
-                "Jun";
-                "Jul";
-                "Aug";
-                "Sep";
-                "Oct";
-                "Nov";
-                "Dec";
-              |]
-            in
-            let month_name = months.(month_int) in
-            (* Create a Unix time for day calculation *)
             let tm =
               {
                 Unix.tm_year = year_int - 1900;
@@ -136,36 +177,16 @@ let format_rfc822_date date_str =
               }
             in
             let _, normalized_tm = Unix.mktime tm in
-            let days = [| "Sun"; "Mon"; "Tue"; "Wed"; "Thu"; "Fri"; "Sat" |] in
-            let day_name = days.(normalized_tm.tm_wday) in
-            Printf.sprintf "%s, %02d %s %04d 00:00:00 +0000" day_name day_int
-              month_name year_int
+            Printf.sprintf "%s, %02d %s %04d 00:00:00 +0000"
+              rfc822_days.(normalized_tm.tm_wday)
+              day_int rfc822_months.(month_int) year_int
         | _ -> Printf.sprintf "%s 00:00:00 +0000" date
       with _ -> Printf.sprintf "%s 00:00:00 +0000" date)
   | None ->
-      (* Use current date as fallback *)
-      let now = Unix.time () in
-      let tm = Unix.gmtime now in
-      let months =
-        [|
-          "Jan";
-          "Feb";
-          "Mar";
-          "Apr";
-          "May";
-          "Jun";
-          "Jul";
-          "Aug";
-          "Sep";
-          "Oct";
-          "Nov";
-          "Dec";
-        |]
-      in
-      let days = [| "Sun"; "Mon"; "Tue"; "Wed"; "Thu"; "Fri"; "Sat" |] in
-      Printf.sprintf "%s, %02d %s %04d %02d:%02d:%02d +0000" days.(tm.tm_wday)
-        tm.tm_mday months.(tm.tm_mon) (tm.tm_year + 1900) tm.tm_hour tm.tm_min
-        tm.tm_sec
+      let tm = Unix.gmtime (Unix.time ()) in
+      Printf.sprintf "%s, %02d %s %04d %02d:%02d:%02d +0000"
+        rfc822_days.(tm.tm_wday) tm.tm_mday rfc822_months.(tm.tm_mon)
+        (tm.tm_year + 1900) tm.tm_hour tm.tm_min tm.tm_sec
 
 let rec take n lst =
   match (n, lst) with
@@ -228,30 +249,7 @@ let generate_rss_feed pages config =
   in
   let items_xml = String.concat "" items in
 
-  let current_date =
-    let now = Unix.time () in
-    let tm = Unix.gmtime now in
-    let months =
-      [|
-        "Jan";
-        "Feb";
-        "Mar";
-        "Apr";
-        "May";
-        "Jun";
-        "Jul";
-        "Aug";
-        "Sep";
-        "Oct";
-        "Nov";
-        "Dec";
-      |]
-    in
-    let days = [| "Sun"; "Mon"; "Tue"; "Wed"; "Thu"; "Fri"; "Sat" |] in
-    Printf.sprintf "%s, %02d %s %04d %02d:%02d:%02d +0000" days.(tm.tm_wday)
-      tm.tm_mday months.(tm.tm_mon) (tm.tm_year + 1900) tm.tm_hour tm.tm_min
-      tm.tm_sec
-  in
+  let current_date = format_rfc822_date None in
 
   Printf.sprintf
     {|<?xml version="1.0" encoding="UTF-8"?>
