@@ -119,6 +119,9 @@
 
 html {
   scroll-behavior: smooth;
+  /* Paint the root canvas in the theme color so cross-page navigation
+     doesn't flash white (most visible in dark mode on mobile). */
+  background-color: var(--background-color);
 }
 
 html,
