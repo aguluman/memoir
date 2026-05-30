@@ -1,86 +1,58 @@
-(** Path resolution and routing system *)
+(** Path resolution and routing.
 
-open Base
-open Content_types
+    Single source of truth for mapping a content file to its canonical site URL
+    and its generated output path, and for classifying a file's content type.
+    Consumed by [bin/generator.ml]. *)
 
-(** Convert content path to URL path *)
+(* Drop a leading [prefix] from [s] if present. *)
+let chop_prefix ~prefix s =
+  let pl = String.length prefix in
+  if String.length s >= pl && String.sub s 0 pl = prefix then
+    String.sub s pl (String.length s - pl)
+  else s
+
+(* Strip the file extension and the "content/" then "pages/" wrappers, and
+   normalise Windows separators to forward slashes. Works on full paths
+   ("content/pages/blog/foo.md") and bare relative ones ("about.md") alike. *)
+let clean_base path =
+  Filename.remove_extension path
+  |> chop_prefix ~prefix:"content/"
+  |> chop_prefix ~prefix:"pages/"
+  |> String.map (function
+    | '\\' -> '/'
+    | c -> c)
+
+(** Canonical site URL for a content file:
+    - "content/pages/index.md" -> "/"
+    - "content/pages/about/index.md" -> "/about"
+    - "content/pages/blog/foo.md" -> "/blog/foo"
+
+    Section index files canonicalize to their directory (no trailing "/index"),
+    and the result never has a doubled leading slash. *)
 let path_to_url_path content_path =
-  let base_path = Stdlib.Filename.remove_extension content_path in
-  let normalized =
-    if String.equal base_path "index" then "/" else "/" ^ base_path
-  in
-  normalized
+  let base = clean_base content_path in
+  let url = if base = "index" then "/" else "/" ^ base in
+  if String.ends_with ~suffix:"/index" url then Filename.dirname url else url
 
-(** Convert content path to output file path *)
+(** Output file path under [output_dir] for a content file:
+    - root index -> output_dir/index.html
+    - section index-> output_dir/<section>/index.html
+    - normal page -> output_dir/<path>/index.html *)
 let path_to_output_path content_path ~output_dir =
-  let base_path = Stdlib.Filename.remove_extension content_path in
+  let base = clean_base content_path in
+  if Filename.basename base = "index" then
+    if base = "index" then Filename.concat output_dir "index.html"
+    else Filename.concat output_dir (Filename.dirname base ^ "/index.html")
+  else Filename.concat output_dir (base ^ "/index.html")
 
-  (* Remove both "content/" and "pages/" prefixes if they exist *)
-  let clean_base_path =
-    let without_content =
-      match String.chop_prefix base_path ~prefix:"content/" with
-      | Some suffix -> suffix
-      | None -> base_path
-    in
-    match String.chop_prefix without_content ~prefix:"pages/" with
-    | Some suffix -> suffix
-    | None -> without_content
-  in
-
-  (* Handle the case for index.md files specially *)
-  if String.equal (Stdlib.Filename.basename clean_base_path) "index" then
-    (* If it's the root index.md file *)
-    if String.equal clean_base_path "index" then
-      Stdlib.Filename.concat output_dir "index.html"
-    else
-      (* For section index files like about/index.md *)
-      let dir = Stdlib.Filename.dirname clean_base_path in
-      Stdlib.Filename.concat output_dir (dir ^ "/index.html")
-  else
-    (* Normal files get path/index.html *)
-    Stdlib.Filename.concat output_dir (clean_base_path ^ "/index.html")
-
-(** Determine content type from directory path *)
-let determine_content_type dir =
-  match dir with
-  | dir when String.is_prefix dir ~prefix:"blog" -> Content_types.Post
-  | dir when String.is_prefix dir ~prefix:"projects" -> Content_types.Project
-  | dir when String.is_prefix dir ~prefix:"journal" -> Content_types.Journal
+(** Classify a content file by the directory it lives in. Matches the project's
+    [content/pages/<section>/...] layout (and the flatter [content/<section>]
+    form for resilience). Extension-less files are treated as raw assets. *)
+let classify path =
+  match Filename.dirname path with
+  | "content/blog" | "content/pages/blog" -> Content_types.Post
+  | "content/projects" | "content/pages/projects" -> Content_types.Project
+  | "content/journal" | "content/pages/journal" -> Content_types.Journal
+  | "content/pages" | "content" -> Content_types.Page
+  | _ when Filename.extension path = "" -> Content_types.Asset
   | _ -> Content_types.Page
-
-(** Create a route for a content page *)
-let create_route page ~output_dir =
-  let content_type =
-    let dir = Stdlib.Filename.dirname page.path in
-    determine_content_type dir
-  in
-
-  let output_path = path_to_output_path page.path ~output_dir in
-
-  {
-    source_path = page.path;
-    output_path;
-    url_path = page.url_path;
-    content_type;
-  }
-
-(** Generate routes for all content pages *)
-let generate_routes pages ~output_dir =
-  List.map pages ~f:(fun page -> create_route page ~output_dir)
-
-(** Ensure output directory exists for a route *)
-let ensure_output_directory route =
-  let dir = Stdlib.Filename.dirname route.output_path in
-  try
-    let _ = Core_unix.mkdir_p dir in
-    Ok ()
-  with _ -> Error (Printf.sprintf "Failed to create directory: %s" dir)
-
-(** Find a route by URL path *)
-let find_route_by_url_path routes url_path =
-  List.find routes ~f:(fun route -> String.equal route.url_path url_path)
-
-(** Create a sitemap of all routes *)
-let create_sitemap routes ~base_url =
-  List.map routes ~f:(fun route ->
-      Printf.sprintf "%s%s" base_url route.url_path)

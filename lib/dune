@@ -1,4 +1,4 @@
 (library
  (name memoir_lib)
  (public_name memoir.lib)
- (libraries tyxml yaml dream memoir.templates))
+ (libraries tyxml yaml dream memoir.templates memoir.types memoir.content))

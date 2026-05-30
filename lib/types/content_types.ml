@@ -44,6 +44,7 @@ type content_type =
   | Post
   | Project
   | Journal
+  | Asset  (** Non-markdown file copied through verbatim *)
 
 (** Convert string to content_type *)
 let content_type_of_string = function
@@ -51,6 +52,7 @@ let content_type_of_string = function
   | "post" -> Post
   | "project" -> Project
   | "journal" -> Journal
+  | "asset" -> Asset
   | _ -> Page (* Default to Page *)
 
 (** Convert content_type to string *)
@@ -59,6 +61,7 @@ let string_of_content_type = function
   | Post -> "post"
   | Project -> "project"
   | Journal -> "journal"
+  | Asset -> "asset"
 
 (** Route information for generating pages *)
 type route = {

@@ -26,13 +26,30 @@ let test_code_highlighting () =
       ~header_content:[] ~content:[] ~footer_content:[] ()
   in
   let html_str = Format.asprintf "%a" (Tyxml.Html.pp ()) html in
+  (* Highlighting is wired in via the external highlight.min.js script
+     (main.js then calls hljs.highlightAll() on DOM-ready); the init call is
+     not inlined in the page head. *)
   Alcotest.(check bool)
     "Highlight.js script present" true
-    (contains html_str "hljs.highlightAll()")
+    (contains html_str "highlight.min.js")
+
+(* Generator for strings without HTML-special characters.
+   TyXML escapes angle brackets, ampersands, and quotes so those characters
+   never appear verbatim in rendered HTML — that is correct behaviour. *)
+let html_safe_string =
+  let safe_chars =
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -_."
+  in
+  let safe_char =
+    Gen.map
+      (fun i -> safe_chars.[i])
+      (Gen.int_range 0 (String.length safe_chars - 1))
+  in
+  make (Gen.string_size ~gen:safe_char (Gen.int_range 1 50))
 
 (* QCheck property: Title is included in HTML *)
 let title_property =
-  Test.make ~name:"Title included in HTML" string_printable (fun title ->
+  Test.make ~name:"Title included in HTML" html_safe_string (fun title ->
       let html =
         layout ~title_text:title ~description:"Desc" ~page_class:"page"
           ~header_content:[] ~content:[] ~footer_content:[] ()
@@ -42,7 +59,7 @@ let title_property =
 
 (* QCheck property: Description is included in HTML *)
 let description_property =
-  Test.make ~name:"Description included in HTML" string_printable (fun desc ->
+  Test.make ~name:"Description included in HTML" html_safe_string (fun desc ->
       let html =
         layout ~title_text:"Title" ~description:desc ~page_class:"page"
           ~header_content:[] ~content:[] ~footer_content:[] ()
@@ -88,7 +105,7 @@ let () =
           Alcotest.test_case "Additional head content" `Quick
             test_additional_head;
         ] );
-    ];
-  ignore
-    (QCheck_runner.run_tests ~verbose:true
-       [ title_property; description_property ])
+      ( "Properties",
+        List.map QCheck_alcotest.to_alcotest
+          [ title_property; description_property ] );
+    ]

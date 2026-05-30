@@ -59,6 +59,15 @@ let parse_yaml_frontmatter yaml_str =
         }
   with _ -> empty_frontmatter
 
+(** Parse just the frontmatter record from raw file content. Returns
+    {!Content_types.empty_frontmatter} when no frontmatter block is present, so
+    a completely empty record (title = "") signals "no frontmatter at all",
+    while a present-but-titleless block yields the "Untitled" default. *)
+let frontmatter_of_content content =
+  match extract_frontmatter content with
+  | Some yaml, _ -> parse_yaml_frontmatter yaml
+  | None, _ -> empty_frontmatter
+
 (** Parse markdown content into HTML with syntax highlighting support *)
 let parse_markdown content =
   let preprocessed_content =
