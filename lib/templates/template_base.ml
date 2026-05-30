@@ -33,8 +33,10 @@ let meta_tags ~description =
          \      const theme = localStorage.getItem('theme');\n\
          \      if (theme === 'dark') {\n\
          \        document.documentElement.setAttribute('data-theme', 'dark');\n\
+         \        document.documentElement.style.colorScheme = 'dark';\n\
          \      } else if (theme === 'light') {\n\
          \        document.documentElement.setAttribute('data-theme', 'light');\n\
+         \        document.documentElement.style.colorScheme = 'light';\n\
          \      }\n\
          \    })();");
     (* Main stylesheet *)

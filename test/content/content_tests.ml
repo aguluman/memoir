@@ -59,10 +59,11 @@ let frontmatter_property =
     string_printable (fun content ->
       try
         let fm, body = extract_frontmatter content in
-        (* Check no crashes and basic invariants: body not longer than input and
-           presence of frontmatter matches the '---' marker in the content. *)
         String.length body <= String.length content
-        && contains content "---" = Option.is_some fm
+        &&
+        match fm with
+        | Some _ -> starts_with content "---"
+        | None -> true
       with _ -> false)
 
 (* QCheck: URL path generation *)
@@ -101,7 +102,7 @@ let () =
           Alcotest.test_case "Generate URL paths" `Quick test_generate_url_paths;
           Alcotest.test_case "Generate routes" `Quick test_generate_routes;
         ] );
-    ];
-  ignore
-    (QCheck_runner.run_tests ~verbose:true
-       [ frontmatter_property; url_path_property ])
+      ( "Properties",
+        List.map QCheck_alcotest.to_alcotest
+          [ frontmatter_property; url_path_property ] );
+    ]

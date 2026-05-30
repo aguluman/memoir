@@ -1,0 +1,11 @@
+(tests
+ (names integration_tests)
+ (libraries
+  alcotest
+  test_helpers
+  memoir_lib
+  memoir.content
+  memoir.types
+  memoir.templates
+  tyxml
+  str))

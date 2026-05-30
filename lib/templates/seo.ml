@@ -14,8 +14,18 @@ module Seo = struct
       meta ~a:[ a_property "og:type"; a_content type_ ] ();
     ]
 
-  (** Generate complete SEO metadata for a page *)
+  (** Canonical URL link for a page. Tyxml has no dedicated [`Canonical]
+      linktype, so we use the [`Other] escape hatch (the same pattern as the
+      preload link in {!Template_base}). Renders [<link rel="canonical" ...>].
+  *)
+  let canonical_link ~url =
+    let open Html in
+    link ~rel:[ `Other "canonical" ] ~href:url ()
+
+  (** Generate complete SEO metadata for a page: a canonical link followed by
+      the Open Graph tags. *)
   let make_head ~title_text ~description ~url
       ?(image = "/static/images/default-og.jpg") ?(type_ = "website") () =
-    open_graph_meta ~title_text ~description ~url ~image ~type_ ()
+    canonical_link ~url
+    :: open_graph_meta ~title_text ~description ~url ~image ~type_ ()
 end

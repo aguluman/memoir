@@ -1,77 +1,73 @@
-(** File-based content loader system *)
+(** File-based content loading.
 
-open Base
-open Stdio
-open Content_types
+    Single source of truth for enumerating content files and building the
+    blog/journal listing entries injected into section index pages. Consumed by
+    [bin/generator.ml]; the RSS-feed loader lives in {!Memoir_lib}. *)
 
-(** Load content from a file path *)
-let load_file path =
-  try
-    let content = In_channel.read_all path in
-    Ok content
-  with _ -> Error (Printf.sprintf "Failed to read file: %s" path)
+(* Newest-first by date; undated sorts last. *)
+let compare_by_date_desc a b =
+  match (a, b) with
+  | Some x, Some y -> String.compare y x
+  | Some _, None -> -1
+  | None, Some _ -> 1
+  | None, None -> 0
 
-(** Check if a file has a supported content extension *)
-let is_content_file path =
-  let supported_extensions = [ ".md"; ".markdown" ] in
-  let ext = Stdlib.Filename.extension path in
-  List.exists supported_extensions ~f:(String.equal ext)
+(* Binary-safe read; closes the channel even on exception. *)
+let read_file path = In_channel.with_open_bin path In_channel.input_all
 
-(** Load all content files from a directory recursively *)
-let rec load_directory_content ~content_dir ~base_dir =
-  try
-    let dir_contents = Stdlib.Sys.readdir base_dir |> Array.to_list in
-    List.concat_map dir_contents ~f:(fun entry ->
-        let full_path = Stdlib.Filename.concat base_dir entry in
-        if Stdlib.Sys.is_directory full_path then
-          load_directory_content ~content_dir ~base_dir:full_path
-        else if is_content_file full_path then
-          let relative_path =
-            String.drop_prefix full_path (String.length content_dir + 1)
-          in
-          match load_file full_path with
-          | Ok content ->
-              [
-                Markdown_parser.parse_markdown_file ~path:relative_path ~content;
-              ]
-          | Error _ -> []
-        else [])
-  with Sys_error _ -> []
+(** Every file under [root], recursively, skipping the generated [_site] dir. *)
+let walk_files root =
+  let rec go dir acc =
+    if Sys.file_exists dir && Sys.is_directory dir then
+      Array.fold_left
+        (fun acc entry ->
+          if entry = "." || entry = ".." || entry = "_site" then acc
+          else
+            let path = Filename.concat dir entry in
+            if Sys.is_directory path then go path acc else path :: acc)
+        acc (Sys.readdir dir)
+    else acc
+  in
+  List.rev (go root [])
 
-(** Load all content from the content directory *)
-let load_all_content ~content_dir =
-  if Stdlib.Sys.file_exists content_dir && Stdlib.Sys.is_directory content_dir
-  then load_directory_content ~content_dir ~base_dir:content_dir
+(** Renderable markdown files directly in [dir]: ".md" files, excluding
+    "index.md" and any subdirectories. *)
+let list_markdown_files dir =
+  if Sys.file_exists dir && Sys.is_directory dir then
+    Sys.readdir dir |> Array.to_list
+    |> List.filter (fun f ->
+        Filename.extension f = ".md"
+        && f <> "index.md"
+        && not (Sys.is_directory (Filename.concat dir f)))
+    |> List.map (Filename.concat dir)
   else []
 
-(** Group content pages by content type *)
-let group_by_content_type pages =
-  List.fold pages
-    ~init:(Map.empty (module String))
-    ~f:(fun acc page ->
-      let content_type =
-        let dir = Stdlib.Filename.dirname page.path in
-        if String.equal dir "." then "pages"
-        else if String.is_prefix dir ~prefix:"blog" then "posts"
-        else if String.is_prefix dir ~prefix:"projects" then "projects"
-        else "pages"
-      in
+(** A listing entry rendered onto blog/journal index pages. *)
+type entry = {
+  title : string;
+  date : string option;
+  description : string option;
+  url : string;
+}
 
-      let existing = Map.find acc content_type |> Option.value ~default:[] in
-      Map.set acc ~key:content_type ~data:(page :: existing))
-
-(** Filter content pages (e.g., to exclude drafts) *)
-let filter_pages ?(include_drafts = false) pages =
-  List.filter pages ~f:(fun page ->
-      include_drafts || not page.frontmatter.draft)
-
-(** Sort content pages by date (newest first) *)
-let sort_pages_by_date pages =
-  let compare_dates a b =
-    match (a.frontmatter.date, b.frontmatter.date) with
-    | Some date_a, Some date_b -> String.compare date_b date_a
-    | Some _, None -> -1
-    | None, Some _ -> 1
-    | None, None -> 0
-  in
-  List.sort pages ~compare:compare_dates
+(** Listing entries for the markdown files in [dir], each URL prefixed with
+    [url_prefix], sorted newest-first (undated entries fall back to title).
+    Titles missing from frontmatter fall back to the file's slug. *)
+let list_entries ~dir ~url_prefix =
+  list_markdown_files dir
+  |> List.map (fun path ->
+      let fm = Markdown_parser.frontmatter_of_content (read_file path) in
+      let slug = Filename.remove_extension (Filename.basename path) in
+      {
+        title =
+          (match fm.Content_types.title with
+          | "" | "Untitled" -> slug
+          | t -> t);
+        date = fm.Content_types.date;
+        description = fm.Content_types.description;
+        url = url_prefix ^ slug;
+      })
+  |> List.sort (fun a b ->
+      match (a.date, b.date) with
+      | None, None -> String.compare a.title b.title
+      | _ -> compare_by_date_desc a.date b.date)

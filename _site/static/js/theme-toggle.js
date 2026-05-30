@@ -2,17 +2,6 @@
 (function () {
   "use strict";
 
-  // Apply theme immediately to prevent flicker - this runs before DOM is ready
-  (function applyThemeImmediately() {
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme === "dark") {
-      document.documentElement.setAttribute("data-theme", "dark");
-    } else if (savedTheme === "light") {
-      document.documentElement.setAttribute("data-theme", "light");
-    }
-    // If no saved theme, leave as default (light mode from CSS)
-  })();
-
   /**
    * Initialize theme toggle functionality
    */
