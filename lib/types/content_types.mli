@@ -2,7 +2,7 @@
 
 (** A calendar date parsed from an ISO ["YYYY-MM-DD"] frontmatter string.
 
-    [t] is abstract and can only be produced by {!of_string}, which rejects
+    [t] is abstract and can only be produced by {!Date.of_string}, which rejects
     anything malformed. An invalid date is therefore unrepresentable — there is
     no way to construct one and no later parse step that can fail. *)
 module Date : sig

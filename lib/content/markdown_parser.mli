@@ -4,7 +4,7 @@
     frontmatter block, or [(None, content)] otherwise. *)
 val extract_frontmatter : string -> string option * string
 
-(** Parse a YAML frontmatter string into a {!Content_types.frontmatter}.
+(** Parse a YAML frontmatter string into a {!type:Content_types.frontmatter}.
     Malformed YAML yields {!Content_types.empty_frontmatter}. *)
 val parse_yaml_frontmatter : string -> Content_types.frontmatter
 
