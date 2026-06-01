@@ -7,7 +7,7 @@
 (** A listing entry rendered onto blog/journal index pages. *)
 type entry = {
   title : string;
-  date : string option;
+  date : Content_types.Date.t option;
   description : string option;
   url : string;
 }

@@ -72,7 +72,8 @@ let generate_entries_html dir display_config =
               match entry.date with
               | Some d ->
                   Printf.sprintf "<span class=\"%s\">%s</span>"
-                    display_config.date_class d
+                    display_config.date_class
+                    (Content_types.Date.to_iso_string d)
               | None -> ""
             in
             let description_str =
@@ -238,7 +239,9 @@ let load_build_cache () =
         lines
     in
     { file_hashes; cache_file = cache_file_path }
-  with _ -> { file_hashes = []; cache_file = cache_file_path }
+  with Failure _ ->
+    (* read_file raises Failure when the cache file is absent (first build). *)
+    { file_hashes = []; cache_file = cache_file_path }
 
 let save_build_cache cache =
   let content =
@@ -271,7 +274,7 @@ let is_file_modified file_path cache =
           (* Compare content hashes - immune to timestamp changes from fmt *)
           current_hash <> last_hash
       | _ -> true (* No cache entry or empty hash - treat as modified *)
-  with _ -> true
+  with Failure _ -> true (* unreadable file: rebuild it *)
 
 let update_cache_entry file_path cache =
   try
@@ -281,7 +284,9 @@ let update_cache_entry file_path cache =
       :: List.filter (fun (p, _) -> p <> file_path) cache.file_hashes
     in
     { cache with file_hashes }
-  with Unix.Unix_error _ -> cache
+  with Failure _ -> cache
+(* hash_file reads via Memoir_lib.read_file, which raises Failure (not
+   Unix_error) on IO error; an unreadable file just isn't cached. *)
 
 (* When processing journal/blog posts, invalidate their index pages so the
    aggregated listings are regenerated. *)
@@ -345,7 +350,7 @@ let remove_duplicate_index_files () =
                     Unix.rmdir (Filename.concat dir (entry ^ "/index"));
                     Printf.printf "Removed empty directory: %s\n"
                       (Filename.concat dir (entry ^ "/index"))
-                  with _ -> ());
+                  with Unix.Unix_error _ -> () (* directory not empty *));
                 process_dir path))
           entries
       with Sys_error _ -> ()

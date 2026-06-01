@@ -10,28 +10,11 @@ type config = {
   static_dir : string;
 }
 
-(* Page metadata from frontmatter *)
-type page_metadata = {
-  title : string;
-  date : string option;
-  tags : string list;
-  summary : string option;
-  draft : bool;
-}
-
-(* Processed page content *)
-type page = {
-  metadata : page_metadata;
-  content : string;
-  url : string;
-  source_path : string;
-}
+(* The processed-page model is the single canonical {!Content_types.content_page}
+   (frontmatter + content + url). The RSS feed consumes that type directly rather
+   than maintaining a parallel page/metadata record. *)
 
 let site_domain = "https://fearful-odds.rocks"
-
-(* Default empty metadata *)
-let empty_metadata =
-  { title = "Untitled"; date = None; tags = []; summary = None; draft = false }
 
 (* --- Filesystem helpers (shared by the generator and the dev server) ----- *)
 
@@ -78,11 +61,11 @@ let write_file path content =
 
 (* --- Content loading for the RSS feed ------------------------------------ *)
 
-(* Load blog and journal posts as RSS [page]s. Single source of truth used by
-   both bin/generator.ml and bin/server.ml; frontmatter is parsed by the same
-   YAML parser the generator uses for pages. Ordering/limiting is left to
-   {!generate_rss_feed}. *)
-let load_rss_pages ~content_dir =
+(* Load blog and journal posts as {!Content_types.content_page}s. Single source
+   of truth used by both bin/generator.ml and bin/server.ml; frontmatter is
+   parsed by the same YAML parser the generator uses for pages. Ordering/limiting
+   is left to {!generate_rss_feed}. *)
+let load_rss_pages ~content_dir : Content_types.content_page list =
   let load subdir url_prefix =
     let dir = Filename.concat content_dir subdir in
     if Sys.file_exists dir && Sys.is_directory dir then
@@ -96,22 +79,19 @@ let load_rss_pages ~content_dir =
                 Memoir_content.Markdown_parser.frontmatter_of_content content
               in
               let slug = Filename.remove_extension file in
+              (* Fall back to the slug when frontmatter has no usable title. *)
+              let fm =
+                match fm.Content_types.title with
+                | "" | "Untitled" -> { fm with Content_types.title = slug }
+                | _ -> fm
+              in
               Some
                 {
-                  metadata =
-                    {
-                      title =
-                        (match fm.Content_types.title with
-                        | "" | "Untitled" -> slug
-                        | t -> t);
-                      date = fm.Content_types.date;
-                      tags = fm.Content_types.tags;
-                      summary = fm.Content_types.description;
-                      draft = fm.Content_types.draft;
-                    };
+                  Content_types.path;
+                  frontmatter = fm;
                   content;
-                  url = url_prefix ^ slug;
-                  source_path = path;
+                  html_content = None;
+                  url_path = url_prefix ^ slug;
                 }
             with _ -> None
           else None)
@@ -153,40 +133,38 @@ let rfc822_months =
 
 let rfc822_days = [| "Sun"; "Mon"; "Tue"; "Wed"; "Thu"; "Fri"; "Sat" |]
 
-let format_rfc822_date date_str =
-  match date_str with
-  | Some date -> (
-      try
-        let parts = String.split_on_char '-' date in
-        match parts with
-        | [ year; month; day ] ->
-            let year_int = int_of_string year in
-            let month_int = int_of_string month in
-            let day_int = int_of_string day in
-            let tm =
-              {
-                Unix.tm_year = year_int - 1900;
-                tm_mon = month_int - 1;
-                tm_mday = day_int;
-                tm_hour = 0;
-                tm_min = 0;
-                tm_sec = 0;
-                tm_wday = 0;
-                tm_yday = 0;
-                tm_isdst = false;
-              }
-            in
-            let _, normalized_tm = Unix.mktime tm in
-            Printf.sprintf "%s, %02d %s %04d 00:00:00 +0000"
-              rfc822_days.(normalized_tm.tm_wday)
-              day_int rfc822_months.(month_int) year_int
-        | _ -> Printf.sprintf "%s 00:00:00 +0000" date
-      with _ -> Printf.sprintf "%s 00:00:00 +0000" date)
-  | None ->
-      let tm = Unix.gmtime (Unix.time ()) in
-      Printf.sprintf "%s, %02d %s %04d %02d:%02d:%02d +0000"
-        rfc822_days.(tm.tm_wday) tm.tm_mday rfc822_months.(tm.tm_mon)
-        (tm.tm_year + 1900) tm.tm_hour tm.tm_min tm.tm_sec
+(* RFC822 pubDate for an item's parsed date. Total: the date is already known
+   to be valid (it could only be built via Content_types.Date.of_string), so
+   there is no parse step that can fail and no fallback branch. *)
+let format_rfc822_date (d : Content_types.Date.t) =
+  let open Content_types.Date in
+  let tm =
+    {
+      Unix.tm_year = year d - 1900;
+      tm_mon = month d - 1;
+      tm_mday = day d;
+      tm_hour = 0;
+      tm_min = 0;
+      tm_sec = 0;
+      tm_wday = 0;
+      tm_yday = 0;
+      tm_isdst = false;
+    }
+  in
+  let _, normalized_tm = Unix.mktime tm in
+  Printf.sprintf "%s, %02d %s %04d 00:00:00 +0000"
+    rfc822_days.(normalized_tm.tm_wday)
+    (day d)
+    rfc822_months.(month d)
+    (year d)
+
+(* Current time as an RFC822 stamp — for channel-level lastBuildDate/pubDate and
+   for undated items. *)
+let format_rfc822_now () =
+  let tm = Unix.gmtime (Unix.time ()) in
+  Printf.sprintf "%s, %02d %s %04d %02d:%02d:%02d +0000"
+    rfc822_days.(tm.tm_wday) tm.tm_mday rfc822_months.(tm.tm_mon)
+    (tm.tm_year + 1900) tm.tm_hour tm.tm_min tm.tm_sec
 
 let rec take n lst =
   match (n, lst) with
@@ -195,17 +173,22 @@ let rec take n lst =
   | n, x :: xs when n > 0 -> x :: take (n - 1) xs
   | _, _ -> []
 
-let generate_rss_item page config =
-  let title = escape_xml page.metadata.title in
+let generate_rss_item (page : Content_types.content_page) config =
+  let fm = page.frontmatter in
+  let title = escape_xml fm.title in
   let description =
-    match page.metadata.summary with
+    match fm.description with
     | Some s -> escape_xml s
     | None ->
         escape_xml
           (String.sub page.content 0 (min 200 (String.length page.content)))
   in
-  let link = Printf.sprintf "%s%s" config.base_url page.url in
-  let pub_date = format_rfc822_date page.metadata.date in
+  let link = Printf.sprintf "%s%s" config.base_url page.url_path in
+  let pub_date =
+    match fm.date with
+    | Some d -> format_rfc822_date d
+    | None -> format_rfc822_now ()
+  in
   let author_name = escape_xml config.author in
 
   (* Generate category tags *)
@@ -213,7 +196,7 @@ let generate_rss_item page config =
     List.map
       (fun tag ->
         Printf.sprintf "      <category>%s</category>" (escape_xml tag))
-      page.metadata.tags
+      fm.tags
   in
   let categories_xml = String.concat "\n" categories in
 
@@ -230,17 +213,15 @@ let generate_rss_item page config =
     title link description author_name pub_date link
     (if categories_xml = "" then "" else "\n" ^ categories_xml)
 
-let generate_rss_feed pages config =
+let generate_rss_feed (pages : Content_types.content_page list) config =
   (* Filter out draft pages and sort by date (newest first) *)
   let published_pages =
     pages
-    |> List.filter (fun page -> not page.metadata.draft)
-    |> List.sort (fun a b ->
-        match (a.metadata.date, b.metadata.date) with
-        | Some date_a, Some date_b -> String.compare date_b date_a
-        | Some _, None -> -1
-        | None, Some _ -> 1
-        | None, None -> 0)
+    |> List.filter (fun (page : Content_types.content_page) ->
+        not page.frontmatter.draft)
+    |> List.sort (fun (a : Content_types.content_page) b ->
+        Content_types.Date.compare_opt_desc a.frontmatter.date
+          b.frontmatter.date)
     |> take 20 (* Limit to 20 most recent items *)
   in
 
@@ -249,7 +230,7 @@ let generate_rss_feed pages config =
   in
   let items_xml = String.concat "" items in
 
-  let current_date = format_rfc822_date None in
+  let current_date = format_rfc822_now () in
 
   Printf.sprintf
     {|<?xml version="1.0" encoding="UTF-8"?>
