@@ -11,8 +11,8 @@
     </image>
     <atom:link href="https://fearful-odds.rocks/feed.xml" rel="self" type="application/rss+xml" />
     <language>en</language>
-    <lastBuildDate>Sat, 30 Apr 2026 15:12:22 +0000</lastBuildDate>
-    <pubDate>Sat, 30 Apr 2026 15:12:22 +0000</pubDate>
+    <lastBuildDate>Mon, 01 May 2026 16:55:11 +0000</lastBuildDate>
+    <pubDate>Mon, 01 May 2026 16:55:11 +0000</pubDate>
     <ttl>60</ttl>
     <managingEditor>Chukwuma Akunyili</managingEditor>
     <webMaster>Chukwuma Akunyili</webMaster>
@@ -79,18 +79,6 @@
       <category>Azure</category>
     </item>
     <item>
-      <title>Mental Check: Reflecting on the OCaml Journey So Far</title>
-      <link>https://fearful-odds.rocks/journal/oct-5-entry</link>
-      <description><![CDATA[A reflection on my OCaml web development journey so far.]]></description>
-      <dc:creator>Chukwuma Akunyili</dc:creator>
-      <pubDate>Sun, 05 Oct 2025 00:00:00 +0000</pubDate>
-      <guid isPermaLink="true">https://fearful-odds.rocks/journal/oct-5-entry</guid>
-      <category>journal</category>
-      <category>ocaml</category>
-      <category>journey</category>
-      <category>retrospective</category>
-    </item>
-    <item>
       <title>WebAuthn &amp; Passkeys in OCaml: Implementing Passwordless Authentication</title>
       <link>https://fearful-odds.rocks/blog/webauthn-passkey-implementation-ocaml</link>
       <description><![CDATA[Building a complete WebAuthn/Passkeys authentication system in OCaml: from bytea binary storage challenges to Base64 encoding layers, model validation, and repository patterns.]]></description>
@@ -124,6 +112,18 @@
       <category>Monitoring</category>
       <category>Operations</category>
       <category>CI/CD</category>
+    </item>
+    <item>
+      <title>Mental Check: Reflecting on the OCaml Journey So Far</title>
+      <link>https://fearful-odds.rocks/journal/oct-5-entry</link>
+      <description><![CDATA[A reflection on my OCaml web development journey so far.]]></description>
+      <dc:creator>Chukwuma Akunyili</dc:creator>
+      <pubDate>Sun, 05 Oct 2025 00:00:00 +0000</pubDate>
+      <guid isPermaLink="true">https://fearful-odds.rocks/journal/oct-5-entry</guid>
+      <category>journal</category>
+      <category>ocaml</category>
+      <category>journey</category>
+      <category>retrospective</category>
     </item>
     <item>
       <title>Model Validation &amp; Time Utilities Sprint: From Basic Models to Proper Validation Layer</title>
