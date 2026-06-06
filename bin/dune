@@ -1,11 +1,11 @@
 (executable
  (name server)
  (modules server)
- (libraries memoir_lib dream lwt)
+ (libraries memoir_lib memoir.content dream lwt)
  (modes byte exe))
 
 (executable
  (name generator)
  (modules generator)
- (libraries memoir_lib memoir.types memoir.content memoir.templates)
+ (libraries unix memoir_lib memoir.types memoir.content memoir.templates)
  (modes native))
