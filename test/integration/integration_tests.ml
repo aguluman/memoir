@@ -24,8 +24,6 @@ let rss_config =
     base_url = Memoir_lib.site_domain;
     output_dir = "_site";
     content_dir = "content";
-    template_dir = "templates";
-    static_dir = "static";
   }
 
 (* Enumeration: walk_files finds content files and skips the _site dir. *)
