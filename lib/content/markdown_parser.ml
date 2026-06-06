@@ -48,8 +48,8 @@ let parse_yaml_frontmatter yaml_str =
         {
           title = get_string yaml "title" |> Option.value ~default:"Untitled";
           description = get_string yaml "description";
-          date = get_string yaml "date";
-          updated = get_string yaml "updated";
+          date = Option.bind (get_string yaml "date") ~f:Date.of_string;
+          updated = Option.bind (get_string yaml "updated") ~f:Date.of_string;
           tags = get_string_list yaml "tags";
           draft = get_bool yaml "draft";
           layout = get_string yaml "layout";
@@ -119,51 +119,13 @@ let parse_markdown content =
 
   let md = Omd.of_string preprocessed_content in
 
-  (* Convert to HTML with auto identifiers for headings *)
-  let html = Omd.to_html ~auto_identifiers:true md in
-
-  (* Process code blocks to add language classes for highlight.js *)
-  let process_code_blocks html =
-    let code_block_regex =
-      Str.regexp "<pre><code\\([^>]*\\)>\\([\\s\\S]*?\\)</code></pre>"
-    in
-    let result = ref html in
-    let pos = ref 0 in
-
-    while Str.string_match code_block_regex !result !pos do
-      let code_attrs = Str.matched_group 1 !result in
-      let code_content = Str.matched_group 2 !result in
-      let start_pos = Str.match_beginning () in
-      let end_pos = Str.match_end () in
-
-      (* Only add language class if not already present *)
-      if not (String.is_substring code_attrs ~substring:"class=\"language-")
-      then (
-        (* Extract language from data-lang attribute if present *)
-        let lang_regex = Str.regexp "data-lang=\"\\([^\"]+\\)\"" in
-        let new_code_block =
-          if Str.string_match lang_regex code_attrs 0 then
-            let lang = Str.matched_group 1 code_attrs in
-            Printf.sprintf "<pre><code class=\"language-%s\"%s>%s</code></pre>"
-              lang code_attrs code_content
-          else
-            Printf.sprintf "<pre><code%s>%s</code></pre>" code_attrs
-              code_content
-        in
-
-        let before = String.sub ~pos:0 ~len:start_pos !result in
-        let after =
-          String.sub ~pos:end_pos ~len:(String.length !result - end_pos) !result
-        in
-        result := before ^ new_code_block ^ after;
-        pos := start_pos + String.length new_code_block)
-      else pos := end_pos
-    done;
-
-    !result
-  in
-
-  html |> process_code_blocks
+  (* Convert to HTML with auto identifiers for headings. Omd already emits
+     [<pre><code class="language-LANG">] for fenced blocks carrying an info
+     string, which is exactly what highlight.js consumes — so no post-hoc class
+     injection is needed. (The previous regex pass tried to add these classes
+     but used PCRE constructs [\s\S] and [*?] that OCaml's Str does not support,
+     so it never matched a real code block and only added risk: removed.) *)
+  Omd.to_html ~auto_identifiers:true md
 
 (** Parse a markdown file with frontmatter into a content_page *)
 let parse_markdown_file ~path ~content =

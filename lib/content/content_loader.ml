@@ -4,14 +4,6 @@
     blog/journal listing entries injected into section index pages. Consumed by
     [bin/generator.ml]; the RSS-feed loader lives in {!Memoir_lib}. *)
 
-(* Newest-first by date; undated sorts last. *)
-let compare_by_date_desc a b =
-  match (a, b) with
-  | Some x, Some y -> String.compare y x
-  | Some _, None -> -1
-  | None, Some _ -> 1
-  | None, None -> 0
-
 (* Binary-safe read; closes the channel even on exception. *)
 let read_file path = In_channel.with_open_bin path In_channel.input_all
 
@@ -45,7 +37,7 @@ let list_markdown_files dir =
 (** A listing entry rendered onto blog/journal index pages. *)
 type entry = {
   title : string;
-  date : string option;
+  date : Content_types.Date.t option;
   description : string option;
   url : string;
 }
@@ -70,4 +62,4 @@ let list_entries ~dir ~url_prefix =
   |> List.sort (fun a b ->
       match (a.date, b.date) with
       | None, None -> String.compare a.title b.title
-      | _ -> compare_by_date_desc a.date b.date)
+      | _ -> Content_types.Date.compare_opt_desc a.date b.date)

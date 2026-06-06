@@ -72,7 +72,8 @@ let generate_entries_html dir display_config =
               match entry.date with
               | Some d ->
                   Printf.sprintf "<span class=\"%s\">%s</span>"
-                    display_config.date_class d
+                    display_config.date_class
+                    (Content_types.Date.to_iso_string d)
               | None -> ""
             in
             let description_str =
