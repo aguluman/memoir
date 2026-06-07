@@ -56,3 +56,63 @@ let classify path =
   | "content/pages" | "content" -> Content_types.Page
   | _ when Filename.extension path = "" -> Content_types.Asset
   | _ -> Content_types.Page
+
+(* Normalise a path: resolve "."/".." segments and drop empty ones (also strips
+   a leading slash, since empty segments are dropped). *)
+let normalize_path path =
+  let rec normalize acc = function
+    | [] -> acc
+    | "." :: rest -> normalize acc rest
+    | ".." :: rest -> (
+        match acc with
+        | _ :: parent -> normalize parent rest
+        | [] -> normalize [] rest)
+    | x :: rest -> normalize (x :: acc) rest
+  in
+  let parts = String.split_on_char '/' path |> List.filter (fun s -> s <> "") in
+  String.concat "/" (List.rev (normalize [] parts))
+
+(** Resolve a request [url] to an existing file under [site_root] (the generated
+    output directory), or [None] if nothing matches. This is the serve-time
+    inverse of {!path_to_output_path}: it understands the same clean-URL →
+    [<path>/index.html] convention, plus a [.html] fallback, and searches the
+    [static/] subtree and a [pages/] subtree. Keeping it beside the build-time
+    mapping makes Routing the single home for the site's URL scheme. *)
+let resolve_url ~site_root url =
+  let stripped =
+    if url = "/" then "index"
+    else if String.length url > 0 && url.[0] = '/' then
+      String.sub url 1 (String.length url - 1)
+    else url
+  in
+  let rel = normalize_path stripped in
+  let candidates =
+    [
+      Filename.concat (Filename.concat site_root "static") rel;
+      Filename.concat site_root rel;
+      Filename.concat (Filename.concat site_root "pages") rel;
+    ]
+  in
+  (* For one candidate, pick the concrete file it denotes: a directory resolves
+     to its index.html, and a clean URL tries "<p>.html" then "<p>/index.html". *)
+  let concrete path =
+    if Sys.file_exists path then
+      if Sys.is_directory path then
+        let idx = Filename.concat path "index.html" in
+        if Sys.file_exists idx then idx else path
+      else path
+    else
+      let html = path ^ ".html" in
+      let dir_index = Filename.concat path "index.html" in
+      if Sys.file_exists html then html
+      else if Sys.file_exists dir_index then dir_index
+      else path
+  in
+  let rec first = function
+    | [] -> None
+    | path :: rest ->
+        let final = concrete path in
+        if Sys.file_exists final && not (Sys.is_directory final) then Some final
+        else first rest
+  in
+  first candidates

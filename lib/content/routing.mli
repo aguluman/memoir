@@ -20,3 +20,9 @@ val path_to_output_path : string -> output_dir:string -> string
 (** Classify a content file by the directory it lives in. Extension-less files
     are treated as raw assets ({!Content_types.Asset}). *)
 val classify : string -> Content_types.content_type
+
+(** Resolve a request URL to an existing file under [site_root] (the generated
+    output directory), or [None] if nothing matches. The serve-time inverse of
+    {!path_to_output_path}: same clean-URL → [<path>/index.html] convention, a
+    [.html] fallback, and [static/]/[pages/] search subtrees. *)
+val resolve_url : site_root:string -> string -> string option

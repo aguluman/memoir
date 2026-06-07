@@ -2,25 +2,11 @@ open Memoir_templates
 module Markdown_parser = Memoir_content.Markdown_parser
 module Routing = Memoir_content.Routing
 module Content_loader = Memoir_content.Content_loader
+module Build_cache = Memoir_content.Build_cache
 
-(* Configuration type *)
-type config_type = {
-  author : string;
-  output_dir : string;
-  content_dir : string;
-  template_dir : string;
-  static_dir : string;
-}
-
-(* Configuration *)
-let config =
-  {
-    author = "Chukwuma Akunyili";
-    output_dir = "_site";
-    content_dir = "content";
-    template_dir = "templates";
-    static_dir = "static";
-  }
+(* The one canonical configuration lives in Memoir_lib (single source of truth,
+   shared with the dev server). *)
+let config = Memoir_lib.default_config
 
 (* File IO and path utilities are shared via Memoir_lib (lib/memoir_lib.ml). *)
 let read_file = Memoir_lib.read_file
@@ -158,13 +144,15 @@ let process_route route =
           ~output_dir:config.output_dir
       in
       let content = read_file route.file_path in
-      let fm = Markdown_parser.frontmatter_of_content content in
+      let fm_opt = Markdown_parser.frontmatter_of_content content in
+      let fm = Option.value fm_opt ~default:Content_types.empty_frontmatter in
       let title =
-        (* Fall back to the filename when frontmatter has no usable title. *)
-        match fm.Content_types.title with
-        | "" | "Untitled" ->
-            Filename.remove_extension (Filename.basename route.file_path)
-        | t -> t
+        (* No frontmatter block, or a keyless "Untitled" block, falls back to
+           the filename. *)
+        match fm_opt with
+        | Some f when f.Content_types.title <> "Untitled" ->
+            f.Content_types.title
+        | _ -> Filename.remove_extension (Filename.basename route.file_path)
       in
       let html_content = process_markdown ~file_path:route.file_path ~content in
 
@@ -188,13 +176,24 @@ let process_route route =
         | None -> "A page from Chukwuma Akunyili's memoir"
       in
       let year = Unix.(localtime (time ())).tm_year + 1900 in
-      let author = "Chukwuma Akunyili" in
+      let author =
+        match fm.Content_types.author with
+        | Some a -> a
+        | None -> config.author
+      in
+      let image = fm.Content_types.featured_image in
+      let modified =
+        Option.map Content_types.Date.to_iso_string fm.Content_types.updated
+      in
+      let page_class = Option.value fm.Content_types.layout ~default:"page" in
 
-      (* Create proper page using template system. The webring navigation is now
-         appended inside Templates.create_page. *)
+      (* Create the page via the template system. Frontmatter now drives the
+         byline (author), the Open Graph image (featured_image), the article
+         modified-time (updated) and the body layout class (layout); the webring
+         navigation is appended inside Templates.create_page. *)
       let page_string =
-        Templates.create_page ~current_path:url_path ~year ~author
-          ~title_text:title ~description
+        Templates.create_page ~current_path:url_path ~year ~author ~page_class
+          ?image ?modified ~title_text:title ~description
           ~content:[ Tyxml.Html.Unsafe.data final_html_content ]
           ~url:(Memoir_lib.site_domain ^ url_path)
           ()
@@ -212,146 +211,18 @@ let collect_routes () =
         content_type = Routing.classify file_path;
       })
 
-(* Section index page that aggregates a given post's section, if any. *)
-let index_path_for = function
-  | Content_types.Post -> Some "content/pages/blog/index.md"
-  | Content_types.Journal -> Some "content/pages/journal/index.md"
-  | _ -> None
-
-(* Cache for incremental builds - using content hash for reliability *)
-type build_cache = {
-  file_hashes : (string * string) list; (* path, content_hash *)
-  cache_file : string;
-}
-
+(* Path of the on-disk incremental-build cache; the cache logic itself lives in
+   Memoir_content.Build_cache. *)
 let cache_file_path = Filename.concat config.output_dir ".build-cache"
-
-let load_build_cache () =
-  try
-    let content = read_file cache_file_path in
-    let lines = String.split_on_char '\n' content in
-    let file_hashes =
-      List.filter_map
-        (fun line ->
-          match String.split_on_char '|' line with
-          | [ path; hash ] -> Some (path, hash)
-          | _ -> None (* Skip invalid or old format lines *))
-        lines
-    in
-    { file_hashes; cache_file = cache_file_path }
-  with _ -> { file_hashes = []; cache_file = cache_file_path }
-
-let save_build_cache cache =
-  let content =
-    String.concat "\n"
-      (List.map
-         (fun (path, hash) -> Printf.sprintf "%s|%s" path hash)
-         cache.file_hashes)
-  in
-  write_file cache.cache_file content
-
-let hash_file path =
-  let content = read_file path in
-  Digest.to_hex (Digest.string content)
-
-(* Blog/journal index pages aggregate other content, so always rebuild them. *)
-let is_index_page file_path =
-  String.ends_with ~suffix:"/index.md" file_path
-  &&
-  match Routing.classify file_path with
-  | Content_types.Post | Content_types.Journal -> true
-  | _ -> false
-
-let is_file_modified file_path cache =
-  try
-    if is_index_page file_path then true
-    else
-      let current_hash = hash_file file_path in
-      match List.find_opt (fun (p, _) -> p = file_path) cache.file_hashes with
-      | Some (_, last_hash) when last_hash <> "" ->
-          (* Compare content hashes - immune to timestamp changes from fmt *)
-          current_hash <> last_hash
-      | _ -> true (* No cache entry or empty hash - treat as modified *)
-  with _ -> true
-
-let update_cache_entry file_path cache =
-  try
-    let current_hash = hash_file file_path in
-    let file_hashes =
-      (file_path, current_hash)
-      :: List.filter (fun (p, _) -> p <> file_path) cache.file_hashes
-    in
-    { cache with file_hashes }
-  with Unix.Unix_error _ -> cache
-
-(* When processing journal/blog posts, invalidate their index pages so the
-   aggregated listings are regenerated. *)
-let update_cache_with_dependencies file_path cache =
-  let updated_cache = update_cache_entry file_path cache in
-  match index_path_for (Routing.classify file_path) with
-  | Some index_path when file_path <> index_path ->
-      let file_hashes =
-        List.filter (fun (p, _) -> p <> index_path) updated_cache.file_hashes
-      in
-      { updated_cache with file_hashes }
-  | _ -> updated_cache
 
 (* Extract RSS feed generation into a separate function *)
 let generate_rss_feed () =
   let pages = Memoir_lib.load_rss_pages ~content_dir:config.content_dir in
-  let rss_config =
-    {
-      Memoir_lib.site_title = "Chukwuma Akunyili's Blog";
-      site_description =
-        "Thoughts on software engineering, functional programming, and \
-         technology";
-      author = config.author;
-      base_url = Memoir_lib.site_domain;
-      output_dir = config.output_dir;
-      content_dir = config.content_dir;
-      template_dir = config.template_dir;
-      static_dir = config.static_dir;
-    }
-  in
-  let rss_xml = Memoir_lib.generate_rss_feed pages rss_config in
+  let rss_xml = Memoir_lib.generate_rss_feed pages config in
   let rss_output_path = Filename.concat config.output_dir "feed.xml" in
   write_file rss_output_path rss_xml;
   Printf.printf "RSS feed generated at: %s (%d items)\n" rss_output_path
     (List.length pages)
-
-(* Remove duplicate index files (dir/index.html alongside dir/index/index.html) *)
-let remove_duplicate_index_files () =
-  let rec process_dir dir =
-    if Sys.file_exists dir && Sys.is_directory dir then
-      try
-        let entries = Sys.readdir dir in
-        Array.iter
-          (fun entry ->
-            if entry <> "." && entry <> ".." then
-              let path = Filename.concat dir entry in
-              if Sys.is_directory path then (
-                let index_path = Filename.concat dir (entry ^ "/index.html") in
-                let nested_index_path =
-                  Filename.concat dir (entry ^ "/index/index.html")
-                in
-                if
-                  Sys.file_exists index_path
-                  && Sys.file_exists nested_index_path
-                then (
-                  Printf.printf "Removing duplicate index file: %s\n"
-                    nested_index_path;
-                  Sys.remove nested_index_path;
-                  (* Also try to remove the empty index directory *)
-                  try
-                    Unix.rmdir (Filename.concat dir (entry ^ "/index"));
-                    Printf.printf "Removed empty directory: %s\n"
-                      (Filename.concat dir (entry ^ "/index"))
-                  with _ -> ());
-                process_dir path))
-          entries
-      with Sys_error _ -> ()
-  in
-  process_dir (Filename.concat config.output_dir "")
 
 (* Generate site. With ~force:true, the cache is ignored and every route is
    rebuilt; the cache is still rewritten afterwards. *)
@@ -361,8 +232,8 @@ let generate_site ?(force = false) () =
 
   (* Load (or reset) the build cache *)
   let cache =
-    if force then { file_hashes = []; cache_file = cache_file_path }
-    else load_build_cache ()
+    if force then Build_cache.empty ~cache_file:cache_file_path
+    else Build_cache.load ~cache_file:cache_file_path
   in
 
   (* Ensure output directory exists *)
@@ -376,22 +247,19 @@ let generate_site ?(force = false) () =
   let final_cache =
     List.fold_left
       (fun acc (route : route) ->
-        if force || is_file_modified route.file_path acc then (
+        if force || Build_cache.needs_rebuild acc route.file_path then (
           Printf.printf "Processing route: %s -> %s\n" route.file_path
             route.url_path;
           process_route route;
-          update_cache_with_dependencies route.file_path acc)
+          Build_cache.record acc route.file_path)
         else (
           Printf.printf "Skipping unmodified route: %s\n" route.file_path;
           acc))
       cache routes
   in
 
-  (* Remove any duplicate index files created during processing *)
-  remove_duplicate_index_files ();
-
   (* Save updated cache *)
-  save_build_cache final_cache;
+  Build_cache.save final_cache;
 
   (* Generate RSS feed *)
   generate_rss_feed ();

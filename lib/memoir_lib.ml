@@ -1,4 +1,7 @@
-(* Basic configuration type for the static site generator *)
+(* Site configuration — the single source of truth shared by both executables.
+   Only the fields actually consumed survive: the RSS feed reads the metadata
+   (site_title/description/author/base_url) and both bins agree on the build
+   paths (output_dir/content_dir). *)
 type config = {
   site_title : string;
   site_description : string;
@@ -6,33 +9,28 @@ type config = {
   base_url : string;
   output_dir : string;
   content_dir : string;
-  template_dir : string;
-  static_dir : string;
 }
+
+let site_domain = "https://fearful-odds.rocks"
+
+(* The one canonical configuration. The generator and the dev server both use
+   this rather than each hand-rolling a near-identical literal. *)
+let default_config =
+  {
+    site_title = "Chukwuma Akunyili's Blog";
+    site_description =
+      "Thoughts on software engineering, functional programming, and technology";
+    author = "Chukwuma Akunyili";
+    base_url = site_domain;
+    output_dir = "_site";
+    content_dir = "content";
+  }
 
 (* The processed-page model is the single canonical {!Content_types.content_page}
    (frontmatter + content + url). The RSS feed consumes that type directly rather
    than maintaining a parallel page/metadata record. *)
 
-let site_domain = "https://fearful-odds.rocks"
-
 (* --- Filesystem helpers (shared by the generator and the dev server) ----- *)
-
-(* Normalise a path: resolve "."/".." segments and drop empty ones. Mirrors the
-   per-executable copies this replaces, including stripping a leading slash —
-   both callers feed it slash-prefixed-stripped or relative paths already. *)
-let normalize_path path =
-  let rec normalize acc = function
-    | [] -> acc
-    | "." :: rest -> normalize acc rest
-    | ".." :: rest -> (
-        match acc with
-        | _ :: parent -> normalize parent rest
-        | [] -> normalize [] rest)
-    | x :: rest -> normalize (x :: acc) rest
-  in
-  let parts = String.split_on_char '/' path |> List.filter (fun s -> s <> "") in
-  String.concat "/" (List.rev (normalize [] parts))
 
 (* Binary-safe read; closes the channel even on exception, and binary mode
    avoids CRLF translation that would corrupt images / shift byte counts. *)
@@ -71,7 +69,7 @@ let load_rss_pages ~content_dir : Content_types.content_page list =
     if Sys.file_exists dir && Sys.is_directory dir then
       Sys.readdir dir |> Array.to_list
       |> List.filter_map (fun file ->
-          if Filename.check_suffix file ".md" && file <> "index.md" then
+          if Filename.check_suffix file ".md" && file <> "index.md" then (
             try
               let path = Filename.concat dir file in
               let content = read_file path in
@@ -79,11 +77,14 @@ let load_rss_pages ~content_dir : Content_types.content_page list =
                 Memoir_content.Markdown_parser.frontmatter_of_content content
               in
               let slug = Filename.remove_extension file in
-              (* Fall back to the slug when frontmatter has no usable title. *)
+              (* No frontmatter block, or a keyless "Untitled" block, falls
+                    back to the slug for the title. *)
               let fm =
-                match fm.Content_types.title with
-                | "" | "Untitled" -> { fm with Content_types.title = slug }
-                | _ -> fm
+                match fm with
+                | None -> { Content_types.empty_frontmatter with title = slug }
+                | Some f when f.Content_types.title = "Untitled" ->
+                    { f with Content_types.title = slug }
+                | Some f -> f
               in
               Some
                 {
@@ -93,7 +94,12 @@ let load_rss_pages ~content_dir : Content_types.content_page list =
                   html_content = None;
                   url_path = url_prefix ^ slug;
                 }
-            with _ -> None
+            with Failure msg ->
+              (* Surface (don't swallow) a malformed post; skip just that one
+                    so a bad file can't take down the whole feed at runtime. *)
+              Printf.eprintf "skipping RSS post %s: %s\n%!"
+                (Filename.concat dir file) msg;
+              None)
           else None)
     else []
   in
@@ -137,11 +143,12 @@ let rfc822_days = [| "Sun"; "Mon"; "Tue"; "Wed"; "Thu"; "Fri"; "Sat" |]
    to be valid (it could only be built via Content_types.Date.of_string), so
    there is no parse step that can fail and no fallback branch. *)
 let format_rfc822_date (d : Content_types.Date.t) =
+  let open Content_types.Date in
   let tm =
     {
-      Unix.tm_year = d.year - 1900;
-      tm_mon = d.month - 1;
-      tm_mday = d.day;
+      Unix.tm_year = year d - 1900;
+      tm_mon = month d - 1;
+      tm_mday = day d;
       tm_hour = 0;
       tm_min = 0;
       tm_sec = 0;
@@ -153,7 +160,9 @@ let format_rfc822_date (d : Content_types.Date.t) =
   let _, normalized_tm = Unix.mktime tm in
   Printf.sprintf "%s, %02d %s %04d 00:00:00 +0000"
     rfc822_days.(normalized_tm.tm_wday)
-    d.day rfc822_months.(d.month) d.year
+    (day d)
+    rfc822_months.(month d)
+    (year d)
 
 (* Current time as an RFC822 stamp — for channel-level lastBuildDate/pubDate and
    for undated items. *)
@@ -162,13 +171,6 @@ let format_rfc822_now () =
   Printf.sprintf "%s, %02d %s %04d %02d:%02d:%02d +0000"
     rfc822_days.(tm.tm_wday) tm.tm_mday rfc822_months.(tm.tm_mon)
     (tm.tm_year + 1900) tm.tm_hour tm.tm_min tm.tm_sec
-
-let rec take n lst =
-  match (n, lst) with
-  | 0, _ -> []
-  | _, [] -> []
-  | n, x :: xs when n > 0 -> x :: take (n - 1) xs
-  | _, _ -> []
 
 let generate_rss_item (page : Content_types.content_page) config =
   let fm = page.frontmatter in
@@ -219,7 +221,7 @@ let generate_rss_feed (pages : Content_types.content_page list) config =
     |> List.sort (fun (a : Content_types.content_page) b ->
         Content_types.Date.compare_opt_desc a.frontmatter.date
           b.frontmatter.date)
-    |> take 20 (* Limit to 20 most recent items *)
+    |> List.take 20 (* Limit to 20 most recent items (Stdlib, OCaml >= 5.3) *)
   in
 
   let items =
