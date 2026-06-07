@@ -15,7 +15,6 @@ let meta_tags ~description =
         [ a_name "viewport"; a_content "width=device-width, initial-scale=1.0" ]
       ();
     meta ~a:[ a_name "description"; a_content description ] ();
-    (* Preload critical fonts for faster rendering - only the Regular weight for initial load *)
     link
       ~rel:[ `Other "preload" ]
       ~href:"/static/fonts/JetBrainsMono-Regular.woff2"
@@ -26,7 +25,6 @@ let meta_tags ~description =
           a_user_data "crossorigin" "anonymous";
         ]
       ();
-    (* Ultra-fast theme application - runs before any CSS to prevent flicker *)
     script
       (txt
          "(function() {\n\
