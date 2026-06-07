@@ -117,6 +117,17 @@
   box-sizing: border-box;
 }
 
+/* While the page is loading, the inline <head> script adds `.preload` to <html>
+   and removes it on `load`. Suppressing transitions during that window stops the
+   stored theme from animating a white->dark fade on navigation (the theme is
+   applied instantly; only user-initiated toggles animate). */
+html.preload,
+html.preload *,
+html.preload *::before,
+html.preload *::after {
+  transition: none !important;
+}
+
 html {
   scroll-behavior: smooth;
   /* Paint the root canvas in the theme color so cross-page navigation
