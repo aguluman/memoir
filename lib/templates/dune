@@ -1,4 +1,4 @@
 (library
  (name memoir_templates)
  (public_name memoir.templates)
- (libraries str tyxml yojson memoir.types))
+ (libraries tyxml))

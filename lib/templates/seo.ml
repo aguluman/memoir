@@ -22,10 +22,28 @@ module Seo = struct
     let open Html in
     link ~rel:[ `Other "canonical" ] ~href:url ()
 
-  (** Generate complete SEO metadata for a page: a canonical link followed by
-      the Open Graph tags. *)
+  (** Generate complete SEO metadata for a page: a canonical link, the Open
+      Graph tags, and — on [article] pages — [article:modified_time] and
+      [article:author] when [modified]/[author] are supplied. *)
   let make_head ~title_text ~description ~url
-      ?(image = "/static/images/default-og.jpg") ?(type_ = "website") () =
+      ?(image = "/static/images/default-og.jpg") ?(type_ = "website") ?modified
+      ?author () =
+    let open Html in
+    let article_meta =
+      if String.equal type_ "article" then
+        List.filter_map Fun.id
+          [
+            Option.map
+              (fun m ->
+                meta ~a:[ a_property "article:modified_time"; a_content m ] ())
+              modified;
+            Option.map
+              (fun a -> meta ~a:[ a_property "article:author"; a_content a ] ())
+              author;
+          ]
+      else []
+    in
     canonical_link ~url
     :: open_graph_meta ~title_text ~description ~url ~image ~type_ ()
+    @ article_meta
 end

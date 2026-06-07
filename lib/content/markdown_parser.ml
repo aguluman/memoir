@@ -15,57 +15,60 @@ let extract_frontmatter content =
     (Some yaml_content, content_without_frontmatter)
   else (None, content)
 
-(** Parse YAML frontmatter string into frontmatter record *)
+(** Parse a YAML frontmatter string into a frontmatter record.
+
+    Raises [Failure] on malformed YAML rather than silently returning an empty
+    record (Leroy: surface the error so the build fails loudly instead of
+    quietly dropping a page's metadata). A valid-but-keyless block still yields
+    the field defaults (e.g. [title = "Untitled"]). *)
 let parse_yaml_frontmatter yaml_str =
-  try
-    match Yaml.of_string yaml_str with
-    | Error _ -> empty_frontmatter
-    | Ok yaml ->
-        let get_string yaml key =
-          match Yaml.Util.find key yaml with
-          | Ok (Some (`String s)) -> Some s
-          | _ -> None
-        in
+  match Yaml.of_string yaml_str with
+  | Error (`Msg m) -> failwith (Printf.sprintf "invalid YAML frontmatter: %s" m)
+  | Ok yaml ->
+      let get_string yaml key =
+        match Yaml.Util.find key yaml with
+        | Ok (Some (`String s)) -> Some s
+        | _ -> None
+      in
+      let get_string_list yaml key =
+        match Yaml.Util.find key yaml with
+        | Ok (Some (`A lst)) ->
+            List.filter_map
+              (function
+                | `String s -> Some s
+                | _ -> None)
+              lst
+        | _ -> []
+      in
+      let get_bool yaml key =
+        match Yaml.Util.find key yaml with
+        | Ok (Some (`Bool b)) -> b
+        | _ -> false
+      in
+      {
+        title = get_string yaml "title" |> Option.value ~default:"Untitled";
+        description = get_string yaml "description";
+        date = Option.bind (get_string yaml "date") Date.of_string;
+        updated = Option.bind (get_string yaml "updated") Date.of_string;
+        tags = get_string_list yaml "tags";
+        draft = get_bool yaml "draft";
+        layout = get_string yaml "layout";
+        slug = get_string yaml "slug";
+        author = get_string yaml "author";
+        featured_image = get_string yaml "featured_image";
+      }
 
-        let get_string_list yaml key =
-          match Yaml.Util.find key yaml with
-          | Ok (Some (`A lst)) ->
-              List.filter_map
-                (function
-                  | `String s -> Some s
-                  | _ -> None)
-                lst
-          | _ -> []
-        in
+(** Parse the frontmatter from raw file content.
 
-        let get_bool yaml key =
-          match Yaml.Util.find key yaml with
-          | Ok (Some (`Bool b)) -> b
-          | _ -> false
-        in
-
-        {
-          title = get_string yaml "title" |> Option.value ~default:"Untitled";
-          description = get_string yaml "description";
-          date = Option.bind (get_string yaml "date") Date.of_string;
-          updated = Option.bind (get_string yaml "updated") Date.of_string;
-          tags = get_string_list yaml "tags";
-          draft = get_bool yaml "draft";
-          layout = get_string yaml "layout";
-          slug = get_string yaml "slug";
-          author = get_string yaml "author";
-          featured_image = get_string yaml "featured_image";
-        }
-  with _ -> empty_frontmatter
-
-(** Parse just the frontmatter record from raw file content. Returns
-    {!Content_types.empty_frontmatter} when no frontmatter block is present, so
-    a completely empty record (title = "") signals "no frontmatter at all",
-    while a present-but-titleless block yields the "Untitled" default. *)
+    Returns [None] when the file has no frontmatter block at all — that absence
+    is now explicit in the type rather than encoded as a [title = ""] sentinel
+    (Minsky). A present-but-titleless block yields [Some] with the field
+    defaults. Raises [Failure] (via {!parse_yaml_frontmatter}) on malformed
+    YAML. *)
 let frontmatter_of_content content =
   match extract_frontmatter content with
-  | Some yaml, _ -> parse_yaml_frontmatter yaml
-  | None, _ -> empty_frontmatter
+  | Some yaml, _ -> Some (parse_yaml_frontmatter yaml)
+  | None, _ -> None
 
 (** Parse markdown content into HTML with syntax highlighting support *)
 let parse_markdown content =

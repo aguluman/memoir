@@ -2,7 +2,8 @@
     plus RSS-feed loading and rendering. The processed-page model is the single
     canonical {!Content_types.content_page}. *)
 
-(** Site-generation configuration consumed by the RSS feed. *)
+(** Site configuration: RSS metadata plus the build paths both executables
+    share. *)
 type config = {
   site_title : string;
   site_description : string;
@@ -10,16 +11,13 @@ type config = {
   base_url : string;
   output_dir : string;
   content_dir : string;
-  template_dir : string;
-  static_dir : string;
 }
+
+(** The single canonical site configuration used by the generator and server. *)
+val default_config : config
 
 (** Canonical public domain of the site, used to build absolute URLs. *)
 val site_domain : string
-
-(** Normalise a path: resolve ["."]/[".."] segments, drop empty ones, and strip
-    a leading slash. *)
-val normalize_path : string -> string
 
 (** Binary-safe read of an entire file; raises [Failure] on IO error. *)
 val read_file : string -> string

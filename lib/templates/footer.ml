@@ -8,10 +8,4 @@ module Footer = struct
     p
       ~a:[ a_class [ "copyright" ] ]
       [ Html.txt (Printf.sprintf "© %d %s. All rights reserved." year name) ]
-
-  let make ?(year = 0000) ?(name = "Your Name") () =
-    let open Html in
-    footer
-      ~a:[ a_class [ "site-footer" ] ]
-      [ div ~a:[ a_class [ "footer-bottom" ] ] [ copyright ~year ~name () ] ]
 end

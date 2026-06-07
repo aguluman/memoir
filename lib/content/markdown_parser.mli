@@ -5,12 +5,13 @@
 val extract_frontmatter : string -> string option * string
 
 (** Parse a YAML frontmatter string into a {!type:Content_types.frontmatter}.
-    Malformed YAML yields {!Content_types.empty_frontmatter}. *)
+    Raises [Failure] on malformed YAML (the metadata is never silently dropped).
+*)
 val parse_yaml_frontmatter : string -> Content_types.frontmatter
 
-(** Parse just the frontmatter record from raw file content; returns
-    {!Content_types.empty_frontmatter} when no block is present. *)
-val frontmatter_of_content : string -> Content_types.frontmatter
+(** Parse the frontmatter from raw file content. [None] means the file has no
+    frontmatter block at all. Raises [Failure] on malformed YAML. *)
+val frontmatter_of_content : string -> Content_types.frontmatter option
 
 (** Render markdown body text to an HTML string. *)
 val parse_markdown : string -> string

@@ -50,13 +50,22 @@ let list_entries ~dir ~url_prefix =
   |> List.map (fun path ->
       let fm = Markdown_parser.frontmatter_of_content (read_file path) in
       let slug = Filename.remove_extension (Filename.basename path) in
+      (* [None] = no frontmatter block; a present block titled "Untitled"
+            (the keyless default) also falls back to the slug. *)
       {
         title =
-          (match fm.Content_types.title with
-          | "" | "Untitled" -> slug
-          | t -> t);
-        date = fm.Content_types.date;
-        description = fm.Content_types.description;
+          (match fm with
+          | Some f when f.Content_types.title <> "Untitled" ->
+              f.Content_types.title
+          | _ -> slug);
+        date =
+          (match fm with
+          | Some f -> f.Content_types.date
+          | None -> None);
+        description =
+          (match fm with
+          | Some f -> f.Content_types.description
+          | None -> None);
         url = url_prefix ^ slug;
       })
   |> List.sort (fun a b ->

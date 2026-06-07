@@ -1,3 +1,11 @@
 (tests
  (names template_tests)
- (libraries alcotest qcheck qcheck-alcotest memoir_lib test_helpers str))
+ (libraries
+  alcotest
+  qcheck
+  qcheck-alcotest
+  memoir_lib
+  memoir.templates
+  tyxml
+  test_helpers
+  str))
