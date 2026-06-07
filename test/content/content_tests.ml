@@ -59,6 +59,9 @@ let frontmatter_property =
     string_printable (fun content ->
       try
         let fm, body = extract_frontmatter content in
+        (* Sound invariants: extraction never grows the body, and a frontmatter
+           block is only reported when the content actually begins with "---"
+           (a "---" appearing mid-content must NOT be treated as frontmatter). *)
         String.length body <= String.length content
         &&
         match fm with
