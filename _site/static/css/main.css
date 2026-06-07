@@ -45,8 +45,10 @@
 /* 2. Design tokens ---------------------------------------------------------- */
 :root,
 :root[data-theme="light"] {
-  --primary-font: "Primary", "JetBrains Mono Nerd Font", ui-monospace, monospace;
-  --secondary-font: "Secondary", "JetBrains Mono Nerd Font", ui-monospace, monospace;
+  --primary-font:
+    "Primary", "JetBrains Mono Nerd Font", ui-monospace, monospace;
+  --secondary-font:
+    "Secondary", "JetBrains Mono Nerd Font", ui-monospace, monospace;
 
   /* Warm "paper" light theme with a racing-red accent. */
   --text-color: #2b2924;
@@ -115,17 +117,6 @@
 *::before,
 *::after {
   box-sizing: border-box;
-}
-
-/* While the page is loading, the inline <head> script adds `.preload` to <html>
-   and removes it on `load`. Suppressing transitions during that window stops the
-   stored theme from animating a white->dark fade on navigation (the theme is
-   applied instantly; only user-initiated toggles animate). */
-html.preload,
-html.preload *,
-html.preload *::before,
-html.preload *::after {
-  transition: none !important;
 }
 
 html {
@@ -496,7 +487,9 @@ tbody tr:last-child td {
   height: 2px;
   background: var(--heading-color);
   border-radius: 2px;
-  transition: transform 0.3s ease, top 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    top 0.3s ease;
 }
 
 .hamburger::before {
@@ -690,7 +683,11 @@ tbody tr:last-child td {
 .journal-entry:hover {
   transform: translateY(-3px);
   box-shadow: var(--shadow-md);
-  border-color: color-mix(in srgb, var(--accent-color) 45%, var(--border-color));
+  border-color: color-mix(
+    in srgb,
+    var(--accent-color) 45%,
+    var(--border-color)
+  );
 }
 
 .blog-entry h3,

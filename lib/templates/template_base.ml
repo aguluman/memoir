@@ -14,7 +14,6 @@ let meta_tags ~description =
       ~a:
         [ a_name "viewport"; a_content "width=device-width, initial-scale=1.0" ]
       ();
-    meta ~a:[ a_name "color-scheme"; a_content "light dark" ] ();
     meta ~a:[ a_name "description"; a_content description ] ();
     link
       ~rel:[ `Other "preload" ]
@@ -28,18 +27,15 @@ let meta_tags ~description =
       ();
     script
       (txt
-         "(function () {\n\
-         \      var stored = localStorage.getItem('theme');\n\
-         \      var prefersDark = window.matchMedia\n\
-         \        && window.matchMedia('(prefers-color-scheme: dark)').matches;\n\
-         \      var theme = stored || (prefersDark ? 'dark' : 'light');\n\
-         \      var root = document.documentElement;\n\
-         \      root.setAttribute('data-theme', theme);\n\
-         \      root.style.colorScheme = theme;\n\
-         \      root.classList.add('preload');\n\
-         \      window.addEventListener('load', function () {\n\
-         \        root.classList.remove('preload');\n\
-         \      });\n\
+         "(function() {\n\
+         \      const theme = localStorage.getItem('theme');\n\
+         \      if (theme === 'dark') {\n\
+         \        document.documentElement.setAttribute('data-theme', 'dark');\n\
+         \        document.documentElement.style.colorScheme = 'dark';\n\
+         \      } else if (theme === 'light') {\n\
+         \        document.documentElement.setAttribute('data-theme', 'light');\n\
+         \        document.documentElement.style.colorScheme = 'light';\n\
+         \      }\n\
          \    })();");
     (* Main stylesheet *)
     link ~rel:[ `Stylesheet ] ~href:"/static/css/main.css" ();
