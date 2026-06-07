@@ -31,12 +31,20 @@ module Date = struct
   let to_iso_string { year; month; day } =
     Printf.sprintf "%04d-%02d-%02d" year month day
 
-  (** Total chronological order (oldest < newest). *)
+  (* Component accessors — the type is abstract across the interface, so callers
+     that need the parts (e.g. RFC822 formatting) go through these rather than
+     reaching into the record. *)
+  let year t = t.year
+  let month t = t.month
+  let day t = t.day
+
+  (** Total chronological order (oldest < newest). Monomorphic [Int.compare]
+      rather than polymorphic [compare], per Jane Street style. *)
   let compare a b =
-    match Stdlib.compare a.year b.year with
+    match Int.compare a.year b.year with
     | 0 -> (
-        match Stdlib.compare a.month b.month with
-        | 0 -> Stdlib.compare a.day b.day
+        match Int.compare a.month b.month with
+        | 0 -> Int.compare a.day b.day
         | c -> c)
     | c -> c
 
@@ -95,28 +103,3 @@ type content_type =
   | Project
   | Journal
   | Asset  (** Non-markdown file copied through verbatim *)
-
-(** Convert string to content_type *)
-let content_type_of_string = function
-  | "page" -> Page
-  | "post" -> Post
-  | "project" -> Project
-  | "journal" -> Journal
-  | "asset" -> Asset
-  | _ -> Page (* Default to Page *)
-
-(** Convert content_type to string *)
-let string_of_content_type = function
-  | Page -> "page"
-  | Post -> "post"
-  | Project -> "project"
-  | Journal -> "journal"
-  | Asset -> "asset"
-
-(** Route information for generating pages *)
-type route = {
-  source_path : string; (* Original source file path *)
-  output_path : string; (* Output file path *)
-  url_path : string; (* URL path *)
-  content_type : content_type;
-}

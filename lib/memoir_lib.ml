@@ -137,11 +137,12 @@ let rfc822_days = [| "Sun"; "Mon"; "Tue"; "Wed"; "Thu"; "Fri"; "Sat" |]
    to be valid (it could only be built via Content_types.Date.of_string), so
    there is no parse step that can fail and no fallback branch. *)
 let format_rfc822_date (d : Content_types.Date.t) =
+  let open Content_types.Date in
   let tm =
     {
-      Unix.tm_year = d.year - 1900;
-      tm_mon = d.month - 1;
-      tm_mday = d.day;
+      Unix.tm_year = year d - 1900;
+      tm_mon = month d - 1;
+      tm_mday = day d;
       tm_hour = 0;
       tm_min = 0;
       tm_sec = 0;
@@ -153,7 +154,9 @@ let format_rfc822_date (d : Content_types.Date.t) =
   let _, normalized_tm = Unix.mktime tm in
   Printf.sprintf "%s, %02d %s %04d 00:00:00 +0000"
     rfc822_days.(normalized_tm.tm_wday)
-    d.day rfc822_months.(d.month) d.year
+    (day d)
+    rfc822_months.(month d)
+    (year d)
 
 (* Current time as an RFC822 stamp — for channel-level lastBuildDate/pubDate and
    for undated items. *)
