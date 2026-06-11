@@ -144,6 +144,7 @@ analyze-size:
 .PHONY: new-post
 new-post: $(CONTENT_DIR)
 	@read -p "Enter blog post title: " title; \
+	case "$$title" in *--*) echo "$(YELLOW)⚠️  Collapsing '--' in title: a '--' sequence breaks frontmatter parsing$(NC)"; title=$$(echo "$$title" | sed 's/--*/-/g');; esac; \
 	slug=$$(echo "$$title" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-\|-$$//g'); \
 	file="$(CONTENT_DIR)/pages/blog/$$slug.md"; \
 	date=$$(date +%Y-%m-%d); \
@@ -152,8 +153,9 @@ new-post: $(CONTENT_DIR)
 	echo "title: \"$$title\"" >> "$$file"; \
 	echo "date: $$date" >> "$$file"; \
 	echo "tags: []" >> "$$file"; \
-	echo "draft: true" >> "$$file"; \
-	echo "description: \"\"" >> "$$file"; \
+	echo "# draft: true   uncomment to hide this post from the RSS feed; the page still renders on the site" >> "$$file"; \
+	echo "# description: fill in to show a blurb on the blog index and set the meta description" >> "$$file"; \
+	echo "# also supported: updated, author, featured_image, slug" >> "$$file"; \
 	echo "---" >> "$$file"; \
 	echo "" >> "$$file"; \
 	echo "# $$title" >> "$$file"; \
@@ -164,6 +166,7 @@ new-post: $(CONTENT_DIR)
 .PHONY: new-journal
 new-journal: $(CONTENT_DIR)
 	@read -p "Enter journal entry title: " title; \
+	case "$$title" in *--*) echo "$(YELLOW)⚠️  Collapsing '--' in title: a '--' sequence breaks frontmatter parsing$(NC)"; title=$$(echo "$$title" | sed 's/--*/-/g');; esac; \
 	slug=$$(echo "$$title" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-\|-$$//g'); \
 	file="$(CONTENT_DIR)/pages/journal/$$slug.md"; \
 	date=$$(date +%Y-%m-%d); \
@@ -172,7 +175,7 @@ new-journal: $(CONTENT_DIR)
 	echo "title: \"$$title\"" >> "$$file"; \
 	echo "date: $$date" >> "$$file"; \
 	echo "tags: []" >> "$$file"; \
-	echo "description: \"\"" >> "$$file"; \
+	echo "# description: fill in to set the page's meta description" >> "$$file"; \
 	echo "---" >> "$$file"; \
 	echo "" >> "$$file"; \
 	echo "# $$title" >> "$$file"; \
@@ -183,14 +186,15 @@ new-journal: $(CONTENT_DIR)
 .PHONY: new-page
 new-page: $(CONTENT_DIR)
 	@read -p "Enter page title: " title; \
+	case "$$title" in *--*) echo "$(YELLOW)⚠️  Collapsing '--' in title: a '--' sequence breaks frontmatter parsing$(NC)"; title=$$(echo "$$title" | sed 's/--*/-/g');; esac; \
 	slug=$$(echo "$$title" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-\|-$$//g'); \
 	file="$(CONTENT_DIR)/pages/$$slug/index.md"; \
 	echo "$(BLUE)📄 Creating new page: $$file$(NC)"; \
 	mkdir -p $$(dirname "$$file"); \
 	echo "---" > "$$file"; \
 	echo "title: \"$$title\"" >> "$$file"; \
-	echo "layout: \"page\"" >> "$$file"; \
-	echo "description: \"\"" >> "$$file"; \
+	echo "# layout: sets the body CSS class; defaults to \"page\" when omitted" >> "$$file"; \
+	echo "# description: fill in to set the page's meta description" >> "$$file"; \
 	echo "---" >> "$$file"; \
 	echo "" >> "$$file"; \
 	echo "# $$title" >> "$$file"; \
