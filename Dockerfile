@@ -24,9 +24,7 @@ RUN eval $(opam env --switch=5.4.0) && \
     opam install --yes \
     dune \
     yaml \
-    core_unix \
     tyxml \
-    yojson \
     omd \
     dream \
     alcotest \
