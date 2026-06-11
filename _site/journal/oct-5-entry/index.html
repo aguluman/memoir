@@ -1,13 +1,9 @@
-<!DOCTYPE html><!DOCTYPE html>
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><title>Mental Check: Reflecting on the OCaml Journey So Far</title><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><meta name="description" content="A reflection on my OCaml web development journey so far."/><link rel="preload" href="/static/fonts/JetBrainsMono-Regular.woff2" data-as="font" data-type="font/woff2" data-crossorigin="anonymous"/><script>(function() {
-      const theme = localStorage.getItem('theme');
-      if (theme === 'dark') {
-        document.documentElement.setAttribute('data-theme', 'dark');
-        document.documentElement.style.colorScheme = 'dark';
-      } else if (theme === 'light') {
-        document.documentElement.setAttribute('data-theme', 'light');
-        document.documentElement.style.colorScheme = 'light';
-      }
+      const theme = localStorage.getItem('theme')
+        || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+      document.documentElement.style.colorScheme = theme;
     })();</script><link rel="stylesheet" href="/static/css/main.css"/><link rel="stylesheet" href="/static/css/highlight.css"/><link rel="icon" href="/static/images/favicon.svg" type="image/svg+xml"/><script src="/static/js/main.js" defer="defer"></script><script src="/static/js/theme-toggle.js" defer="defer"></script><script src="/static/js/highlight.min.js"></script><link rel="canonical" href="https://fearful-odds.rocks/journal/oct-5-entry"/><meta property="og:title" content="Mental Check: Reflecting on the OCaml Journey So Far"/><meta property="og:description" content="A reflection on my OCaml web development journey so far."/><meta property="og:url" content="https://fearful-odds.rocks/journal/oct-5-entry"/><meta property="og:image" content="/static/images/default-og.jpg"/><meta property="og:type" content="article"/><meta property="article:author" content="Chukwuma Akunyili"/></head><body class="journal-entry"><button class="theme-toggle" title="Toggle dark/light mode" data-aria-label="Toggle dark/light mode"><span class="sun-icon">☀️</span><span class="moon-icon">🌙</span></button><header class="site-header"><div><nav class="site-navigation" aria-label="Main navigation"><button class="mobile-nav-toggle" aria-expanded="false" aria-controls="primary-navigation" aria-label="Toggle navigation menu"><span class="hamburger"></span><span class="sr-only">Menu</span></button><ul class="nav-list" id="primary-navigation" data-visible="false"><li class="nav-item"><a href="/">Home</a></li><li class="nav-item"><a href="/about">About</a></li><li class="nav-item"><a href="/projects">Projects</a></li><li class="nav-item"><a href="/blog">Blog</a></li><li class="nav-item"><a href="/journal">Journal</a></li><li class="nav-item"><a href="/contact">Contact</a></li></ul></nav></div></header><main><h1 id="looking-back---the-journey-thus-far">Looking Back - The Journey thus far!</h1>
 <p><strong>Date: October 5, 2025</strong></p>
 <p>Today I had a headache, maybe I didn't have enough sleep.
