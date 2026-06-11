@@ -16,9 +16,7 @@
             ocaml
             dune_3
             yaml
-            core_unix
             tyxml
-            yojson
             omd
             dream
             # Test dependencies

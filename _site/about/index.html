@@ -1,13 +1,9 @@
-<!DOCTYPE html><!DOCTYPE html>
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><title>About Me</title><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><meta name="description" content="Learn more about the author and software engineer behind Fearful Odds"/><link rel="preload" href="/static/fonts/JetBrainsMono-Regular.woff2" data-as="font" data-type="font/woff2" data-crossorigin="anonymous"/><script>(function() {
-      const theme = localStorage.getItem('theme');
-      if (theme === 'dark') {
-        document.documentElement.setAttribute('data-theme', 'dark');
-        document.documentElement.style.colorScheme = 'dark';
-      } else if (theme === 'light') {
-        document.documentElement.setAttribute('data-theme', 'light');
-        document.documentElement.style.colorScheme = 'light';
-      }
+      const theme = localStorage.getItem('theme')
+        || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+      document.documentElement.style.colorScheme = theme;
     })();</script><link rel="stylesheet" href="/static/css/main.css"/><link rel="stylesheet" href="/static/css/highlight.css"/><link rel="icon" href="/static/images/favicon.svg" type="image/svg+xml"/><script src="/static/js/main.js" defer="defer"></script><script src="/static/js/theme-toggle.js" defer="defer"></script><script src="/static/js/highlight.min.js"></script><link rel="canonical" href="https://fearful-odds.rocks/about"/><meta property="og:title" content="About Me"/><meta property="og:description" content="Learn more about the author and software engineer behind Fearful Odds"/><meta property="og:url" content="https://fearful-odds.rocks/about"/><meta property="og:image" content="/static/images/default-og.jpg"/><meta property="og:type" content="article"/><meta property="article:author" content="Chukwuma Akunyili"/></head><body class="about"><button class="theme-toggle" title="Toggle dark/light mode" data-aria-label="Toggle dark/light mode"><span class="sun-icon">☀️</span><span class="moon-icon">🌙</span></button><header class="site-header"><div><nav class="site-navigation" aria-label="Main navigation"><button class="mobile-nav-toggle" aria-expanded="false" aria-controls="primary-navigation" aria-label="Toggle navigation menu"><span class="hamburger"></span><span class="sr-only">Menu</span></button><ul class="nav-list" id="primary-navigation" data-visible="false"><li class="nav-item"><a href="/">Home</a></li><li class="nav-item active"><a href="/about" aria-current="page">About</a></li><li class="nav-item"><a href="/projects">Projects</a></li><li class="nav-item"><a href="/blog">Blog</a></li><li class="nav-item"><a href="/journal">Journal</a></li><li class="nav-item"><a href="/contact">Contact</a></li></ul></nav></div></header><main><h1 id="about-me">About Me</h1>
 <p>Welcome to my corner of the digital world. I'm Chukwuma Akunyili, a software engineer with a passion for functional programming, elegant systems design, and pushing the boundaries of what's possible in software.</p>
 <h2 id="my-journey">My Journey</h2>
