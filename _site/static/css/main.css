@@ -112,6 +112,45 @@
   color-scheme: dark;
 }
 
+/* No-JS fallback (odoc-style): when scripts never set data-theme, follow the
+   system preference. Must mirror the :root[data-theme="dark"] block above. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --text-color: #e4e0d8;
+    --heading-color: #faf7f1;
+    --text-muted: #968f83;
+
+    --background-color: #131210;
+    --card-bg: #1c1a17;
+    --accent-bg: #1c1a17;
+    --border-color: #2e2a25;
+
+    --accent-color: #ff6a5c;
+    --accent-strong: #ff8b80;
+    --link-color: #ff7d70;
+    --link-hover-color: #ffa399;
+
+    --blockquote-bg: rgba(255, 106, 92, 0.08);
+    --footer-bg: #1a1815;
+    --footer-text: #e4e0d8;
+
+    --hero-overlay: rgba(0, 0, 0, 0.7);
+    --content-bg: rgba(255, 255, 255, 0.05);
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+
+    color-scheme: dark;
+  }
+}
+
+/* The toggle is inert without JS — hide it rather than show a dead button. */
+@media (scripting: none) {
+  .theme-toggle {
+    display: none;
+  }
+}
+
 /* 3. Base & layout ---------------------------------------------------------- */
 *,
 *::before,
@@ -556,7 +595,7 @@ tbody tr:last-child td {
   border-color: var(--accent-color);
 }
 
-/* Default (light) shows the moon (switch-to-dark); JS keeps this in sync. */
+/* Default (light) shows the moon (switch-to-dark); [data-theme] flips it. */
 .sun-icon {
   display: none;
 }
@@ -667,8 +706,11 @@ tbody tr:last-child td {
   width: 100%;
 }
 
-.blog-entry,
-.journal-entry {
+/* Scoped to the listing containers: "blog-entry"/"journal-entry" are also
+   frontmatter layout values that become the <body> class of entry pages, so
+   unscoped selectors would style an entire page as a hover-card. */
+.blog-entries .blog-entry,
+.journal-entries .journal-entry {
   padding: 1.5rem;
   background: var(--card-bg);
   border: 1px solid var(--border-color);
@@ -679,8 +721,8 @@ tbody tr:last-child td {
     border-color 0.2s ease;
 }
 
-.blog-entry:hover,
-.journal-entry:hover {
+.blog-entries .blog-entry:hover,
+.journal-entries .journal-entry:hover {
   transform: translateY(-3px);
   box-shadow: var(--shadow-md);
   border-color: color-mix(
@@ -690,20 +732,20 @@ tbody tr:last-child td {
   );
 }
 
-.blog-entry h3,
-.journal-entry h3 {
+.blog-entries .blog-entry h3,
+.journal-entries .journal-entry h3 {
   margin: 0 0 0.5rem;
   font-size: 1.2rem;
 }
 
-.blog-entry h3 a,
-.journal-entry h3 a {
+.blog-entries .blog-entry h3 a,
+.journal-entries .journal-entry h3 a {
   color: var(--heading-color);
   text-decoration: none;
 }
 
-.blog-entry h3 a:hover,
-.journal-entry h3 a:hover {
+.blog-entries .blog-entry h3 a:hover,
+.journal-entries .journal-entry h3 a:hover {
   color: var(--accent-color);
 }
 
@@ -880,8 +922,8 @@ tbody tr:last-child td {
     padding: 1rem 0.85rem 2rem;
   }
 
-  .blog-entry,
-  .journal-entry {
+  .blog-entries .blog-entry,
+  .journal-entries .journal-entry {
     padding: 1.15rem;
   }
 
