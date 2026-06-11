@@ -1,10 +1,12 @@
-(** Main templates module that re-exports all template components *)
+(** Page assembly: fills the {!Template_base.layout} slots (header / main /
+    footer) with this site's components — navigation, webring, copyright — and
+    renders the result to an HTML string. *)
 
-open Footer
+open Template_base
 open Navigation
 open Seo
-open Template_base
 open Webring
+open Footer
 
 (** Convenient function to create a page with all components.
 
@@ -26,8 +28,8 @@ let create_page ?(lang = "en") ?(current_path = "/") ?(page_class = "page")
   in
 
   (* Webring navigation is appended to every page's content (single source of
-     truth lives in Webring; previously this was an inline string in the
-     generator). The annotation pins the element list to flow content so the
+     truth lives in Webring;
+     The annotation pins the element list to flow content so the
      public signature stays a simple closed type. *)
   let content =
     content @ [ (Webring.navigation () : Html_types.flow5 Html.elt) ]
@@ -47,6 +49,6 @@ let create_page ?(lang = "en") ?(current_path = "/") ?(page_class = "page")
       ()
   in
 
-  (* Convert to string *)
-  let html_string = doctype ^ Format.asprintf "%a" (Html.pp ()) html_output in
-  html_string
+  (* Convert to string — [Html.pp] already emits the doctype, so nothing is
+     prepended (a manual "<!DOCTYPE html>" here doubled it on every page). *)
+  Format.asprintf "%a" (Html.pp ()) html_output

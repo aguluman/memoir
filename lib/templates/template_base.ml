@@ -2,9 +2,6 @@ open Tyxml
 
 (** Base HTML templates and components *)
 
-(** Generate HTML doctype *)
-let doctype = "<!DOCTYPE html>"
-
 (** Meta tags for SEO and responsiveness *)
 let meta_tags ~description =
   let open Html in
@@ -28,14 +25,11 @@ let meta_tags ~description =
     script
       (txt
          "(function() {\n\
-         \      const theme = localStorage.getItem('theme');\n\
-         \      if (theme === 'dark') {\n\
-         \        document.documentElement.setAttribute('data-theme', 'dark');\n\
-         \        document.documentElement.style.colorScheme = 'dark';\n\
-         \      } else if (theme === 'light') {\n\
-         \        document.documentElement.setAttribute('data-theme', 'light');\n\
-         \        document.documentElement.style.colorScheme = 'light';\n\
-         \      }\n\
+         \      const theme = localStorage.getItem('theme')\n\
+         \        || (matchMedia('(prefers-color-scheme: dark)').matches ? \
+          'dark' : 'light');\n\
+         \      document.documentElement.setAttribute('data-theme', theme);\n\
+         \      document.documentElement.style.colorScheme = theme;\n\
          \    })();");
     (* Main stylesheet *)
     link ~rel:[ `Stylesheet ] ~href:"/static/css/main.css" ();
