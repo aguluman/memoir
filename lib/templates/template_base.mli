@@ -2,9 +2,6 @@
 
 open Tyxml
 
-(** The HTML5 doctype string. *)
-val doctype : string
-
 (** Assemble a full HTML document: [<head>] (title + standard meta tags +
     [additional_head]) and [<body>] (header / main / footer). The three content
     lists are flow content; [additional_head] holds extra head links/meta (e.g.
