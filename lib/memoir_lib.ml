@@ -72,9 +72,17 @@ let load_rss_pages ~content_dir : Content_types.content_page list =
           if Filename.check_suffix file ".md" && file <> "index.md" then (
             try
               let path = Filename.concat dir file in
-              let content = read_file path in
+              (* Split once at the source: the frontmatter drives the item
+                 metadata and only the body is stored, so a feed excerpt that
+                 still carries the YAML block is unrepresentable here (Minsky)
+                 rather than filtered out downstream. *)
+              let yaml, body =
+                Memoir_content.Markdown_parser.extract_frontmatter
+                  (read_file path)
+              in
               let fm =
-                Memoir_content.Markdown_parser.frontmatter_of_content content
+                Option.map Memoir_content.Markdown_parser.parse_yaml_frontmatter
+                  yaml
               in
               let slug = Filename.remove_extension file in
               (* No frontmatter block, or a keyless "Untitled" block, falls
@@ -90,7 +98,7 @@ let load_rss_pages ~content_dir : Content_types.content_page list =
                 {
                   Content_types.path;
                   frontmatter = fm;
-                  content;
+                  content = body;
                   html_content = None;
                   url_path = url_prefix ^ slug;
                 }
@@ -122,7 +130,6 @@ let escape_xml s =
 
 let rfc822_months =
   [|
-    "";
     "Jan";
     "Feb";
     "Mar";
@@ -136,6 +143,27 @@ let rfc822_months =
     "Nov";
     "Dec";
   |]
+
+(* Wrap [s] in a CDATA section that cannot be broken out of: the only sequence
+   the XML spec recognises inside CDATA is its "]]>" terminator, so any
+   occurrence in [s] is split across two adjacent sections. Entity-escaping the
+   text instead would double-encode — CDATA is literal text, so an "&quot;"
+   would reach the feed reader verbatim. *)
+let cdata s =
+  let buf = Buffer.create (String.length s + 24) in
+  Buffer.add_string buf "<![CDATA[";
+  let n = String.length s in
+  let i = ref 0 in
+  while !i < n do
+    if !i + 2 < n && s.[!i] = ']' && s.[!i + 1] = ']' && s.[!i + 2] = '>' then (
+      Buffer.add_string buf "]]]]><![CDATA[>";
+      i := !i + 3)
+    else (
+      Buffer.add_char buf s.[!i];
+      incr i)
+  done;
+  Buffer.add_string buf "]]>";
+  Buffer.contents buf
 
 let rfc822_days = [| "Sun"; "Mon"; "Tue"; "Wed"; "Thu"; "Fri"; "Sat" |]
 
@@ -161,11 +189,9 @@ let format_rfc822_date (d : Content_types.Date.t) =
   Printf.sprintf "%s, %02d %s %04d 00:00:00 +0000"
     rfc822_days.(normalized_tm.tm_wday)
     (day d)
-    rfc822_months.(month d)
+    rfc822_months.(normalized_tm.tm_mon)
     (year d)
 
-(* Current time as an RFC822 stamp — for channel-level lastBuildDate/pubDate and
-   for undated items. *)
 let format_rfc822_now () =
   let tm = Unix.gmtime (Unix.time ()) in
   Printf.sprintf "%s, %02d %s %04d %02d:%02d:%02d +0000"
@@ -175,12 +201,19 @@ let format_rfc822_now () =
 let generate_rss_item (page : Content_types.content_page) config =
   let fm = page.frontmatter in
   let title = escape_xml fm.title in
+  let excerpt s =
+    let s = String.trim s in
+    if String.length s <= 200 then s
+    else
+      let cut = String.sub s 0 200 in
+      match String.rindex_opt cut ' ' with
+      | Some i -> String.sub cut 0 i ^ "…"
+      | None -> cut
+  in
   let description =
     match fm.description with
-    | Some s -> escape_xml s
-    | None ->
-        escape_xml
-          (String.sub page.content 0 (min 200 (String.length page.content)))
+    | Some s -> s
+    | None -> excerpt page.content
   in
   let link = Printf.sprintf "%s%s" config.base_url page.url_path in
   let pub_date =
@@ -204,12 +237,12 @@ let generate_rss_item (page : Content_types.content_page) config =
     <item>
       <title>%s</title>
       <link>%s</link>
-      <description><![CDATA[%s]]></description>
+      <description>%s</description>
       <dc:creator>%s</dc:creator>
       <pubDate>%s</pubDate>
       <guid isPermaLink="true">%s</guid>%s
     </item>|}
-    title link description author_name pub_date link
+    title link (cdata description) author_name pub_date link
     (if categories_xml = "" then "" else "\n" ^ categories_xml)
 
 let generate_rss_feed (pages : Content_types.content_page list) config =
@@ -221,7 +254,7 @@ let generate_rss_feed (pages : Content_types.content_page list) config =
     |> List.sort (fun (a : Content_types.content_page) b ->
         Content_types.Date.compare_opt_desc a.frontmatter.date
           b.frontmatter.date)
-    |> List.take 20 (* Limit to 20 most recent items (Stdlib, OCaml >= 5.3) *)
+    |> List.take 20
   in
 
   let items =
