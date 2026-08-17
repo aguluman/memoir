@@ -55,81 +55,74 @@ help:
 # Primary commands
 .PHONY: generate
 generate: build
-	@echo "$(BLUE)🚀 Generating static site...$(NC)"
+	@echo "$(BLUE) Generating static site...$(NC)"
 	@$(DUNE) exec bin/generator.exe
-	@echo "$(GREEN)✅ Site generated successfully in $(SITE_DIR)/$(NC)"
-	@echo "$(BLUE)🔍 Copying documentation to site...$(NC)"
+	@echo "$(GREEN) Site generated successfully in $(SITE_DIR)/$(NC)"
+	@echo "$(BLUE) Copying documentation to site...$(NC)"
 	@$(MAKE) copy-docs
 
 
 .PHONY: generate-force
 generate-force: build
-	@echo "$(BLUE)🚀 Forcing full site generation (ignoring cache)...$(NC)"
+	@echo "$(BLUE) Forcing full site generation (ignoring cache)...$(NC)"
 	@$(DUNE) exec bin/generator.exe -- --force
-	@echo "$(GREEN)✅ Site generated successfully in $(SITE_DIR)/$(NC)"
-	@echo "$(BLUE)🔍 Copying documentation to site...$(NC)"
+	@echo "$(GREEN) Site generated successfully in $(SITE_DIR)/$(NC)"
+	@echo "$(BLUE) Copying documentation to site...$(NC)"
 	@$(MAKE) copy-docs
 	
 
 .PHONY: serve
 serve: build
-	@echo "$(BLUE)🌐 Starting development server...$(NC)"
-	@echo "$(YELLOW)📍 Server will be available at: http://$(HOST):$(PORT)$(NC)"
-	@echo "$(YELLOW)📡 RSS feed available at: http://$(HOST):$(PORT)/feed.xml$(NC)"
-	@echo "$(MAGENTA)🛑 Press Ctrl+C to stop the server$(NC)"
+	@echo "$(BLUE) Starting development server...$(NC)"
+	@echo "$(YELLOW) Server will be available at: http://$(HOST):$(PORT)$(NC)"
+	@echo "$(YELLOW) RSS feed available at: http://$(HOST):$(PORT)/feed.xml$(NC)"
+	@echo "$(MAGENTA) Press Ctrl+C to stop the server$(NC)"
 	@$(DUNE) exec --watch bin/server.exe
 
 
 # Build commands
 .PHONY: build
 build:
-	@echo "$(BLUE)🔧 Building project...$(NC)"
+	@echo "$(BLUE) Building project...$(NC)"
 	@$(DUNE) build
-	@echo "$(GREEN)✅ Build completed$(NC)"
+	@echo "$(GREEN) Build completed$(NC)"
 
 
 # Test commands
 .PHONY: test
 test: build
-	@echo "$(BLUE)🧪 Running tests...$(NC)"
-	@$(DUNE) runtest || (echo "$(RED)❌ Some tests failed$(NC)" && exit 1)
-	@echo "$(GREEN)✅ All tests passed$(NC)"
+	@echo "$(BLUE) Running tests...$(NC)"
+	@$(DUNE) runtest || (echo "$(RED) Some tests failed$(NC)" && exit 1)
+	@echo "$(GREEN) All tests passed$(NC)"
 
 .PHONY: test-watch
 test-watch:
-	@echo "$(BLUE)🔍 Running tests in watch mode...$(NC)"
+	@echo "$(BLUE) Running tests in watch mode...$(NC)"
 	@$(DUNE) runtest --watch
 
 .PHONY: test-verbose
 test-verbose: build
-	@echo "$(BLUE)🧪 Running tests with verbose output...$(NC)"
+	@echo "$(BLUE) Running tests with verbose output...$(NC)"
 	@$(DUNE) runtest --verbose
 
 
 # Clean commands
 .PHONY: clean
 clean:
-	@echo "$(BLUE)🧹 Cleaning build artifacts...$(NC)"
+	@echo "$(BLUE) Cleaning build artifacts...$(NC)"
 	@$(DUNE) clean
-	@echo "$(GREEN)✅ Clean completed$(NC)"
+	@echo "$(GREEN) Clean completed$(NC)"
 
 
 # Development utilities
 fmt:
-	@echo "$(BLUE)💅 Formatting CSS files...$(NC)"
-	@npx prettier --write --log-level=warn "$(SITE_DIR)/static/css/*.css" || true
-	@echo "$(GREEN)✅ CSS formatted$(NC)"
-	@echo "$(BLUE)💅 Formatting JavaScript files...$(NC)"
-	@npx prettier --write --log-level=warn "$(SITE_DIR)/static/js/*.js" || true
-	@echo "$(GREEN)✅ JavaScript formatted$(NC)"
-	@echo "$(BLUE)💅 Formatting OCaml code...$(NC)"
+	@deno fmt $(SITE_DIR)/static/css $(SITE_DIR)/static/js
 	@$(DUNE) fmt
-	@echo "$(GREEN)✅ OCaml code formatted$(NC)"
-
+	
 
 .PHONY: analyze-size
 analyze-size:
-	@echo "$(BLUE)📊 Analyzing site size...$(NC)"
+	@echo "$(BLUE) Analyzing site size...$(NC)"
 	@echo ""
 	@du -sh $(SITE_DIR)
 	@echo ""
@@ -144,7 +137,7 @@ analyze-size:
 .PHONY: new-post
 new-post: $(CONTENT_DIR)
 	@read -p "Enter blog post title: " title; \
-	case "$$title" in *--*) echo "$(YELLOW)⚠️  Collapsing '--' in title: a '--' sequence breaks frontmatter parsing$(NC)"; title=$$(echo "$$title" | sed 's/--*/-/g');; esac; \
+	case "$$title" in *--*) echo "$(YELLOW)  Collapsing '--' in title: a '--' sequence breaks frontmatter parsing$(NC)"; title=$$(echo "$$title" | sed 's/--*/-/g');; esac; \
 	slug=$$(echo "$$title" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-\|-$$//g'); \
 	file="$(CONTENT_DIR)/pages/blog/$$slug.md"; \
 	date=$$(date +%Y-%m-%d); \
@@ -161,16 +154,16 @@ new-post: $(CONTENT_DIR)
 	echo "# $$title" >> "$$file"; \
 	echo "" >> "$$file"; \
 	echo "Your content here..." >> "$$file"; \
-	echo "$(GREEN)✅ Created: $$file$(NC)"
+	echo "$(GREEN) Created: $$file$(NC)"
 
 .PHONY: new-journal
 new-journal: $(CONTENT_DIR)
 	@read -p "Enter journal entry title: " title; \
-	case "$$title" in *--*) echo "$(YELLOW)⚠️  Collapsing '--' in title: a '--' sequence breaks frontmatter parsing$(NC)"; title=$$(echo "$$title" | sed 's/--*/-/g');; esac; \
+	case "$$title" in *--*) echo "$(YELLOW)  Collapsing '--' in title: a '--' sequence breaks frontmatter parsing$(NC)"; title=$$(echo "$$title" | sed 's/--*/-/g');; esac; \
 	slug=$$(echo "$$title" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-\|-$$//g'); \
 	file="$(CONTENT_DIR)/pages/journal/$$slug.md"; \
 	date=$$(date +%Y-%m-%d); \
-	echo "$(BLUE)📔 Creating new journal entry: $$file$(NC)"; \
+	echo "$(BLUE) Creating new journal entry: $$file$(NC)"; \
 	echo "---" > "$$file"; \
 	echo "title: \"$$title\"" >> "$$file"; \
 	echo "date: $$date" >> "$$file"; \
@@ -181,12 +174,12 @@ new-journal: $(CONTENT_DIR)
 	echo "# $$title" >> "$$file"; \
 	echo "" >> "$$file"; \
 	echo "Your thoughts here..." >> "$$file"; \
-	echo "$(GREEN)✅ Created: $$file$(NC)"
+	echo "$(GREEN) Created: $$file$(NC)"
 	
 .PHONY: new-page
 new-page: $(CONTENT_DIR)
 	@read -p "Enter page title: " title; \
-	case "$$title" in *--*) echo "$(YELLOW)⚠️  Collapsing '--' in title: a '--' sequence breaks frontmatter parsing$(NC)"; title=$$(echo "$$title" | sed 's/--*/-/g');; esac; \
+	case "$$title" in *--*) echo "$(YELLOW)  Collapsing '--' in title: a '--' sequence breaks frontmatter parsing$(NC)"; title=$$(echo "$$title" | sed 's/--*/-/g');; esac; \
 	slug=$$(echo "$$title" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-\|-$$//g'); \
 	file="$(CONTENT_DIR)/pages/$$slug/index.md"; \
 	echo "$(BLUE)📄 Creating new page: $$file$(NC)"; \
@@ -200,7 +193,7 @@ new-page: $(CONTENT_DIR)
 	echo "# $$title" >> "$$file"; \
 	echo "" >> "$$file"; \
 	echo "Your content here..." >> "$$file"; \
-	echo "$(GREEN)✅ Created: $$file$(NC)"
+	echo "$(GREEN) Created: $$file$(NC)"
 
 # Documentation commands
 .PHONY:docs-build copy-docs
@@ -210,12 +203,12 @@ docs-build:
 	@echo "Documentation built successfully in _build/default/_doc/_html/"
 
 copy-docs: docs-build
-	@echo "$(BLUE)📚 Copying documentation to $(SITE_DIR)/docs/$(NC)"
+	@echo "$(BLUE) Copying documentation to $(SITE_DIR)/docs/$(NC)"
 	@rm -rf $(SITE_DIR)/docs
 	@mkdir -p $(SITE_DIR)/docs
 	@cp -r --preserve=all _build/default/_doc/_html/* $(SITE_DIR)/docs/
 	@chmod -R u+rwX,go+rX $(SITE_DIR)/docs/
-	@echo "$(GREEN)✅ Documentation copied to $(SITE_DIR)/docs/$(NC)"
+	@echo "$(GREEN) Documentation copied to $(SITE_DIR)/docs/$(NC)"
 
 # Default target
 .DEFAULT_GOAL := help

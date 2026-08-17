@@ -1,8 +1,6 @@
 open Tyxml
 
-(** Responsive navigation menu component *)
 module Navigation = struct
-  (** Navigation link item with active state *)
   let nav_item ~href ~text ~current_path =
     let open Html in
     let is_active = href = current_path in
@@ -19,7 +17,6 @@ module Navigation = struct
           [ Html.txt text ];
       ]
 
-  (** Mobile navigation toggle button *)
   let mobile_toggle () =
     let open Html in
     button
@@ -35,7 +32,6 @@ module Navigation = struct
         span ~a:[ a_class [ "sr-only" ] ] [ Html.txt "Menu" ];
       ]
 
-  (** Main navigation component *)
   let make ?(current_path = "/") () =
     let open Html in
     nav

@@ -1,7 +1,3 @@
-(* Site configuration — the single source of truth shared by both executables.
-   Only the fields actually consumed survive: the RSS feed reads the metadata
-   (site_title/description/author/base_url) and both bins agree on the build
-   paths (output_dir/content_dir). *)
 type config = {
   site_title : string;
   site_description : string;
@@ -13,8 +9,6 @@ type config = {
 
 let site_domain = "https://fearful-odds.rocks"
 
-(* The one canonical configuration. The generator and the dev server both use
-   this rather than each hand-rolling a near-identical literal. *)
 let default_config =
   {
     site_title = "Chukwuma Akunyili's Blog";
@@ -26,20 +20,11 @@ let default_config =
     content_dir = "content";
   }
 
-(* The processed-page model is the single canonical {!Content_types.content_page}
-   (frontmatter + content + url). The RSS feed consumes that type directly rather
-   than maintaining a parallel page/metadata record. *)
-
-(* --- Filesystem helpers (shared by the generator and the dev server) ----- *)
-
-(* Binary-safe read; closes the channel even on exception, and binary mode
-   avoids CRLF translation that would corrupt images / shift byte counts. *)
 let read_file path =
   try In_channel.with_open_bin path In_channel.input_all
   with Sys_error msg ->
     failwith (Printf.sprintf "Failed to read file %s: %s" path msg)
 
-(* Create [dir] and any missing parents. *)
 let rec ensure_directory_exists dir =
   if dir = "" || dir = "." || dir = "/" || Sys.file_exists dir then (
     if Sys.file_exists dir && not (Sys.is_directory dir) then
@@ -48,7 +33,6 @@ let rec ensure_directory_exists dir =
     ensure_directory_exists (Filename.dirname dir);
     Sys.mkdir dir 0o755)
 
-(* Binary-safe write; creates parent directories as needed. *)
 let write_file path content =
   ensure_directory_exists (Filename.dirname path);
   try
@@ -57,12 +41,6 @@ let write_file path content =
   with Sys_error msg ->
     failwith (Printf.sprintf "Failed to write file %s: %s" path msg)
 
-(* --- Content loading for the RSS feed ------------------------------------ *)
-
-(* Load blog and journal posts as {!Content_types.content_page}s. Single source
-   of truth used by both bin/generator.ml and bin/server.ml; frontmatter is
-   parsed by the same YAML parser the generator uses for pages. Ordering/limiting
-   is left to {!generate_rss_feed}. *)
 let load_rss_pages ~content_dir : Content_types.content_page list =
   let load subdir url_prefix =
     let dir = Filename.concat content_dir subdir in
@@ -72,10 +50,7 @@ let load_rss_pages ~content_dir : Content_types.content_page list =
           if Filename.check_suffix file ".md" && file <> "index.md" then (
             try
               let path = Filename.concat dir file in
-              (* Split once at the source: the frontmatter drives the item
-                 metadata and only the body is stored, so a feed excerpt that
-                 still carries the YAML block is unrepresentable here (Minsky)
-                 rather than filtered out downstream. *)
+
               let yaml, body =
                 Memoir_content.Markdown_parser.extract_frontmatter
                   (read_file path)
@@ -85,8 +60,7 @@ let load_rss_pages ~content_dir : Content_types.content_page list =
                   yaml
               in
               let slug = Filename.remove_extension file in
-              (* No frontmatter block, or a keyless "Untitled" block, falls
-                    back to the slug for the title. *)
+
               let fm =
                 match fm with
                 | None -> { Content_types.empty_frontmatter with title = slug }
@@ -103,8 +77,6 @@ let load_rss_pages ~content_dir : Content_types.content_page list =
                   url_path = url_prefix ^ slug;
                 }
             with Failure msg ->
-              (* Surface (don't swallow) a malformed post; skip just that one
-                    so a bad file can't take down the whole feed at runtime. *)
               Printf.eprintf "skipping RSS post %s: %s\n%!"
                 (Filename.concat dir file) msg;
               None)
@@ -144,11 +116,6 @@ let rfc822_months =
     "Dec";
   |]
 
-(* Wrap [s] in a CDATA section that cannot be broken out of: the only sequence
-   the XML spec recognises inside CDATA is its "]]>" terminator, so any
-   occurrence in [s] is split across two adjacent sections. Entity-escaping the
-   text instead would double-encode — CDATA is literal text, so an "&quot;"
-   would reach the feed reader verbatim. *)
 let cdata s =
   let buf = Buffer.create (String.length s + 24) in
   Buffer.add_string buf "<![CDATA[";
@@ -167,9 +134,6 @@ let cdata s =
 
 let rfc822_days = [| "Sun"; "Mon"; "Tue"; "Wed"; "Thu"; "Fri"; "Sat" |]
 
-(* RFC822 pubDate for an item's parsed date. Total: the date is already known
-   to be valid (it could only be built via Content_types.Date.of_string), so
-   there is no parse step that can fail and no fallback branch. *)
 let format_rfc822_date (d : Content_types.Date.t) =
   let open Content_types.Date in
   let tm =
@@ -223,7 +187,6 @@ let generate_rss_item (page : Content_types.content_page) config =
   in
   let author_name = escape_xml config.author in
 
-  (* Generate category tags *)
   let categories =
     List.map
       (fun tag ->
@@ -246,7 +209,6 @@ let generate_rss_item (page : Content_types.content_page) config =
     (if categories_xml = "" then "" else "\n" ^ categories_xml)
 
 let generate_rss_feed (pages : Content_types.content_page list) config =
-  (* Filter out draft pages and sort by date (newest first) *)
   let published_pages =
     pages
     |> List.filter (fun (page : Content_types.content_page) ->
@@ -285,13 +247,9 @@ let generate_rss_feed (pages : Content_types.content_page list) config =
     <webMaster>%s</webMaster>%s
   </channel>
 </rss>|}
-    (escape_xml config.site_title) (* %s 1 *)
-    (escape_xml config.site_description) (* %s 2 *)
-    config.base_url (* %s 3 *) config.base_url (* %s 4 *)
-    (escape_xml config.site_title) (* %s 5 *)
-    config.base_url (* %s 6 *) config.base_url (* %s 7 *)
-    current_date (* %s 8 *)
-    current_date (* %s 9 *)
-    (escape_xml config.author) (* %s 10 *)
-    (escape_xml config.author) (* %s 11 *)
-    items_xml (* %s 12 *)
+    (escape_xml config.site_title)
+    (escape_xml config.site_description)
+    config.base_url config.base_url
+    (escape_xml config.site_title)
+    config.base_url config.base_url current_date current_date
+    (escape_xml config.author) (escape_xml config.author) items_xml

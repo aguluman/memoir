@@ -46,7 +46,9 @@
 
     // Handle escape key to close mobile navigation
     document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && navList.getAttribute("data-visible") === "true") {
+      if (
+        e.key === "Escape" && navList.getAttribute("data-visible") === "true"
+      ) {
         closeNav();
       }
     });

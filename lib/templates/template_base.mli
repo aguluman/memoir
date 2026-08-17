@@ -1,11 +1,5 @@
-(** Base HTML document layout shared by every page. *)
-
 open Tyxml
 
-(** Assemble a full HTML document: [<head>] (title + standard meta tags +
-    [additional_head]) and [<body>] (header / main / footer). The three content
-    lists are flow content; [additional_head] holds extra head links/meta (e.g.
-    the SEO block from {!Seo.Seo.make_head}). *)
 val layout :
   ?lang:string ->
   title_text:string ->

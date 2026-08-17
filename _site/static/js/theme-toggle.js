@@ -8,10 +8,9 @@
   if (!toggle) return;
 
   toggle.addEventListener("click", function () {
-    const next =
-      document.documentElement.getAttribute("data-theme") === "dark"
-        ? "light"
-        : "dark";
+    const next = document.documentElement.getAttribute("data-theme") === "dark"
+      ? "light"
+      : "dark";
     document.documentElement.setAttribute("data-theme", next);
     document.documentElement.style.colorScheme = next;
     localStorage.setItem("theme", next);

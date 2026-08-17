@@ -1,8 +1,5 @@
 open Tyxml
 
-(** Base HTML templates and components *)
-
-(** Meta tags for SEO and responsiveness *)
 let meta_tags ~description =
   let open Html in
   [
@@ -31,23 +28,16 @@ let meta_tags ~description =
          \      document.documentElement.setAttribute('data-theme', theme);\n\
          \      document.documentElement.style.colorScheme = theme;\n\
          \    })();");
-    (* Main stylesheet *)
     link ~rel:[ `Stylesheet ] ~href:"/static/css/main.css" ();
-    (* Highlight CSS *)
     link ~rel:[ `Stylesheet ] ~href:"/static/css/highlight.css" ();
-    (* Favicon *)
     link ~rel:[ `Icon ] ~href:"/static/images/favicon.svg"
       ~a:[ a_mime_type "image/svg+xml" ]
       ();
-    (* Main JavaScript *)
     script ~a:[ a_src "/static/js/main.js"; a_defer () ] (txt "");
-    (* Theme toggle JavaScript *)
     script ~a:[ a_src "/static/js/theme-toggle.js"; a_defer () ] (txt "");
-    (* Highlight.js — synchronous so hljs is defined before deferred main.js runs *)
     script ~a:[ a_src "/static/js/highlight.min.js" ] (txt "");
   ]
 
-(** Base HTML layout to be used by all pages *)
 let layout ?(lang = "en") ~title_text ~description ~page_class
     ?(additional_head = []) ~header_content ~content ~footer_content () =
   let open Html in
@@ -59,7 +49,6 @@ let layout ?(lang = "en") ~title_text ~description ~page_class
     (body
        ~a:[ a_class [ page_class ] ]
        [
-         (* Theme toggle button *)
          button
            ~a:
              [

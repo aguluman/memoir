@@ -1,8 +1,5 @@
-(** Markdown parser with frontmatter support *)
-
 open Content_types
 
-(** Extract frontmatter from markdown content *)
 let extract_frontmatter content =
   let frontmatter_pattern = "^---\n\\([^-]\\|-[^-]\\)*\n---\n" in
   let re = Str.regexp frontmatter_pattern in
@@ -15,12 +12,6 @@ let extract_frontmatter content =
     (Some yaml_content, content_without_frontmatter)
   else (None, content)
 
-(** Parse a YAML frontmatter string into a frontmatter record.
-
-    Raises [Failure] on malformed YAML rather than silently returning an empty
-    record (Leroy: surface the error so the build fails loudly instead of
-    quietly dropping a page's metadata). A valid-but-keyless block still yields
-    the field defaults (e.g. [title = "Untitled"]). *)
 let parse_yaml_frontmatter yaml_str =
   match Yaml.of_string yaml_str with
   | Error (`Msg m) -> failwith (Printf.sprintf "invalid YAML frontmatter: %s" m)
@@ -58,32 +49,14 @@ let parse_yaml_frontmatter yaml_str =
         featured_image = get_string yaml "featured_image";
       }
 
-(** Parse the frontmatter from raw file content.
-
-    Returns [None] when the file has no frontmatter block at all — that absence
-    is now explicit in the type rather than encoded as a [title = ""] sentinel
-    (Minsky). A present-but-titleless block yields [Some] with the field
-    defaults. Raises [Failure] (via {!parse_yaml_frontmatter}) on malformed
-    YAML. *)
 let frontmatter_of_content content =
   match extract_frontmatter content with
   | Some yaml, _ -> Some (parse_yaml_frontmatter yaml)
   | None, _ -> None
 
-(** Parse markdown content into HTML with syntax highlighting support *)
 let parse_markdown content =
-  (* Convert to HTML with auto identifiers for headings. Omd already emits
-     [<pre><code class="language-LANG">] for fenced blocks carrying an info
-     string, which is exactly what highlight.js consumes.
-
-     Two preprocessing passes (backtick-spacing and unterminated-fence repair)
-     used to run here, plus a class-injection pass; all three were removed. Each
-     drove [Str] with an anchored [string_match]/unsupported PCRE pattern, so
-     they only fired when the input *began* with a fence — which post-frontmatter
-     body text never does. They were no-ops that only added risk. *)
   Omd.to_html ~auto_identifiers:true (Omd.of_string content)
 
-(** Parse a markdown file with frontmatter into a content_page *)
 let parse_markdown_file ~path ~content =
   let frontmatter_yaml, markdown_content = extract_frontmatter content in
   let frontmatter =
@@ -92,7 +65,6 @@ let parse_markdown_file ~path ~content =
     | None -> empty_frontmatter
   in
 
-  (* Process markdown after frontmatter *)
   let html_content = parse_markdown markdown_content in
   let url_path =
     match frontmatter.slug with

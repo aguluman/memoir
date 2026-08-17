@@ -4,43 +4,34 @@ module Routing = Memoir_content.Routing
 module Content_loader = Memoir_content.Content_loader
 module Build_cache = Memoir_content.Build_cache
 
-(* The one canonical configuration lives in Memoir_lib (single source of truth,
-   shared with the dev server). *)
 let config = Memoir_lib.default_config
-
-(* File IO and path utilities are shared via Memoir_lib (lib/memoir_lib.ml). *)
 let read_file = Memoir_lib.read_file
 let write_file = Memoir_lib.write_file
 let ensure_directory_exists = Memoir_lib.ensure_directory_exists
 
-(* Process markdown content into HTML *)
 let process_markdown ~file_path ~content =
   let page = Markdown_parser.parse_markdown_file ~path:file_path ~content in
   match page.Content_types.html_content with
   | Some html -> html
   | None -> ""
 
-(* Route and URL mapping types *)
 type route = {
   url_path : string;
   file_path : string;
   content_type : Content_types.content_type;
 }
 
-(* Configuration for rendering different content listings *)
 type entry_display_config = {
   url_prefix : string;
-  entry_element : string; (* "article", "div", etc. *)
-  entry_class : string; (* "blog-entry", "journal-entry", etc. *)
-  container_class : string; (* "blog-entries", "journal-entries", etc. *)
+  entry_element : string;
+  entry_class : string;
+  container_class : string;
   date_class : string;
   show_description : bool;
   empty_message : string;
   not_found_message : string;
 }
 
-(* Generic function to generate entry listings. The listing data comes from
-   Content_loader; this function only renders it. *)
 let generate_entries_html dir display_config =
   if not (Sys.file_exists dir && Sys.is_directory dir) then
     Printf.sprintf "<p><em>%s</em></p>" display_config.not_found_message
@@ -85,7 +76,6 @@ let generate_entries_html dir display_config =
         display_config.container_class
         (String.concat "\n" entries_html)
 
-(* Generate journal entry listings *)
 let generate_journal_entries_html journal_dir =
   let config =
     {
@@ -101,7 +91,6 @@ let generate_journal_entries_html journal_dir =
   in
   generate_entries_html journal_dir config
 
-(* Generate blog entry listings *)
 let generate_blog_entries_html blog_dir =
   let config =
     {
@@ -117,7 +106,6 @@ let generate_blog_entries_html blog_dir =
   in
   generate_entries_html blog_dir config
 
-(* True when file_path is the index.md of the given section directory. *)
 let is_section_index file_path section =
   Filename.basename file_path = "index.md"
   && Filename.basename (Filename.dirname file_path) = section
@@ -125,11 +113,9 @@ let is_section_index file_path section =
 let replace_placeholder pat rep s =
   Str.global_replace (Str.regexp_string pat) rep s
 
-(* Process Page Route *)
 let process_route route =
   match route.content_type with
   | Content_types.Asset ->
-      (* Static assets remain unchanged *)
       let clean =
         if String.length route.url_path > 0 && route.url_path.[0] = '/' then
           String.sub route.url_path 1 (String.length route.url_path - 1)
@@ -147,8 +133,6 @@ let process_route route =
       let fm_opt = Markdown_parser.frontmatter_of_content content in
       let fm = Option.value fm_opt ~default:Content_types.empty_frontmatter in
       let title =
-        (* No frontmatter block, or a keyless "Untitled" block, falls back to
-           the filename. *)
         match fm_opt with
         | Some f when f.Content_types.title <> "Untitled" ->
             f.Content_types.title
@@ -156,7 +140,6 @@ let process_route route =
       in
       let html_content = process_markdown ~file_path:route.file_path ~content in
 
-      (* Inject blog/journal listings into their section index pages. *)
       let final_html_content =
         let dir = Filename.dirname route.file_path in
         if is_section_index route.file_path "journal" then
@@ -187,10 +170,6 @@ let process_route route =
       in
       let page_class = Option.value fm.Content_types.layout ~default:"page" in
 
-      (* Create the page via the template system. Frontmatter now drives the
-         byline (author), the Open Graph image (featured_image), the article
-         modified-time (updated) and the body layout class (layout); the webring
-         navigation is appended inside Templates.create_page. *)
       let page_string =
         Templates.create_page ~current_path:url_path ~year ~author ~page_class
           ?image ?modified ~title_text:title ~description
@@ -200,8 +179,6 @@ let process_route route =
       in
       write_file output_path page_string
 
-(* Collect every content file into a route, classifying and URL-mapping each
-   via the shared Routing module. *)
 let collect_routes () =
   Content_loader.walk_files config.content_dir
   |> List.map (fun file_path ->
@@ -211,11 +188,8 @@ let collect_routes () =
         content_type = Routing.classify file_path;
       })
 
-(* Path of the on-disk incremental-build cache; the cache logic itself lives in
-   Memoir_content.Build_cache. *)
 let cache_file_path = Filename.concat config.output_dir ".build-cache"
 
-(* Extract RSS feed generation into a separate function *)
 let generate_rss_feed () =
   let pages = Memoir_lib.load_rss_pages ~content_dir:config.content_dir in
   let rss_xml = Memoir_lib.generate_rss_feed pages config in
@@ -224,26 +198,20 @@ let generate_rss_feed () =
   Printf.printf "RSS feed generated at: %s (%d items)\n" rss_output_path
     (List.length pages)
 
-(* Generate site. With ~force:true, the cache is ignored and every route is
-   rebuilt; the cache is still rewritten afterwards. *)
 let generate_site ?(force = false) () =
   if force then print_endline "Forcing full rebuild (ignoring cache)..."
   else print_endline "Starting site generation...";
 
-  (* Load (or reset) the build cache *)
   let cache =
     if force then Build_cache.empty ~cache_file:cache_file_path
     else Build_cache.load ~cache_file:cache_file_path
   in
 
-  (* Ensure output directory exists *)
   ensure_directory_exists config.output_dir;
 
-  (* Collect and process routes *)
   let routes = collect_routes () in
   Printf.printf "Collected %d routes\n" (List.length routes);
 
-  (* Process each route, skipping unmodified ones unless forcing *)
   let final_cache =
     List.fold_left
       (fun acc (route : route) ->
@@ -258,19 +226,15 @@ let generate_site ?(force = false) () =
       cache routes
   in
 
-  (* Save updated cache *)
   Build_cache.save final_cache;
 
-  (* Generate RSS feed *)
   generate_rss_feed ();
 
   print_endline "Site generation complete!"
 
-(* Entry point *)
 let () =
   print_endline "Memoir Generation - OCaml Static Site Generator";
   try
-    (* Check for --force flag in command line arguments *)
     let force =
       Array.length Sys.argv > 1
       && (Sys.argv.(1) = "--force" || Sys.argv.(1) = "-f")
